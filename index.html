@@ -16,6 +16,7 @@
   --bleu:#2346A8; --rouge:#E2453C; --line:#CDD8EE;
   --water1:#7FD3E6; --water2:#2E8FB8; --sand:#F1D9A0;
   --ok:#14885A; --okbg:#DDF5E9; --bad:#C8322A; --badbg:#FDE3E1;
+  --warn:#C77700; --warnbg:#FFF1DA;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -23,6 +24,7 @@
     --bleu:#8EA8FF; --rouge:#FF6E66; --line:#2C3B6E;
     --water1:#2B7F9C; --water2:#123E63; --sand:#8C7746;
     --ok:#4FD39A; --okbg:#173D33; --bad:#FF8A82; --badbg:#4A1E2A;
+    --warn:#F0A63A; --warnbg:#4A3A1E;
   }
 }
 :root[data-theme="dark"]{
@@ -30,8 +32,10 @@
   --bleu:#8EA8FF; --rouge:#FF6E66; --line:#2C3B6E;
   --water1:#2B7F9C; --water2:#123E63; --sand:#8C7746;
   --ok:#4FD39A; --okbg:#173D33; --bad:#FF8A82; --badbg:#4A1E2A;
+  --warn:#F0A63A; --warnbg:#4A3A1E;
 }
 *,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:17px;line-height:1.45}
@@ -85,10 +89,17 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .btn:focus-visible,.stage:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .typerow{display:flex;gap:8px}
-.known{display:inline-flex;align-items:center;gap:6px;flex:none;margin-left:auto;min-height:40px;padding:0 10px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-weight:600;font-size:.9rem;line-height:1.1;cursor:pointer}
+.marks{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+.known{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 10px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-weight:600;font-size:.9rem;line-height:1.1;cursor:pointer}
 .known input{width:20px;height:20px;margin:0;accent-color:var(--ok);cursor:pointer}
 .item.done .known{border-color:var(--ok);background:var(--paper)}
 .known:focus-within{outline:3px solid var(--rouge);outline-offset:2px}
+.forgot-mark input{accent-color:var(--warn)}
+.item.forgot{border-color:var(--warn);background:var(--warnbg)}
+.item.forgot .num{background:var(--warn);color:#fff;border-color:var(--warn)}
+.item.forgot .forgot-mark{border-color:var(--warn);background:var(--paper)}
+.substages{display:flex;gap:6px;overflow-x:auto;padding:2px}
+.hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
 .fb.ok{background:var(--okbg);color:var(--ok);font-weight:600}
@@ -136,7 +147,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 @media (max-width:600px){
   .item.sp .item-top{flex-wrap:wrap;align-items:center}
   .item.sp .item-top .num{order:1}
-  .item.sp .item-top .known{order:2}
+  .item.sp .item-top .marks{order:2}
   .item.sp .item-top .texts{order:3;flex:1 1 100%}
   .item.sp .actions{flex-direction:column;align-items:stretch}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
@@ -181,8 +192,12 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <summary>⚙️ Настройки</summary>
       <div class="actions" style="margin-top:10px">
         <button class="btn ghost" id="restartLevel">Начать уровень заново</button>
-        <label style="display:flex;gap:6px;align-items:center">Уровень <select id="levelPick" style="font:inherit;padding:6px;border-radius:10px"></select></label>
         <button class="btn ghost" id="resetAll">Сбросить весь прогресс</button>
+        <button class="btn ghost" id="adminBtn" aria-pressed="false">🔑 Админ</button>
+      </div>
+      <div class="actions" id="adminBox" hidden style="margin-top:10px">
+        <button class="btn" id="nextLevelBtn">⏭ Сразу на следующий уровень</button>
+        <label style="display:flex;gap:6px;align-items:center">Уровень <select id="levelPick" style="font:inherit;padding:6px;border-radius:10px"></select></label>
       </div>
     </details>
   </section>
@@ -207,15 +222,25 @@ const STAGES = [
   {key:"rep", tab:"🎧 Écoute & répète", fr:"Écoute et répète.", ru:"Послушай и повтори каждую фразу."},
   {key:"ass", tab:"🔗 Associe", fr:"Associe.", ru:"Выбери правильный перевод."},
   {key:"dis", tab:"🇷🇺 Dis-le", fr:"Dis-le en français.", ru:"Скажи это по-французски."},
+  {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила."},
   {key:"fin", tab:"🏁 Test final", fr:"Le test final !", ru:"Финальная проверка: новые фразы."}
+];
+const REV_SUBS = [
+  {key:"rev_rep", tab:"🎧 Écoute & répète"},
+  {key:"rev_ass", tab:"🔗 Associe"},
+  {key:"rev_dis", tab:"🇷🇺 Dis-le"}
 ];
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({level:1, shrimps:0, unlocked:0, view:0, done:{rep:[],ass:[],dis:[],fin:[]}, won:false});
-let state = fresh(), generated = {};
-try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){ state={...fresh(),...s.state}; generated=s.generated||{}; } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated})); }catch(e){} }
+const fresh = () => ({level:1, shrimps:0, unlocked:0, view:0, revView:0, forgot:[], done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
+let state = fresh(), generated = {}, admin = false;
+try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
+  const old=!(s.state && "forgot" in s.state);
+  state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; generated=s.generated||{}; admin=!!s.admin;
+  if(old){ if(state.unlocked>=3) state.unlocked=4; if(state.view>=3) state.view=4; } // между «Dis-le» и «Test final» появился шаг «Повтор»
+} }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin})); }catch(e){} }
 function levelData(n){ return BUILTIN[n] || generated[n] || null; }
 function planFor(n){ return BUILTIN[n] || PLAN[n] || {fr:"Конструкция "+n, ru:"", theme:"повседневные ситуации"}; }
 
@@ -332,39 +357,67 @@ function renderNotice(){
 }
 
 /* ---------- RENDER ---------- */
-function stageCount(k){ const d=levelData(state.level); return k==="fin" ? (d?d.final.length:5) : (d?d.phrases.length:30); }
-function doneCount(k){ return state.done[k].filter(Boolean).length; }
+const isRev=k=>k.indexOf("rev_")===0;
+function stageCount(k){
+  if(k==="rev") return 3*state.forgot.length;
+  if(isRev(k)) return state.forgot.length;
+  const d=levelData(state.level); return k==="fin" ? (d?d.final.length:5) : (d?d.phrases.length:30);
+}
+function doneCount(k){
+  if(k==="rev") return REV_SUBS.reduce((n,x)=>n+doneCount(x.key),0);
+  if(isRev(k)) return state.forgot.filter(i=>state.done[k][i]).length;
+  return state.done[k].filter(Boolean).length;
+}
+function unl(){ return admin ? STAGES.length-1 : state.unlocked; }
+function revDone(){ return doneCount("rev")>=stageCount("rev"); }
+function subUnlocked(i){ return admin || i===0 || (doneCount("rev_rep")>=stageCount("rev_rep") && (i===1 || doneCount("rev_ass")>=stageCount("rev_ass"))); }
+// «Повтор» открывается после «Dis-le», «Test final» — когда нечего повторять или всё повторено
+function syncUnlock(){
+  if(doneCount("dis")<stageCount("dis")) return;
+  state.unlocked = revDone() ? Math.max(state.unlocked,4) : 3;
+}
+function setForgot(idx,on){
+  const i=state.forgot.indexOf(idx);
+  if(on && i<0){ state.forgot.push(idx); state.forgot.sort((a,b)=>a-b); }
+  if(!on && i>=0) state.forgot.splice(i,1);
+}
 
 function renderHeader(){
   const p=planFor(state.level);
   $("levelNum").textContent="Niveau "+state.level;
   $("construction").textContent=p.fr+" — "+p.ru;
+  if(state.view>unl()) state.view=unl();
   const k=STAGES[state.view].key, tot=stageCount(k), dn=doneCount(k);
-  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot;
-  $("bar").style.width=(dn/tot*100)+"%"; $("barWrap").setAttribute("aria-valuemax",tot); $("barWrap").setAttribute("aria-valuenow",dn);
+  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot+(k==="dis"&&state.forgot.length?" · отложено "+state.forgot.length:"");
+  $("bar").style.width=(tot?dn/tot*100:100)+"%"; $("barWrap").setAttribute("aria-valuemax",tot); $("barWrap").setAttribute("aria-valuenow",dn);
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const st=STAGES[state.view]; $("sayFr").textContent=st.fr; $("sayRu").textContent=st.ru;
   const nav=$("stages"); nav.innerHTML="";
   STAGES.forEach((s,i)=>{
     const b=document.createElement("button"); b.className="stage";
-    const complete = doneCount(s.key)>=stageCount(s.key);
-    b.innerHTML=(i>state.unlocked?"🔒 ":"")+esc(s.tab)+(complete?' <span class="ck">✓</span>':"");
-    b.disabled=i>state.unlocked; b.setAttribute("aria-pressed",i===state.view);
+    const complete = s.key==="rev" ? state.unlocked>=4 : doneCount(s.key)>=stageCount(s.key);
+    b.innerHTML=(i>unl()?"🔒 ":"")+esc(s.tab)+(s.key==="rev"&&state.forgot.length?" ("+state.forgot.length+")":"")+(complete?' <span class="ck">✓</span>':"");
+    b.disabled=i>unl(); b.setAttribute("aria-pressed",i===state.view);
     b.onclick=()=>{state.view=i;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
     nav.appendChild(b);
   });
 }
 
-function markDone(k, idx){
-  state.done[k][idx]=true; happy();
-  const tot=stageCount(k);
-  if(doneCount(k)>=tot){
-    const si=STAGES.findIndex(s=>s.key===k);
-    if(k==="fin"){ if(!state.won) state.shrimps++; state.won=true; toast("Bravo ! Tu gagnes une crevette ! 🦐"); }
-    else if(si+1>state.unlocked){ state.unlocked=si+1; toast("Bravo ! Этап открыт: "+STAGES[si+1].tab); }
+function stageComplete(k){
+  if(k==="fin"){ if(!state.won) state.shrimps++; state.won=true; toast("Bravo ! Tu gagnes une crevette ! 🦐"); }
+  else if(k==="rep"||k==="ass"){ const si=STAGES.findIndex(s=>s.key===k); if(si+1>state.unlocked){ state.unlocked=si+1; toast("Bravo ! Этап открыт: "+STAGES[si+1].tab); } }
+  else if(k==="dis"){ const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[state.unlocked].tab); }
+  else if(isRev(k)){
+    if(revDone()){ const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[4].tab); }
+    else toast("Bravo ! Следующий шаг открыт");
   }
+}
+function markDone(k, idx, quiet){
+  state.done[k][idx]=true; if(!quiet) happy();
+  const complete=doneCount(k)>=stageCount(k);
+  if(complete) stageComplete(k);
   save(); renderHeader(); renderAqua();
-  if(doneCount(k)>=tot) renderMain();
+  if(complete) renderMain();
 }
 
 function unmarkDone(k, idx){
@@ -384,9 +437,10 @@ function feedbackHtml(res, said, target, showAnswer, mode){
 }
 
 function speechItem(idx, fr, ru, k, ruOnly){
-  const el=document.createElement("article"); el.className="item sp"+(state.done[k][idx]?" done":"");
+  const isForgot = k==="dis" && state.forgot.indexOf(idx)>=0;
+  const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
   const showFr = !ruOnly || state.done[k][idx];
-  el.innerHTML='<div class="item-top"><div class="num">'+(state.done[k][idx]?"✓":idx+1)+'</div><div class="texts">'+
+  el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":idx+1)+'</div><div class="texts">'+
     (showFr?'<div class="fr" lang="fr">'+esc(fr)+'</div>':"")+'<div class="ru'+(ruOnly?" big":"")+'">'+esc(ru)+'</div></div></div>'+
     '<div class="actions"></div><div class="fbwrap"></div>';
   const actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
@@ -395,12 +449,32 @@ function speechItem(idx, fr, ru, k, ruOnly){
   }
   const known=document.createElement("label"); known.className="known";
   known.innerHTML='<input type="checkbox"> Я это знаю';
-  const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx];
-  cb.onchange=()=>{
-    if(cb.checked) markDone(k, idx); else unmarkDone(k, idx);
-    if(el.isConnected){ const fresh=speechItem(idx, fr, ru, k, ruOnly); el.replaceWith(fresh); const c=fresh.querySelector(".known input"); if(c) c.focus({preventScroll:true}); }
+  const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx] && !isForgot;
+  const refresh=(sel)=>{
+    if(!el.isConnected) return;
+    if(k==="dis" && doneCount("dis")>=stageCount("dis")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+    const fresh=speechItem(idx, fr, ru, k, ruOnly); el.replaceWith(fresh); const c=fresh.querySelector(sel); if(c) c.focus({preventScroll:true});
   };
-  el.querySelector(".item-top").appendChild(known);
+  cb.onchange=()=>{
+    if(cb.checked){
+      if(isForgot){ setForgot(idx,false); syncUnlock(); save(); renderHeader(); }
+      else markDone(k, idx);
+    } else unmarkDone(k, idx);
+    refresh(".known input");
+  };
+  const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(known);
+  if(k==="dis"){
+    const fg=document.createElement("label"); fg.className="known forgot-mark";
+    fg.innerHTML='<input type="checkbox"> Не помню';
+    const fc=fg.querySelector("input"); fc.checked=isForgot;
+    fc.onchange=()=>{
+      if(fc.checked){ setForgot(idx,true); if(state.unlocked>=4 && !state.won) state.unlocked=3; if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true); }
+      else { setForgot(idx,false); unmarkDone("dis", idx); }
+      refresh(".forgot-mark input");
+    };
+    marks.appendChild(fg);
+  }
+  el.querySelector(".item-top").appendChild(marks);
   if(state.done[k][idx]){ return el; }
   const handle=(said, mode)=>{
     const res=check(fr, said, mode);
@@ -438,8 +512,8 @@ function lev(a,b){
 }
 function sim(a,b){ return jacc(wordsOf(a),wordsOf(b)) + 1 - lev(a,b)/(Math.max(a.length,b.length)||1); }
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-function assItem(idx, d){
-  const k="ass", [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
+function assItem(idx, d, k){
+  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
   const close=d.phrases.map((p,i)=>({i, text:p[col], score:sim(p[0],fr)+sim(p[1],ru)}))
     .filter(c=>c.i!==idx && c.text!==right).sort((x,y)=>y.score-x.score).slice(0,6);
   const picks=[]; for(const c of shuffle(close)){ if(picks.length<2 && !picks.some(x=>x.text===c.text)) picks.push(c); }
@@ -499,6 +573,7 @@ function renderMain(){
     m.appendChild(w); return;
   }
   const k=STAGES[state.view].key, list=document.createElement("div"); list.className="list";
+  if(k==="rev"){ renderReview(m,d); return; }
   if(k==="rep") d.phrases.forEach((p,i)=>list.appendChild(speechItem(i,p[0],p[1],"rep",false)));
   if(k==="ass") d.phrases.forEach((p,i)=>list.appendChild(assItem(i,d)));
   if(k==="dis") d.phrases.forEach((p,i)=>list.appendChild(speechItem(i,p[0],p[1],"dis",true)));
@@ -506,9 +581,49 @@ function renderMain(){
   m.appendChild(list);
   const tot=stageCount(k);
   if(doneCount(k)>=tot && state.view<3){
+    const to = state.view===2 && !state.forgot.length ? 4 : state.view+1;
     const nx=document.createElement("div"); nx.style.marginTop="14px";
-    nx.innerHTML='<button class="btn" style="width:100%;font-size:1.15rem">Этап пройден! Дальше: '+esc(STAGES[state.view+1].tab)+'</button>';
-    nx.querySelector("button").onclick=()=>{state.view++;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
+    nx.innerHTML='<button class="btn" style="width:100%;font-size:1.15rem">Этап пройден! Дальше: '+esc(STAGES[to].tab)+'</button>';
+    nx.querySelector("button").onclick=()=>{state.view=to;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
+    m.appendChild(nx);
+  }
+}
+
+function renderReview(m,d){
+  if(!state.forgot.length){
+    const w=document.createElement("section"); w.className="panel win";
+    w.innerHTML='<div class="big">🐈✨</div><h2 style="margin:.3em 0">Повторять нечего!</h2><p>Ты не откладывала карточки. Можно идти на финальный тест.</p><div style="margin-top:14px"><button class="btn" id="goFin">Дальше: '+esc(STAGES[4].tab)+'</button></div>';
+    w.querySelector("#goFin").onclick=()=>{ state.view=4; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+    m.appendChild(w); return;
+  }
+  let rv=Math.min(state.revView,2); while(rv>0 && !subUnlocked(rv)) rv--;
+  state.revView=rv;
+  const nav=document.createElement("nav"); nav.className="substages"; nav.setAttribute("aria-label","Шаги повторения");
+  REV_SUBS.forEach((s,i)=>{
+    const b=document.createElement("button"); b.className="stage";
+    const complete=doneCount(s.key)>=stageCount(s.key);
+    b.innerHTML=(!subUnlocked(i)?"🔒 ":"")+esc(s.tab)+(complete?' <span class="ck">✓</span>':"");
+    b.disabled=!subUnlocked(i); b.setAttribute("aria-pressed",i===rv);
+    b.onclick=()=>{ state.revView=i; save(); renderMain(); renderHeader(); window.scrollTo({top:0,behavior:"smooth"}); };
+    nav.appendChild(b);
+  });
+  m.appendChild(nav);
+  const hint=document.createElement("p"); hint.className="hint";
+  hint.textContent="Здесь только карточки, которые ты отложила ("+state.forgot.length+"). Пройди три шага по порядку.";
+  m.appendChild(hint);
+  const key=REV_SUBS[rv].key, list=document.createElement("div"); list.className="list";
+  state.forgot.forEach(i=>{
+    const [fr,ru]=d.phrases[i];
+    list.appendChild(key==="rev_ass" ? assItem(i,d,key) : speechItem(i,fr,ru,key,key==="rev_dis"));
+  });
+  m.appendChild(list);
+  if(doneCount(key)>=stageCount(key)){
+    const last=rv===2, nx=document.createElement("div"); nx.style.marginTop="14px";
+    nx.innerHTML='<button class="btn" style="width:100%;font-size:1.15rem">'+(last?"Всё повторено! Дальше: "+esc(STAGES[4].tab):"Шаг пройден! Дальше: "+esc(REV_SUBS[rv+1].tab))+'</button>';
+    nx.querySelector("button").onclick=()=>{
+      if(last){ state.view=4; } else state.revView=rv+1;
+      save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"});
+    };
     m.appendChild(nx);
   }
 }
@@ -524,14 +639,23 @@ function renderAqua(){
     s.style.setProperty("--d",(5+(i%4))+"s");s.style.setProperty("--dx",(40+(i*13)%60)+"px");s.style.animationDelay=(-i*1.1)+"s";a.appendChild(s);
   }
 }
-function renderAll(){ renderHeader(); renderNotice(); renderMain(); renderAqua(); }
+function renderAll(){ renderHeader(); renderNotice(); renderMain(); renderAqua(); renderAdmin(); }
 
 $("restartLevel").onclick=()=>{ if(confirm("Начать текущий уровень заново?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
 $("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; save(); renderAll(); } };
 const pick=$("levelPick");
 for(let n=1;n<=MAXLEVEL;n++){ const o=document.createElement("option"); o.value=n; o.textContent=n+". "+BUILTIN[n].fr; pick.appendChild(o); }
-pick.value=Math.min(state.level,MAXLEVEL);
-pick.onchange=()=>{ const n=+pick.value; if(n!==state.level && confirm("Перейти на уровень "+n+"? Прогресс текущего уровня начнётся заново.")){ const sh=state.shrimps; state={...fresh(), level:n, shrimps:sh}; save(); renderAll(); } else pick.value=Math.min(state.level,MAXLEVEL); };
+function goLevel(n){ const sh=state.shrimps; state={...fresh(), level:n, shrimps:sh}; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); toast("Уровень "+n); }
+pick.onchange=()=>{ const n=+pick.value; if(n!==state.level) goLevel(n); };
+$("nextLevelBtn").onclick=()=>{ if(state.level<MAXLEVEL) goLevel(state.level+1); };
+$("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
+function renderAdmin(){
+  $("adminBtn").textContent=admin?"🔑 Админ включён (выключить)":"🔑 Админ";
+  $("adminBtn").setAttribute("aria-pressed",admin);
+  $("adminBox").hidden=!admin;
+  $("nextLevelBtn").disabled=state.level>=MAXLEVEL;
+  pick.value=Math.min(state.level,MAXLEVEL);
+}
 renderAll();
 </script>
 </body>
