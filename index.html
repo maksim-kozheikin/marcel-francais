@@ -234,11 +234,11 @@ const REV_SUBS = [
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:3, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[]}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
+const fresh = () => ({v:3, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
 let state = fresh(), generated = {}, admin = false;
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin;
-  if(s.state && (s.state.v===2||s.state.v===3)){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; if(s.state.v===2){ state.v=3; state.done.fin=[]; state.order=null; } if(!state.fg) state.fg={ass:[],dis:(state.forgot||[]).slice()}; }
+  if(s.state && (s.state.v===2||s.state.v===3)){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; if(s.state.v===2){ state.v=3; state.done.fin=[]; state.order=null; } if(!state.fg) state.fg={ass:[],dis:(state.forgot||[]).slice()}; state.fg.fin=state.fg.fin||[]; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; } // карточки изменились (по 20 штук), текущий уровень начинается заново
 } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin})); }catch(e){} }
@@ -390,12 +390,13 @@ function order(name){
   return state.order[name];
 }
 // state.fg хранит отметки по этапам («Associe», «Dis-le»), state.forgot — все отложенные карточки для шага «Повтор»
+function syncForgot(){ state.forgot=[...new Set([...state.fg.ass,...state.fg.dis,...state.fg.fin])].sort((x,y)=>x-y); }
 function setForgot(idx,on,stage){
   const had=state.forgot.indexOf(idx)>=0, a=state.fg[stage], i=a.indexOf(idx);
   if(on && i<0) a.push(idx);
   if(!on && i>=0) a.splice(i,1);
-  state.forgot=[...new Set([...state.fg.ass,...state.fg.dis])].sort((x,y)=>x-y);
-  if(on && !had && state.unlocked>=4 && !state.won) state.unlocked=3;
+  syncForgot();
+  if(on && !had){ ["rev_rep","rev_ass","rev_dis"].forEach(r=>{ state.done[r][idx]=false; }); if(stage!=="fin" && state.unlocked>=4 && !state.won) state.unlocked=3; }
 }
 
 function renderHeader(){
@@ -404,14 +405,14 @@ function renderHeader(){
   $("construction").textContent=p.fr+" — "+p.ru;
   if(state.view>unl()) state.view=unl();
   const k=STAGES[state.view].key, tot=stageCount(k), dn=doneCount(k);
-  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot+((k==="dis"||k==="ass")&&state.fg[k].length?" · отложено "+state.fg[k].length:"");
+  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot+((k==="dis"||k==="ass"||k==="fin")&&state.fg[k].length?" · отложено "+state.fg[k].length:"");
   $("bar").style.width=(tot?dn/tot*100:100)+"%"; $("barWrap").setAttribute("aria-valuemax",tot); $("barWrap").setAttribute("aria-valuenow",dn);
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const st=STAGES[state.view]; $("sayFr").textContent=st.fr; $("sayRu").textContent=st.ru;
   const nav=$("stages"); nav.innerHTML="";
   STAGES.forEach((s,i)=>{
     const b=document.createElement("button"); b.className="stage";
-    const complete = s.key==="rev" ? state.unlocked>=4 : doneCount(s.key)>=stageCount(s.key);
+    const complete = s.key==="rev" ? state.unlocked>=4 && revDone() : doneCount(s.key)>=stageCount(s.key);
     b.innerHTML=(i>unl()?"🔒 ":"")+esc(s.tab)+(s.key==="rev"&&state.forgot.length?" ("+state.forgot.length+")":"")+(complete?' <span class="ck">✓</span>':"");
     b.disabled=i>unl(); b.setAttribute("aria-pressed",i===state.view);
     b.onclick=()=>{state.view=i;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
@@ -424,7 +425,11 @@ function stageComplete(k){
   else if(k==="rep"||k==="ass"){ const si=STAGES.findIndex(s=>s.key===k); if(si+1>state.unlocked){ state.unlocked=si+1; toast("Bravo ! Этап открыт: "+STAGES[si+1].tab); } }
   else if(k==="dis"){ const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[state.unlocked].tab); }
   else if(isRev(k)){
-    if(revDone()){ const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[4].tab); }
+    if(revDone()){
+      if(state.fg.fin.length){ state.fg.fin=[]; syncForgot(); toast("Bravo ! Карточки вернулись в "+STAGES[4].tab); }
+      else { const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[4].tab); }
+      syncUnlock();
+    }
     else toast("Bravo ! Следующий шаг открыт");
   }
 }
@@ -455,45 +460,52 @@ function feedbackHtml(res, said, target, showAnswer, mode){
 }
 
 function speechItem(idx, fr, ru, k, ruOnly, n){
-  const isForgot = k==="dis" && state.fg.dis.indexOf(idx)>=0;
+  const canForget = k==="dis" || k==="fin";
+  const isForgot = canForget && state.fg[k].indexOf(idx)>=0, settled = state.done[k][idx] || isForgot;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
-  const showFr = !ruOnly || state.done[k][idx];
+  const showFr = !ruOnly || settled;
   el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts">'+
     (showFr?'<div class="fr" lang="fr">'+esc(fr)+'</div>':"")+'<div class="ru'+(ruOnly?" big":"")+'">'+esc(ru)+'</div></div></div>'+
     '<div class="actions"></div><div class="fbwrap"></div>';
   const actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
-  if(!ruOnly || state.done[k][idx]){
+  if(!ruOnly || settled){
     const lb=document.createElement("button"); lb.className="btn"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); actions.appendChild(lb);
   }
   const known=document.createElement("label"); known.className="known";
   known.innerHTML='<input type="checkbox"> Je sais';
   const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx] && !isForgot;
-  const refresh=(sel)=>{
+  const refresh=(sel,full)=>{
     if(!el.isConnected) return;
-    if(k==="dis" && doneCount("dis")>=stageCount("dis")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+    if(full || (k==="dis" && doneCount("dis")>=stageCount("dis"))){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
     const fresh=speechItem(idx, fr, ru, k, ruOnly, n); el.replaceWith(fresh); const c=fresh.querySelector(sel); if(c) c.focus({preventScroll:true});
   };
   cb.onchange=()=>{
     if(cb.checked){
-      if(isForgot){ setForgot(idx,false,"dis"); syncUnlock(); save(); renderHeader(); }
+      if(isForgot){ setForgot(idx,false,k); if(state.done[k][idx]){ syncUnlock(); save(); renderHeader(); } else markDone(k, idx); }
       else markDone(k, idx);
     } else unmarkDone(k, idx);
-    refresh(".known input");
+    refresh(".known input", k==="fin" && isForgot);
   };
   const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(known);
-  if(k==="dis"){
+  if(canForget){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
-      if(fc.checked){ setForgot(idx,true,"dis"); if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true); }
-      else { setForgot(idx,false,"dis"); unmarkDone("dis", idx); }
-      refresh(".forgot-mark input");
+      if(fc.checked){
+        setForgot(idx,true,k);
+        if(k==="fin"){ if(state.done.fin[idx]) unmarkDone("fin", idx); else { save(); renderHeader(); } }  // в финальном тесте карточка ждёт повтора и не засчитывается
+        else if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true);
+      } else {
+        setForgot(idx,false,k);
+        if(k==="fin"){ save(); renderHeader(); } else unmarkDone("dis", idx);
+      }
+      refresh(".forgot-mark input", k==="fin");
     };
     marks.appendChild(fg);
   }
   el.querySelector(".item-top").appendChild(marks);
-  if(state.done[k][idx]){ return el; }
+  if(settled){ return el; }
   const handle=(said, mode)=>{
     const res=check(fr, said, mode);
     fbw.innerHTML=feedbackHtml(res, said, fr, ruOnly, mode);
@@ -755,6 +767,12 @@ function renderMain(){
   if(k==="dis") order("dis").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"dis",true,n+1)));
   if(k==="fin") order("fin").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"fin",true,n+1)));
   m.appendChild(list);
+  if(k==="fin" && state.fg.fin.length){
+    const rv=document.createElement("div"); rv.style.marginTop="14px";
+    rv.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Отложено карточек '+state.fg.fin.length+'. Дальше: '+esc(STAGES[3].tab)+'</button>';
+    rv.querySelector("button").onclick=()=>{ state.view=3; state.revView=0; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+    m.appendChild(rv);
+  }
   const tot=stageCount(k);
   if(doneCount(k)>=tot && state.view<3){
     const to = state.view===2 && !state.forgot.length ? 4 : state.view+1;
