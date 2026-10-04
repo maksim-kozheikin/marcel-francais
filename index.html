@@ -405,15 +405,17 @@ const STAGES = [
   {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила."},
   {key:"fin", tab:"🏁 Test final", fr:"Le test final !", ru:"Финальная проверка. Скажи по-французски все фразы уровня."}
 ];
+// повтор по разделам: в каждом только карточки, отложенные именно в этом разделе
 const REV_SUBS = [
-  {key:"rev_rep", tab:"🎧 Écoute & répète"},
-  {key:"rev_ass", tab:"🔗 Associe"},
-  {key:"rev_dis", tab:"🇷🇺 Dis-le"}
+  {key:"rev_ass", tab:"🔗 Associe", src:"ass"},
+  {key:"rev_dis", tab:"🇷🇺 Dis-le", src:"dis"},
+  {key:"rev_fin", tab:"🏁 Test final", src:"fin"}
 ];
+const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:5, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
+const fresh = () => ({v:5, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[]}, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
@@ -575,18 +577,19 @@ function renderNotice(){
 /* ---------- RENDER ---------- */
 const isRev=k=>k.indexOf("rev_")===0;
 function stageCount(k){
-  if(k==="rev") return 3*state.forgot.length;
-  if(isRev(k)) return state.forgot.length;
+  if(k==="rev") return REV_SUBS.reduce((n,x)=>n+state.fg[x.src].length,0);
+  if(isRev(k)) return state.fg[revSrc(k)].length;
   const d=levelData(state.level); return d?d.phrases.length:21;
 }
 function doneCount(k){
   if(k==="rev") return REV_SUBS.reduce((n,x)=>n+doneCount(x.key),0);
-  if(isRev(k)) return state.forgot.filter(i=>state.done[k][i]).length;
+  if(isRev(k)) return state.fg[revSrc(k)].filter(i=>state.done[k][i]).length;
   return state.done[k].filter(Boolean).length;
 }
 function unl(){ return admin ? STAGES.length-1 : state.unlocked; }
 function revDone(){ return doneCount("rev")>=stageCount("rev"); }
-function subUnlocked(i){ return admin || i===0 || (doneCount("rev_rep")>=stageCount("rev_rep") && (i===1 || doneCount("rev_ass")>=stageCount("rev_ass"))); }
+// разделы повтора, в которых есть карточки
+function revSections(){ return REV_SUBS.filter(x=>state.fg[x.src].length); }
 // «Повтор» открывается после «Dis-le», «Test final» — когда нечего повторять или всё повторено
 function syncUnlock(){
   if(doneCount("dis")<stageCount("dis")) return;
@@ -608,10 +611,10 @@ function order(name){
 function syncForgot(){ state.forgot=[...new Set([...state.fg.ass,...state.fg.dis,...state.fg.fin])].sort((x,y)=>x-y); }
 function setForgot(idx,on,stage){
   const had=state.forgot.indexOf(idx)>=0, a=state.fg[stage], i=a.indexOf(idx);
-  if(on && i<0) a.push(idx);
+  if(on && i<0){ a.push(idx); state.done["rev_"+stage][idx]=false; }
   if(!on && i>=0) a.splice(i,1);
   syncForgot();
-  if(on && !had){ ["rev_rep","rev_ass","rev_dis"].forEach(r=>{ state.done[r][idx]=false; }); if(stage!=="fin" && state.unlocked>=4 && !state.won) state.unlocked=3; }
+  if(on && !had){ if(stage!=="fin" && state.unlocked>=4 && !state.won) state.unlocked=3; }
 }
 
 function renderHeader(){
@@ -1090,7 +1093,7 @@ function renderMain(){
   if(k==="fin" && state.fg.fin.length){
     const rv=document.createElement("div"); rv.style.marginTop="14px";
     rv.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Отложено карточек '+state.fg.fin.length+'. Дальше: '+esc(STAGES[3].tab)+'</button>';
-    rv.querySelector("button").onclick=()=>{ state.view=3; state.revView=0; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+    rv.querySelector("button").onclick=()=>{ state.view=3; state.revKey="rev_fin"; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
     m.appendChild(rv);
   }
   const tot=stageCount(k);
@@ -1110,33 +1113,34 @@ function renderReview(m,d){
     w.querySelector("#goFin").onclick=()=>{ state.view=4; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
     m.appendChild(w); return;
   }
-  let rv=Math.min(state.revView,2); while(rv>0 && !subUnlocked(rv)) rv--;
-  state.revView=rv;
-  const nav=document.createElement("nav"); nav.className="substages"; nav.setAttribute("aria-label","Шаги повторения");
-  REV_SUBS.forEach((s,i)=>{
+  const secs=revSections();
+  let rv=Math.max(0,secs.findIndex(x=>x.key===state.revKey)); if(rv<0) rv=0;
+  const cur=secs[rv]; state.revKey=cur.key;
+  const nav=document.createElement("nav"); nav.className="substages"; nav.setAttribute("aria-label","Разделы повторения");
+  secs.forEach((x,i)=>{
     const b=document.createElement("button"); b.className="stage";
-    const complete=doneCount(s.key)>=stageCount(s.key);
-    b.innerHTML=(!subUnlocked(i)?"🔒 ":"")+esc(s.tab)+(complete?' <span class="ck">✓</span>':"");
-    b.disabled=!subUnlocked(i); b.setAttribute("aria-pressed",i===rv);
-    b.onclick=()=>{ state.revView=i; save(); renderMain(); renderHeader(); window.scrollTo({top:0,behavior:"smooth"}); };
+    const complete=doneCount(x.key)>=stageCount(x.key);
+    b.innerHTML=esc(x.tab)+" ("+stageCount(x.key)+")"+(complete?' <span class="ck">✓</span>':"");
+    b.setAttribute("aria-pressed",i===rv);
+    b.onclick=()=>{ state.revKey=x.key; save(); renderMain(); renderHeader(); window.scrollTo({top:0,behavior:"smooth"}); };
     nav.appendChild(b);
   });
   m.appendChild(nav);
   const hint=document.createElement("p"); hint.className="hint";
-  hint.textContent="Здесь только карточки, которые ты отложила ("+state.forgot.length+"). Пройди три шага по порядку.";
+  hint.textContent="Здесь только карточки, которые ты отложила в разделе «"+cur.tab.replace(/^\S+\s/,"")+"» ("+stageCount(cur.key)+").";
   m.appendChild(hint);
-  const key=REV_SUBS[rv].key, list=document.createElement("div"); list.className="list";
-  const seq = key==="rev_ass" ? order("ass") : key==="rev_dis" ? order("dis") : order("rep");
-  seq.filter(i=>state.forgot.indexOf(i)>=0).forEach((i,n)=>{
+  const key=cur.key, list=document.createElement("div"); list.className="list";
+  const seq=order(cur.src);
+  seq.filter(i=>state.fg[cur.src].indexOf(i)>=0).forEach((i,n)=>{
     const [fr,ru]=d.phrases[i];
-    list.appendChild(key==="rev_ass" ? assItem(i,d,key,n+1) : speechItem(i,fr,ru,key,key==="rev_dis",n+1));
+    list.appendChild(key==="rev_ass" ? assItem(i,d,key,n+1) : speechItem(i,fr,ru,key,true,n+1));
   });
   m.appendChild(list);
   if(doneCount(key)>=stageCount(key)){
-    const last=rv===2, nx=document.createElement("div"); nx.style.marginTop="14px";
-    nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">'+(last?"Всё повторено! Дальше: "+esc(STAGES[4].tab):"Шаг пройден! Дальше: "+esc(REV_SUBS[rv+1].tab))+'</button>';
+    const nextSec=secs.find(x=>doneCount(x.key)<stageCount(x.key)), nx=document.createElement("div"); nx.style.marginTop="14px";
+    nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">'+(nextSec?"Раздел пройден! Дальше: "+esc(nextSec.tab):"Всё повторено! Дальше: "+esc(STAGES[4].tab))+'</button>';
     nx.querySelector("button").onclick=()=>{
-      if(last){ state.view=4; } else state.revView=rv+1;
+      if(nextSec) state.revKey=nextSec.key; else state.view=4;
       save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"});
     };
     m.appendChild(nx);
