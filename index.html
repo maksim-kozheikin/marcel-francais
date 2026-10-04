@@ -147,6 +147,10 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .voicerow{display:flex;gap:6px}
 .voicerow select{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:46px;padding:0 8px}
 .voicerow .btn{flex:none;min-height:46px}
+.voicerow .vn{flex:none;align-self:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-content:center;font-size:.8rem;font-weight:600}
+.listen-row{display:flex;gap:8px;flex:0 0 auto}
+.actions .listen-row{flex:1 1 100%}
+.listen-row .btn{flex:1 1 0;min-width:0}
 .notice{background:var(--badbg);border-radius:14px;padding:10px 14px}
 
 .aqua{position:relative;border-radius:24px 24px 18px 18px;overflow:hidden;border:3px solid var(--ink);background:var(--bg)}
@@ -175,9 +179,12 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item.sp .known{padding:0 8px;gap:5px;font-size:.85rem}
   .item.sp .known input{width:18px;height:18px}
   .item.sp .item-top .texts{order:3;flex:1 1 100%}
-  .item.sp .item-top > .btn{order:4;flex:1 1 100%;min-height:54px;font-size:1.05rem}
-  .item.sp .actions{flex-direction:column;align-items:stretch}
+  .item.sp .item-top > .listen-row{order:4;flex:1 1 100%}
+  .item.sp .item-top > .listen-row .btn{min-height:54px;font-size:1rem}
+  .item.sp .actions{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
+  .item.sp .actions .listen-row{flex:none;width:100%}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
+  .item .actions .listen-row .btn{flex:1 1 0;width:auto;min-width:0;font-size:1rem}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -213,8 +220,9 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
         <button type="button" data-rate="0.75">🐌 Медленно</button>
         <button type="button" data-rate="1">🐇 Нормально</button>
       </div>
-      <div class="lbl" id="voiceLbl">Голос озвучки</div>
-      <div class="voicerow" id="voiceRow"><select id="voicePick" aria-label="Голос озвучки"></select><button type="button" class="btn ghost" id="voiceTest" aria-label="Проверить голос">🔊</button></div>
+      <div class="lbl" id="voiceLbl">Голоса озвучки</div>
+      <div class="voicerow" id="voiceRow"><span class="vn">1</span><select id="voicePick" aria-label="Голос 1"></select><button type="button" class="btn ghost" id="voiceTest" aria-label="Проверить голос 1">🔊</button></div>
+      <div class="voicerow" id="voiceRow2"><span class="vn">2</span><select id="voicePick2" aria-label="Голос 2"></select><button type="button" class="btn ghost" id="voiceTest2" aria-label="Проверить голос 2">🔊</button></div>
     </div>
   </section>
 
@@ -243,10 +251,10 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 
 <script>
 /* ---------- DATA ---------- */
-const BUILTIN = {"1": {fr: "Je veux + nombre + nom", ru: "Я хочу + количество + предмет", phrases: [["Je veux une pomme. Je ne veux pas de pomme.", "Я хочу одно яблоко. Я не хочу одно яблоко."], ["Je veux trois bananes. Je ne veux pas trois bananes.", "Я хочу три банана. Я не хочу три банана."], ["Je veux six œufs. Je ne veux pas six œufs.", "Я хочу шесть яиц. Я не хочу шесть яиц."], ["Je veux douze crevettes. Je ne veux pas douze crevettes.", "Я хочу двенадцать креветок. Я не хочу двенадцать креветок."], ["Je veux quinze pêches. Je ne veux pas quinze pêches.", "Я хочу пятнадцать персиков. Я не хочу пятнадцать персиков."], ["Je veux dix-sept oignons. Je ne veux pas dix-sept oignons.", "Я хочу семнадцать луковиц. Я не хочу семнадцать луковиц."], ["Je veux vingt et un citrons. Je ne veux pas vingt et un citrons.", "Я хочу двадцать один лимон. Я не хочу двадцать один лимон."], ["Je veux trente-six bonbons. Je ne veux pas trente-six bonbons.", "Я хочу тридцать шесть конфет. Я не хочу тридцать шесть конфет."], ["Je veux quarante-deux courgettes. Je ne veux pas quarante-deux courgettes.", "Я хочу сорок два кабачка. Я не хочу сорок два кабачка."], ["Je veux soixante et onze baguettes. Je ne veux pas soixante et onze baguettes.", "Я хочу семьдесят один багет. Я не хочу семьдесят один багет."], ["Je veux quatre-vingt-trois bouteilles de lait. Je ne veux pas quatre-vingt-trois bouteilles de lait.", "Я хочу восемьдесят три бутылки молока. Я не хочу восемьдесят три бутылки молока."], ["Je veux cent pains au chocolat. Je ne veux pas cent pains au chocolat.", "Я хочу сто булочек с шоколадом. Я не хочу сто булочек с шоколадом."]]}, "2": {fr: "J'ai…", ru: "У меня есть…", phrases: [["J'ai vingt-trois voitures. Je n'ai pas vingt-trois voitures.", "У меня есть двадцать три машины. У меня нет двадцати трёх машин."], ["J'ai quatre-vingt-trois réservations. Je n'ai pas quatre-vingt-trois réservations.", "У меня есть восемьдесят три брони. У меня нет восьмидесяти трёх броней."], ["J'ai deux sœurs. Je n'ai pas deux sœurs.", "У меня есть две сестры. У меня нет двух сестёр."], ["J'ai cinq chats. Je n'ai pas cinq chats.", "У меня есть пять котов. У меня нет пяти котов."], ["J'ai douze billets. Je n'ai pas douze billets.", "У меня есть двенадцать билетов. У меня нет двенадцати билетов."], ["J'ai trente-six questions. Je n'ai pas trente-six questions.", "У меня есть тридцать шесть вопросов. У меня нет тридцати шести вопросов."], ["J'ai quarante-deux amis. Je n'ai pas quarante-deux amis.", "У меня есть сорок два друга. У меня нет сорока двух друзей."], ["J'ai soixante et onze euros. Je n'ai pas soixante et onze euros.", "У меня есть семьдесят один евро. У меня нет семидесяти одного евро."], ["J'ai vingt et une chaises. Je n'ai pas vingt et une chaises.", "У меня есть двадцать один стул. У меня нет двадцати одного стула."], ["J'ai deux cent cinquante grammes de beurre. Je n'ai pas deux cent cinquante grammes de beurre.", "У меня есть двести пятьдесят грамм масла. У меня нет двухсот пятидесяти грамм масла."], ["J'ai deux litres de lait. Je n'ai pas deux litres de lait.", "У меня есть два литра молока. У меня нет двух литров молока."], ["J'ai vingt-huit ans. Je n'ai pas vingt-huit ans.", "Мне двадцать восемь лет. Мне не двадцать восемь лет."]]}, "3": {fr: "Je prends…", ru: "Я беру…", phrases: [["Je prends un café. Je ne prends pas de café.", "Я беру кофе. Я не беру кофе."], ["Je prends deux croissants. Je ne prends pas deux croissants.", "Я беру два круассана. Я не беру два круассана."], ["Je prends le bus. Je ne prends pas le bus.", "Я еду на автобусе. Я не еду на автобусе."], ["Je prends cette robe. Je ne prends pas cette robe.", "Я беру это платье. Я не беру это платье."], ["Je prends un dessert. Je ne prends pas de dessert.", "Я беру десерт. Я не беру десерт."], ["Je prends deux verres d'eau. Je ne prends pas deux verres d'eau.", "Я беру два стакана воды. Я не беру два стакана воды."], ["Je prends neuf yaourts. Je ne prends pas neuf yaourts.", "Я беру девять йогуртов. Я не беру девять йогуртов."], ["Je prends cent trente grammes de fromage. Je ne prends pas cent trente grammes de fromage.", "Я беру сто тридцать грамм сыра. Я не беру сто тридцать грамм сыра."], ["Je prends deux cent cinquante grammes de beurre. Je ne prends pas deux cent cinquante grammes de beurre.", "Я беру двести пятьдесят грамм масла. Я не беру двести пятьдесят грамм масла."], ["Je prends trois kilos de fraises. Je ne prends pas trois kilos de fraises.", "Я беру три килограмма клубники. Я не беру три килограмма клубники."], ["Je prends le train. Je ne prends pas le train.", "Я еду на поезде. Я не еду на поезде."], ["Je prends vingt timbres. Je ne prends pas vingt timbres.", "Я беру двадцать марок. Я не беру двадцать марок."]]}, "4": {fr: "Je voudrais…", ru: "Я бы хотела…", phrases: [["Je voudrais un café. Je ne voudrais pas de café.", "Я бы хотела кофе. Я бы не хотела кофе."], ["Je voudrais de l'eau. Je ne voudrais pas d'eau.", "Я бы хотела воды. Я бы не хотела воды."], ["Je voudrais une salade. Je ne voudrais pas de salade.", "Я бы хотела салат. Я бы не хотела салат."], ["Je voudrais un dessert. Je ne voudrais pas de dessert.", "Я бы хотела десерт. Я бы не хотела десерт."], ["Je voudrais deux billets. Je ne voudrais pas deux billets.", "Я бы хотела два билета. Я бы не хотела два билета."], ["Je voudrais une table pour deux. Je ne voudrais pas de table pour deux.", "Я бы хотела столик на двоих. Я бы не хотела столик на двоих."], ["Je voudrais deux kilos de poires. Je ne voudrais pas deux kilos de poires.", "Я бы хотела два килограмма груш. Я бы не хотела два килограмма груш."], ["Je voudrais cent cinquante grammes de jambon. Je ne voudrais pas cent cinquante grammes de jambon.", "Я бы хотела сто пятьдесят грамм ветчины. Я бы не хотела сто пятьдесят грамм ветчины."], ["Je voudrais deux boules de glace. Je ne voudrais pas deux boules de glace.", "Я бы хотела два шарика мороженого. Я бы не хотела два шарика мороженого."], ["Je voudrais huit tranches de jambon. Je ne voudrais pas huit tranches de jambon.", "Я бы хотела восемь ломтиков ветчины. Я бы не хотела восемь ломтиков ветчины."], ["Je voudrais vingt timbres. Je ne voudrais pas vingt timbres.", "Я бы хотела двадцать марок. Я бы не хотела двадцать марок."], ["Je voudrais payer. Je ne voudrais pas payer.", "Я бы хотела заплатить. Я бы не хотела заплатить."]]}, "5": {fr: "Je cherche…", ru: "Я ищу…", phrases: [["Je cherche la gare. Je ne cherche pas la gare.", "Я ищу вокзал. Я не ищу вокзал."], ["Je cherche l'hôtel. Je ne cherche pas l'hôtel.", "Я ищу гостиницу. Я не ищу гостиницу."], ["Je cherche une pharmacie. Je ne cherche pas de pharmacie.", "Я ищу аптеку. Я не ищу аптеку."], ["Je cherche mon sac. Je ne cherche pas mon sac.", "Я ищу свою сумку. Я не ищу свою сумку."], ["Je cherche des chaussures. Je ne cherche pas de chaussures.", "Я ищу обувь. Я не ищу обувь."], ["Je cherche la chambre trente-deux. Je ne cherche pas la chambre trente-deux.", "Я ищу номер тридцать два. Я не ищу номер тридцать два."], ["Je cherche le quai neuf. Je ne cherche pas le quai neuf.", "Я ищу платформу девять. Я не ищу платформу девять."], ["Je cherche un café à deux cents mètres. Je ne cherche pas de café à deux cents mètres.", "Я ищу кафе в двухстах метрах. Я не ищу кафе в двухстах метрах."], ["Je cherche un supermarché à deux kilomètres. Je ne cherche pas de supermarché à deux kilomètres.", "Я ищу супермаркет в двух километрах. Я не ищу супермаркет в двух километрах."], ["Je cherche un appartement de cinquante mètres carrés. Je ne cherche pas d'appartement de cinquante mètres carrés.", "Я ищу квартиру в пятьдесят квадратных метров. Я не ищу квартиру в пятьдесят квадратных метров."], ["Je cherche un travail. Je ne cherche pas de travail.", "Я ищу работу. Я не ищу работу."], ["Je cherche un kilo de farine. Je ne cherche pas un kilo de farine.", "Я ищу килограмм муки. Я не ищу килограмм муки."]]}, "6": {fr: "Je peux… / Je ne peux pas…", ru: "Я могу… / Я не могу…", phrases: [["Je peux payer. Je ne peux pas payer.", "Я могу заплатить. Я не могу заплатить."], ["Je peux venir. Je ne peux pas venir.", "Я могу прийти. Я не могу прийти."], ["Je peux attendre vingt minutes. Je ne peux pas attendre vingt minutes.", "Я могу ждать двадцать минут. Я не могу ждать двадцать минут."], ["Je peux manger du fromage. Je ne peux pas manger de fromage.", "Я могу есть сыр. Я не могу есть сыр."], ["Je peux boire du lait. Je ne peux pas boire de lait.", "Я могу пить молоко. Я не могу пить молоко."], ["Je peux avoir un café. Je ne peux pas avoir de café.", "Я могу получить кофе. Я не могу получить кофе."], ["Je peux avoir deux boules de glace. Je ne peux pas avoir deux boules de glace.", "Я могу получить два шарика мороженого. Я не могу получить два шарика мороженого."], ["Je peux avoir cent trente grammes de fromage. Je ne peux pas avoir cent trente grammes de fromage.", "Я могу получить сто тридцать грамм сыра. Я не могу получить сто тридцать грамм сыра."], ["Je peux avoir la clé. Je ne peux pas avoir la clé.", "Я могу получить ключ. Я не могу получить ключ."], ["Je peux avoir une table. Je ne peux pas avoir de table.", "Я могу получить столик. Я не могу получить столик."], ["Je peux marcher trois kilomètres. Je ne peux pas marcher trois kilomètres.", "Я могу пройти три километра. Я не могу пройти три километра."], ["Je peux payer par carte. Je ne peux pas payer par carte.", "Я могу заплатить картой. Я не могу заплатить картой."]]}, "7": {fr: "Je vais + infinitif", ru: "Я собираюсь… (futur proche)", phrases: [["Je vais manger. Je ne vais pas manger.", "Я собираюсь поесть. Я не собираюсь есть."], ["Je vais dormir. Je ne vais pas dormir.", "Я собираюсь поспать. Я не собираюсь спать."], ["Je vais payer. Je ne vais pas payer.", "Я собираюсь заплатить. Я не собираюсь платить."], ["Je vais partir. Je ne vais pas partir.", "Я собираюсь уехать. Я не собираюсь уезжать."], ["Je vais acheter deux billets. Je ne vais pas acheter deux billets.", "Я собираюсь купить два билета. Я не собираюсь покупать два билета."], ["Je vais attendre trente-cinq minutes. Je ne vais pas attendre trente-cinq minutes.", "Я собираюсь подождать тридцать пять минут. Я не собираюсь ждать тридцать пять минут."], ["Je vais marcher trois kilomètres. Je ne vais pas marcher trois kilomètres.", "Я собираюсь пройти три километра. Я не собираюсь идти три километра."], ["Je vais nager quatre cents mètres. Je ne vais pas nager quatre cents mètres.", "Я собираюсь проплыть четыреста метров. Я не собираюсь плыть четыреста метров."], ["Je vais courir dix kilomètres. Je ne vais pas courir dix kilomètres.", "Я собираюсь пробежать десять километров. Я не собираюсь бежать десять километров."], ["Je vais boire deux verres d'eau. Je ne vais pas boire deux verres d'eau.", "Я собираюсь выпить два стакана воды. Я не собираюсь пить два стакана воды."], ["Je vais acheter cent trente grammes de fromage. Je ne vais pas acheter cent trente grammes de fromage.", "Я собираюсь купить сто тридцать грамм сыра. Я не собираюсь покупать сто тридцать грамм сыра."], ["Je vais dépenser soixante-dix euros. Je ne vais pas dépenser soixante-dix euros.", "Я собираюсь потратить семьдесят евро. Я не собираюсь тратить семьдесят евро."]]}, "8": {fr: "J'ai + participe passé", ru: "Я (сделала)… (passé composé)", phrases: [["J'ai mangé. Je n'ai pas mangé.", "Я поела. Я не ела."], ["J'ai travaillé. Je n'ai pas travaillé.", "Я поработала. Я не работала."], ["J'ai pris le bus. Je n'ai pas pris le bus.", "Я поехала на автобусе. Я не поехала на автобусе."], ["J'ai acheté deux billets. Je n'ai pas acheté deux billets.", "Я купила два билета. Я не купила два билета."], ["J'ai dépensé quatre-vingt-dix euros. Je n'ai pas dépensé quatre-vingt-dix euros.", "Я потратила девяносто евро. Я не потратила девяносто евро."], ["J'ai attendu cinquante-cinq minutes. Je n'ai pas attendu cinquante-cinq minutes.", "Я ждала пятьдесят пять минут. Я не ждала пятьдесят пять минут."], ["J'ai marché cinq kilomètres. Je n'ai pas marché cinq kilomètres.", "Я прошла пять километров. Я не прошла пять километров."], ["J'ai nagé trois cents mètres. Je n'ai pas nagé trois cents mètres.", "Я проплыла триста метров. Я не проплыла триста метров."], ["J'ai couru dix kilomètres. Je n'ai pas couru dix kilomètres.", "Я пробежала десять километров. Я не пробежала десять километров."], ["J'ai acheté deux cent cinquante grammes de beurre. Je n'ai pas acheté deux cent cinquante grammes de beurre.", "Я купила двести пятьдесят грамм масла. Я не купила двести пятьдесят грамм масла."], ["J'ai commandé une pizza. Je n'ai pas commandé de pizza.", "Я заказала пиццу. Я не заказала пиццу."], ["J'ai oublié mon téléphone. Je n'ai pas oublié mon téléphone.", "Я забыла телефон. Я не забыла телефон."]]}, "9": {fr: "Je suis…", ru: "Я (есть)… / Я нахожусь…", phrases: [["Je suis fatiguée. Je ne suis pas fatiguée.", "Я устала. Я не устала."], ["Je suis contente. Je ne suis pas contente.", "Я довольна. Я не довольна."], ["Je suis en retard. Je ne suis pas en retard.", "Я опаздываю. Я не опаздываю."], ["Je suis libre. Je ne suis pas libre.", "Я свободна. Я не свободна."], ["Je suis occupée. Je ne suis pas occupée.", "Я занята. Я не занята."], ["Je suis perdue. Je ne suis pas perdue.", "Я заблудилась. Я не заблудилась."], ["Je suis touriste. Je ne suis pas touriste.", "Я туристка. Я не туристка."], ["Je suis à l'hôtel. Je ne suis pas à l'hôtel.", "Я в гостинице. Я не в гостинице."], ["Je suis à la gare. Je ne suis pas à la gare.", "Я на вокзале. Я не на вокзале."], ["Je suis à dix kilomètres de Nice. Je ne suis pas à dix kilomètres de Nice.", "Я в десяти километрах от Ниццы. Я не в десяти километрах от Ниццы."], ["Je suis à deux cents mètres de la gare. Je ne suis pas à deux cents mètres de la gare.", "Я в двухстах метрах от вокзала. Я не в двухстах метрах от вокзала."], ["Je suis au troisième étage. Je ne suis pas au troisième étage.", "Я на третьем этаже. Я не на третьем этаже."]]}, "10": {fr: "Il y a…", ru: "Есть / Здесь есть…", phrases: [["Il y a un café. Il n'y a pas de café.", "Здесь есть кафе. Здесь нет кафе."], ["Il y a une banque. Il n'y a pas de banque.", "Здесь есть банк. Здесь нет банка."], ["Il y a trois chambres. Il n'y a pas trois chambres.", "Есть три комнаты. Нет трёх комнат."], ["Il y a une chambre libre. Il n'y a pas de chambre libre.", "Есть свободный номер. Нет свободного номера."], ["Il y a cinq cents grammes de fromage. Il n'y a pas cinq cents grammes de fromage.", "Есть пятьсот грамм сыра. Нет пятисот грамм сыра."], ["Il y a deux litres d'eau. Il n'y a pas deux litres d'eau.", "Есть два литра воды. Нет двух литров воды."], ["Il y a un parc à deux kilomètres. Il n'y a pas de parc à deux kilomètres.", "В двух километрах есть парк. В двух километрах нет парка."], ["Il y a un musée à cinq cents mètres. Il n'y a pas de musée à cinq cents mètres.", "В пятистах метрах есть музей. В пятистах метрах нет музея."], ["Il y a trente-six étudiants. Il n'y a pas trente-six étudiants.", "Здесь тридцать шесть студентов. Здесь нет тридцати шести студентов."], ["Il y a un ascenseur. Il n'y a pas d'ascenseur.", "Здесь есть лифт. Здесь нет лифта."], ["Il y a une plage. Il n'y a pas de plage.", "Здесь есть пляж. Здесь нет пляжа."], ["Il y a un problème. Il n'y a pas de problème.", "Есть проблема. Проблем нет."]]}, "11": {fr: "Dans l'appli — achats", ru: "В приложении — покупки", phrases: [["Rechercher un produit. Ne pas rechercher de produit.", "Найти товар. Не искать товар."], ["Ajouter au panier. Ne pas ajouter au panier.", "Добавить в корзину. Не добавлять в корзину."], ["Payer mon achat. Ne pas payer mon achat.", "Оплатить покупку. Не оплачивать покупку."], ["Passer la commande. Ne pas passer la commande.", "Оформить заказ. Не оформлять заказ."], ["Choisir la taille. Ne pas choisir la taille.", "Выбрать размер. Не выбирать размер."], ["Entrer un code promo. Ne pas entrer de code promo.", "Ввести промокод. Не вводить промокод."], ["Suivre ma commande. Ne pas suivre ma commande.", "Отследить заказ. Не отслеживать заказ."], ["Annuler la commande. Ne pas annuler la commande.", "Отменить заказ. Не отменять заказ."], ["Mon panier est vide. Mon panier n'est pas vide.", "Моя корзина пуста. Моя корзина не пуста."], ["Le produit est disponible. Le produit n'est pas disponible.", "Товар в наличии. Товара нет в наличии."], ["La livraison est gratuite. La livraison n'est pas gratuite.", "Доставка бесплатная. Доставка не бесплатная."], ["J'ai reçu ma commande. Je n'ai pas reçu ma commande.", "Я получила заказ. Я не получила заказ."]]}, "12": {fr: "Dans l'appli — compte", ru: "В приложении — аккаунт и настройки", phrases: [["Se connecter. Ne pas se connecter.", "Войти. Не входить."], ["Créer un compte. Ne pas créer de compte.", "Создать аккаунт. Не создавать аккаунт."], ["Entrer mon mot de passe. Ne pas entrer mon mot de passe.", "Ввести пароль. Не вводить пароль."], ["Changer le mot de passe. Ne pas changer le mot de passe.", "Сменить пароль. Не менять пароль."], ["Activer les notifications. Ne pas activer les notifications.", "Включить уведомления. Не включать уведомления."], ["Autoriser la localisation. Ne pas autoriser la localisation.", "Разрешить определение местоположения. Не разрешать определение местоположения."], ["Modifier mon profil. Ne pas modifier mon profil.", "Изменить профиль. Не менять профиль."], ["Supprimer mon compte. Ne pas supprimer mon compte.", "Удалить аккаунт. Не удалять аккаунт."], ["J'ai un compte. Je n'ai pas de compte.", "У меня есть аккаунт. У меня нет аккаунта."], ["Je me souviens du mot de passe. Je ne me souviens pas du mot de passe.", "Я помню пароль. Я не помню пароль."], ["J'accepte les conditions. Je n'accepte pas les conditions.", "Я принимаю условия. Я не принимаю условия."], ["Je veux des notifications. Je ne veux pas de notifications.", "Я хочу уведомления. Я не хочу уведомления."]]}, "13": {fr: "Dans l'appli — boutons et messages", ru: "В приложении — кнопки и сообщения", phrases: [["Valider. Ne pas valider.", "Подтвердить. Не подтверждать."], ["Enregistrer. Ne pas enregistrer.", "Сохранить. Не сохранять."], ["Supprimer. Ne pas supprimer.", "Удалить. Не удалять."], ["Partager. Ne pas partager.", "Поделиться. Не делиться."], ["Télécharger. Ne pas télécharger.", "Скачать. Не скачивать."], ["Mettre à jour l'application. Ne pas mettre à jour l'application.", "Обновить приложение. Не обновлять приложение."], ["Fermer. Ne pas fermer.", "Закрыть. Не закрывать."], ["Réessayer. Ne pas réessayer.", "Повторить попытку. Не повторять попытку."], ["Je comprends. Je ne comprends pas.", "Я понимаю. Я не понимаю."], ["Je trouve le bouton. Je ne trouve pas le bouton.", "Я нахожу кнопку. Я не нахожу кнопку."], ["La connexion fonctionne. La connexion ne fonctionne pas.", "Соединение работает. Соединение не работает."], ["Il y a une erreur. Il n'y a pas d'erreur.", "Есть ошибка. Ошибки нет."]]}};
+const BUILTIN = {"1": {fr: "Je veux + nombre + nom", ru: "Я хочу + количество + предмет", phrases: [["Je veux une pomme.", "Я хочу одно яблоко."], ["Je ne veux pas de pomme.", "Я не хочу одно яблоко."], ["Tu veux une pomme ?", "Ты хочешь одно яблоко?"], ["Je veux douze crevettes.", "Я хочу двенадцать креветок."], ["Je ne veux pas douze crevettes.", "Я не хочу двенадцать креветок."], ["Tu veux douze crevettes ?", "Ты хочешь двенадцать креветок?"], ["Je veux vingt et un citrons.", "Я хочу двадцать один лимон."], ["Je ne veux pas vingt et un citrons.", "Я не хочу двадцать один лимон."], ["Tu veux vingt et un citrons ?", "Ты хочешь двадцать один лимон?"], ["Je veux trente-six bonbons.", "Я хочу тридцать шесть конфет."], ["Je ne veux pas trente-six bonbons.", "Я не хочу тридцать шесть конфет."], ["Tu veux trente-six bonbons ?", "Ты хочешь тридцать шесть конфет?"], ["Je veux quarante-deux courgettes.", "Я хочу сорок два кабачка."], ["Je ne veux pas quarante-deux courgettes.", "Я не хочу сорок два кабачка."], ["Tu veux quarante-deux courgettes ?", "Ты хочешь сорок два кабачка?"], ["Je veux soixante et onze baguettes.", "Я хочу семьдесят один багет."], ["Je ne veux pas soixante et onze baguettes.", "Я не хочу семьдесят один багет."], ["Tu veux soixante et onze baguettes ?", "Ты хочешь семьдесят один багет?"], ["Je veux quatre-vingt-trois bouteilles de lait.", "Я хочу восемьдесят три бутылки молока."], ["Je ne veux pas quatre-vingt-trois bouteilles de lait.", "Я не хочу восемьдесят три бутылки молока."], ["Tu veux quatre-vingt-trois bouteilles de lait ?", "Ты хочешь восемьдесят три бутылки молока?"]]}, "2": {fr: "J'ai…", ru: "У меня есть…", phrases: [["J'ai vingt-trois voitures.", "У меня есть двадцать три машины."], ["Je n'ai pas vingt-trois voitures.", "У меня нет двадцати трёх машин."], ["Tu as vingt-trois voitures ?", "У тебя есть двадцать три машины?"], ["J'ai quatre-vingt-trois réservations.", "У меня есть восемьдесят три брони."], ["Je n'ai pas quatre-vingt-trois réservations.", "У меня нет восьмидесяти трёх броней."], ["Tu as quatre-vingt-trois réservations ?", "У тебя есть восемьдесят три брони?"], ["J'ai deux sœurs.", "У меня есть две сестры."], ["Je n'ai pas deux sœurs.", "У меня нет двух сестёр."], ["Tu as deux sœurs ?", "У тебя есть две сестры?"], ["J'ai cinq chats.", "У меня есть пять котов."], ["Je n'ai pas cinq chats.", "У меня нет пяти котов."], ["Tu as cinq chats ?", "У тебя есть пять котов?"], ["J'ai soixante et onze euros.", "У меня есть семьдесят один евро."], ["Je n'ai pas soixante et onze euros.", "У меня нет семидесяти одного евро."], ["Tu as soixante et onze euros ?", "У тебя есть семьдесят один евро?"], ["J'ai deux cent cinquante grammes de beurre.", "У меня есть двести пятьдесят грамм масла."], ["Je n'ai pas deux cent cinquante grammes de beurre.", "У меня нет двухсот пятидесяти грамм масла."], ["Tu as deux cent cinquante grammes de beurre ?", "У тебя есть двести пятьдесят грамм масла?"], ["J'ai vingt-huit ans.", "Мне двадцать восемь лет."], ["Je n'ai pas vingt-huit ans.", "Мне не двадцать восемь лет."], ["Tu as vingt-huit ans ?", "Тебе двадцать восемь лет?"]]}, "3": {fr: "Je prends…", ru: "Я беру…", phrases: [["Je prends un café.", "Я беру кофе."], ["Je ne prends pas de café.", "Я не беру кофе."], ["Tu prends un café ?", "Ты берёшь кофе?"], ["Je prends deux croissants.", "Я беру два круассана."], ["Je ne prends pas deux croissants.", "Я не беру два круассана."], ["Tu prends deux croissants ?", "Ты берёшь два круассана?"], ["Je prends le bus.", "Я еду на автобусе."], ["Je ne prends pas le bus.", "Я не еду на автобусе."], ["Tu prends le bus ?", "Ты едешь на автобусе?"], ["Je prends cette robe.", "Я беру это платье."], ["Je ne prends pas cette robe.", "Я не беру это платье."], ["Tu prends cette robe ?", "Ты берёшь это платье?"], ["Je prends deux verres d'eau.", "Я беру два стакана воды."], ["Je ne prends pas deux verres d'eau.", "Я не беру два стакана воды."], ["Tu prends deux verres d'eau ?", "Ты берёшь два стакана воды?"], ["Je prends cent trente grammes de fromage.", "Я беру сто тридцать грамм сыра."], ["Je ne prends pas cent trente grammes de fromage.", "Я не беру сто тридцать грамм сыра."], ["Tu prends cent trente grammes de fromage ?", "Ты берёшь сто тридцать грамм сыра?"], ["Je prends trois kilos de fraises.", "Я беру три килограмма клубники."], ["Je ne prends pas trois kilos de fraises.", "Я не беру три килограмма клубники."], ["Tu prends trois kilos de fraises ?", "Ты берёшь три килограмма клубники?"]]}, "4": {fr: "Je voudrais…", ru: "Я бы хотела…", phrases: [["Je voudrais un café.", "Я бы хотела кофе."], ["Je ne voudrais pas de café.", "Я бы не хотела кофе."], ["Vous voudriez un café ?", "Вы бы хотели кофе?"], ["Je voudrais de l'eau.", "Я бы хотела воды."], ["Je ne voudrais pas d'eau.", "Я бы не хотела воды."], ["Vous voudriez de l'eau ?", "Вы бы хотели воды?"], ["Je voudrais deux billets.", "Я бы хотела два билета."], ["Je ne voudrais pas deux billets.", "Я бы не хотела два билета."], ["Vous voudriez deux billets ?", "Вы бы хотели два билета?"], ["Je voudrais une table pour deux.", "Я бы хотела столик на двоих."], ["Je ne voudrais pas de table pour deux.", "Я бы не хотела столик на двоих."], ["Vous voudriez une table pour deux ?", "Вы бы хотели столик на двоих?"], ["Je voudrais cent cinquante grammes de jambon.", "Я бы хотела сто пятьдесят грамм ветчины."], ["Je ne voudrais pas cent cinquante grammes de jambon.", "Я бы не хотела сто пятьдесят грамм ветчины."], ["Vous voudriez cent cinquante grammes de jambon ?", "Вы бы хотели сто пятьдесят грамм ветчины?"], ["Je voudrais deux boules de glace.", "Я бы хотела два шарика мороженого."], ["Je ne voudrais pas deux boules de glace.", "Я бы не хотела два шарика мороженого."], ["Vous voudriez deux boules de glace ?", "Вы бы хотели два шарика мороженого?"], ["Je voudrais payer.", "Я бы хотела заплатить."], ["Je ne voudrais pas payer.", "Я бы не хотела заплатить."], ["Vous voudriez payer ?", "Вы бы хотели заплатить?"]]}, "5": {fr: "Je cherche…", ru: "Я ищу…", phrases: [["Je cherche la gare.", "Я ищу вокзал."], ["Je ne cherche pas la gare.", "Я не ищу вокзал."], ["Vous cherchez la gare ?", "Вы ищете вокзал?"], ["Je cherche l'hôtel.", "Я ищу гостиницу."], ["Je ne cherche pas l'hôtel.", "Я не ищу гостиницу."], ["Vous cherchez l'hôtel ?", "Вы ищете гостиницу?"], ["Je cherche une pharmacie.", "Я ищу аптеку."], ["Je ne cherche pas de pharmacie.", "Я не ищу аптеку."], ["Vous cherchez une pharmacie ?", "Вы ищете аптеку?"], ["Je cherche mon sac.", "Я ищу свою сумку."], ["Je ne cherche pas mon sac.", "Я не ищу свою сумку."], ["Vous cherchez votre sac ?", "Вы ищете свою сумку?"], ["Je cherche la chambre trente-deux.", "Я ищу номер тридцать два."], ["Je ne cherche pas la chambre trente-deux.", "Я не ищу номер тридцать два."], ["Vous cherchez la chambre trente-deux ?", "Вы ищете номер тридцать два?"], ["Je cherche un café à deux cents mètres.", "Я ищу кафе в двухстах метрах."], ["Je ne cherche pas de café à deux cents mètres.", "Я не ищу кафе в двухстах метрах."], ["Vous cherchez un café à deux cents mètres ?", "Вы ищете кафе в двухстах метрах?"], ["Je cherche un appartement de cinquante mètres carrés.", "Я ищу квартиру в пятьдесят квадратных метров."], ["Je ne cherche pas d'appartement de cinquante mètres carrés.", "Я не ищу квартиру в пятьдесят квадратных метров."], ["Vous cherchez un appartement de cinquante mètres carrés ?", "Вы ищете квартиру в пятьдесят квадратных метров?"]]}, "6": {fr: "Je peux… / Je ne peux pas…", ru: "Я могу… / Я не могу…", phrases: [["Je peux payer.", "Я могу заплатить."], ["Je ne peux pas payer.", "Я не могу заплатить."], ["Tu peux payer ?", "Ты можешь заплатить?"], ["Je peux venir.", "Я могу прийти."], ["Je ne peux pas venir.", "Я не могу прийти."], ["Tu peux venir ?", "Ты можешь прийти?"], ["Je peux attendre vingt minutes.", "Я могу ждать двадцать минут."], ["Je ne peux pas attendre vingt minutes.", "Я не могу ждать двадцать минут."], ["Tu peux attendre vingt minutes ?", "Ты можешь ждать двадцать минут?"], ["Je peux manger du fromage.", "Я могу есть сыр."], ["Je ne peux pas manger de fromage.", "Я не могу есть сыр."], ["Tu peux manger du fromage ?", "Ты можешь есть сыр?"], ["Je peux avoir un café.", "Я могу получить кофе."], ["Je ne peux pas avoir de café.", "Я не могу получить кофе."], ["Tu peux avoir un café ?", "Ты можешь получить кофе?"], ["Je peux avoir deux boules de glace.", "Я могу получить два шарика мороженого."], ["Je ne peux pas avoir deux boules de glace.", "Я не могу получить два шарика мороженого."], ["Tu peux avoir deux boules de glace ?", "Ты можешь получить два шарика мороженого?"], ["Je peux marcher trois kilomètres.", "Я могу пройти три километра."], ["Je ne peux pas marcher trois kilomètres.", "Я не могу пройти три километра."], ["Tu peux marcher trois kilomètres ?", "Ты можешь пройти три километра?"]]}, "7": {fr: "Je vais + infinitif", ru: "Я собираюсь… (futur proche)", phrases: [["Je vais manger.", "Я собираюсь поесть."], ["Je ne vais pas manger.", "Я не собираюсь есть."], ["Tu vais manger ?", "Ты собираешься поесть?"], ["Je vais payer.", "Я собираюсь заплатить."], ["Je ne vais pas payer.", "Я не собираюсь платить."], ["Tu vais payer ?", "Ты собираешься заплатить?"], ["Je vais acheter deux billets.", "Я собираюсь купить два билета."], ["Je ne vais pas acheter deux billets.", "Я не собираюсь покупать два билета."], ["Tu vais acheter deux billets ?", "Ты собираешься купить два билета?"], ["Je vais attendre trente-cinq minutes.", "Я собираюсь подождать тридцать пять минут."], ["Je ne vais pas attendre trente-cinq minutes.", "Я не собираюсь ждать тридцать пять минут."], ["Tu vais attendre trente-cinq minutes ?", "Ты собираешься подождать тридцать пять минут?"], ["Je vais marcher trois kilomètres.", "Я собираюсь пройти три километра."], ["Je ne vais pas marcher trois kilomètres.", "Я не собираюсь идти три километра."], ["Tu vais marcher trois kilomètres ?", "Ты собираешься пройти три километра?"], ["Je vais courir dix kilomètres.", "Я собираюсь пробежать десять километров."], ["Je ne vais pas courir dix kilomètres.", "Я не собираюсь бежать десять километров."], ["Tu vais courir dix kilomètres ?", "Ты собираешься пробежать десять километров?"], ["Je vais dépenser soixante-dix euros.", "Я собираюсь потратить семьдесят евро."], ["Je ne vais pas dépenser soixante-dix euros.", "Я не собираюсь тратить семьдесят евро."], ["Tu vais dépenser soixante-dix euros ?", "Ты собираешься потратить семьдесят евро?"]]}, "8": {fr: "J'ai + participe passé", ru: "Я (сделала)… (passé composé)", phrases: [["J'ai mangé.", "Я поела."], ["Je n'ai pas mangé.", "Я не ела."], ["Tu as mangé ?", "Ты поела?"], ["J'ai acheté deux billets.", "Я купила два билета."], ["Je n'ai pas acheté deux billets.", "Я не купила два билета."], ["Tu as acheté deux billets ?", "Ты купила два билета?"], ["J'ai dépensé quatre-vingt-dix euros.", "Я потратила девяносто евро."], ["Je n'ai pas dépensé quatre-vingt-dix euros.", "Я не потратила девяносто евро."], ["Tu as dépensé quatre-vingt-dix euros ?", "Ты потратила девяносто евро?"], ["J'ai attendu cinquante-cinq minutes.", "Я ждала пятьдесят пять минут."], ["Je n'ai pas attendu cinquante-cinq minutes.", "Я не ждала пятьдесят пять минут."], ["Tu as attendu cinquante-cinq minutes ?", "Ты ждала пятьдесят пять минут?"], ["J'ai marché cinq kilomètres.", "Я прошла пять километров."], ["Je n'ai pas marché cinq kilomètres.", "Я не прошла пять километров."], ["Tu as marché cinq kilomètres ?", "Ты прошла пять километров?"], ["J'ai commandé une pizza.", "Я заказала пиццу."], ["Je n'ai pas commandé de pizza.", "Я не заказала пиццу."], ["Tu as commandé une pizza ?", "Ты заказала пиццу?"], ["J'ai oublié mon téléphone.", "Я забыла телефон."], ["Je n'ai pas oublié mon téléphone.", "Я не забыла телефон."], ["Tu as oublié ton téléphone ?", "Ты забыла телефон?"]]}, "9": {fr: "Je suis…", ru: "Я (есть)… / Я нахожусь…", phrases: [["Je suis fatiguée.", "Я устала."], ["Je ne suis pas fatiguée.", "Я не устала."], ["Tu es fatiguée ?", "Ты устала?"], ["Je suis en retard.", "Я опаздываю."], ["Je ne suis pas en retard.", "Я не опаздываю."], ["Tu es en retard ?", "Ты опаздываешь?"], ["Je suis libre.", "Я свободна."], ["Je ne suis pas libre.", "Я не свободна."], ["Tu es libre ?", "Ты свободна?"], ["Je suis touriste.", "Я туристка."], ["Je ne suis pas touriste.", "Я не туристка."], ["Tu es touriste ?", "Ты туристка?"], ["Je suis à l'hôtel.", "Я в гостинице."], ["Je ne suis pas à l'hôtel.", "Я не в гостинице."], ["Tu es à l'hôtel ?", "Ты в гостинице?"], ["Je suis à dix kilomètres de Nice.", "Я в десяти километрах от Ниццы."], ["Je ne suis pas à dix kilomètres de Nice.", "Я не в десяти километрах от Ниццы."], ["Tu es à dix kilomètres de Nice ?", "Ты в десяти километрах от Ниццы?"], ["Je suis au troisième étage.", "Я на третьем этаже."], ["Je ne suis pas au troisième étage.", "Я не на третьем этаже."], ["Tu es au troisième étage ?", "Ты на третьем этаже?"]]}, "10": {fr: "Il y a…", ru: "Есть / Здесь есть…", phrases: [["Il y a un café.", "Здесь есть кафе."], ["Il n'y a pas de café.", "Здесь нет кафе."], ["Il y a un café ?", "Здесь есть кафе?"], ["Il y a une banque.", "Здесь есть банк."], ["Il n'y a pas de banque.", "Здесь нет банка."], ["Il y a une banque ?", "Здесь есть банк?"], ["Il y a trois chambres.", "Есть три комнаты."], ["Il n'y a pas trois chambres.", "Нет трёх комнат."], ["Il y a trois chambres ?", "Есть три комнаты?"], ["Il y a une chambre libre.", "Есть свободный номер."], ["Il n'y a pas de chambre libre.", "Нет свободного номера."], ["Il y a une chambre libre ?", "Есть свободный номер?"], ["Il y a deux litres d'eau.", "Есть два литра воды."], ["Il n'y a pas deux litres d'eau.", "Нет двух литров воды."], ["Il y a deux litres d'eau ?", "Есть два литра воды?"], ["Il y a un parc à deux kilomètres.", "В двух километрах есть парк."], ["Il n'y a pas de parc à deux kilomètres.", "В двух километрах нет парка."], ["Il y a un parc à deux kilomètres ?", "В двух километрах есть парк?"], ["Il y a un ascenseur.", "Здесь есть лифт."], ["Il n'y a pas d'ascenseur.", "Здесь нет лифта."], ["Il y a un ascenseur ?", "Здесь есть лифт?"]]}, "11": {fr: "Dans l'appli — achats", ru: "В приложении — покупки", phrases: [["Ajouter au panier.", "Добавить в корзину."], ["Ne pas ajouter au panier.", "Не добавлять в корзину."], ["Voulez-vous ajouter au panier ?", "Хотите добавить в корзину?"], ["Payer mon achat.", "Оплатить покупку."], ["Ne pas payer mon achat.", "Не оплачивать покупку."], ["Voulez-vous payer votre achat ?", "Хотите оплатить покупку?"], ["Passer la commande.", "Оформить заказ."], ["Ne pas passer la commande.", "Не оформлять заказ."], ["Voulez-vous passer la commande ?", "Хотите оформить заказ?"], ["Rechercher un produit.", "Найти товар."], ["Ne pas rechercher de produit.", "Не искать товар."], ["Voulez-vous rechercher un produit ?", "Хотите найти товар?"], ["Mon panier est vide.", "Моя корзина пуста."], ["Mon panier n'est pas vide.", "Моя корзина не пуста."], ["Est-ce que votre panier est vide ?", "Ваша корзина пуста?"], ["Le produit est disponible.", "Товар в наличии."], ["Le produit n'est pas disponible.", "Товара нет в наличии."], ["Est-ce que le produit est disponible ?", "Товар есть в наличии?"], ["J'ai reçu ma commande.", "Я получила заказ."], ["Je n'ai pas reçu ma commande.", "Я не получила заказ."], ["Tu as reçu ta commande ?", "Ты получила заказ?"]]}, "12": {fr: "Dans l'appli — compte", ru: "В приложении — аккаунт и настройки", phrases: [["Se connecter.", "Войти."], ["Ne pas se connecter.", "Не входить."], ["Voulez-vous vous connecter ?", "Хотите войти?"], ["Créer un compte.", "Создать аккаунт."], ["Ne pas créer de compte.", "Не создавать аккаунт."], ["Voulez-vous créer un compte ?", "Хотите создать аккаунт?"], ["Changer le mot de passe.", "Сменить пароль."], ["Ne pas changer le mot de passe.", "Не менять пароль."], ["Voulez-vous changer le mot de passe ?", "Хотите сменить пароль?"], ["Activer les notifications.", "Включить уведомления."], ["Ne pas activer les notifications.", "Не включать уведомления."], ["Voulez-vous activer les notifications ?", "Хотите включить уведомления?"], ["J'ai un compte.", "У меня есть аккаунт."], ["Je n'ai pas de compte.", "У меня нет аккаунта."], ["Tu as un compte ?", "У тебя есть аккаунт?"], ["Je me souviens du mot de passe.", "Я помню пароль."], ["Je ne me souviens pas du mot de passe.", "Я не помню пароль."], ["Tu te souviens du mot de passe ?", "Ты помнишь пароль?"], ["Je veux des notifications.", "Я хочу уведомления."], ["Je ne veux pas de notifications.", "Я не хочу уведомления."], ["Tu veux des notifications ?", "Ты хочешь уведомления?"]]}, "13": {fr: "Dans l'appli — boutons et messages", ru: "В приложении — кнопки и сообщения", phrases: [["Valider.", "Подтвердить."], ["Ne pas valider.", "Не подтверждать."], ["Voulez-vous valider ?", "Хотите подтвердить?"], ["Enregistrer.", "Сохранить."], ["Ne pas enregistrer.", "Не сохранять."], ["Voulez-vous enregistrer ?", "Хотите сохранить?"], ["Supprimer.", "Удалить."], ["Ne pas supprimer.", "Не удалять."], ["Voulez-vous supprimer ?", "Хотите удалить?"], ["Mettre à jour l'application.", "Обновить приложение."], ["Ne pas mettre à jour l'application.", "Не обновлять приложение."], ["Voulez-vous mettre à jour l'application ?", "Хотите обновить приложение?"], ["Je comprends.", "Я понимаю."], ["Je ne comprends pas.", "Я не понимаю."], ["Tu comprends ?", "Ты понимаешь?"], ["Je trouve le bouton.", "Я нахожу кнопку."], ["Je ne trouve pas le bouton.", "Я не нахожу кнопку."], ["Tu trouves le bouton ?", "Ты находишь кнопку?"], ["La connexion fonctionne.", "Соединение работает."], ["La connexion ne fonctionne pas.", "Соединение не работает."], ["Est-ce que la connexion fonctionne ?", "Соединение работает?"]]}};
 /* ---------- теория в начале каждого уровня (каждое правило с новой строки) ---------- */
 const THEORY={
-1:{t:"Je veux + число + предмет",intro:"<b>Je veux</b> значит «я хочу». В каждой карточке два предложения. Первое обычное, второе такое же, но с отрицанием.",rules:[
+1:{t:"Je veux + число + предмет",intro:"<b>Je veux</b> значит «я хочу». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол vouloir (хотеть) меняется по лицам","je veux, tu veux, il veut"],
 ["После Je veux называем число и предмет","Je veux trois bananes."],
 ["«Один» это un (мужской род) или une (женский). Род учим вместе со словом","un croissant, une pomme"],
@@ -260,8 +268,9 @@ const THEORY={
 ["Числа после 80 идут через дефис","quatre-vingt-un, quatre-vingt-trois, quatre-vingt-dix-neuf"],
 ["Сто","cent"],
 ["Отрицание ставится вокруг глагола ne … pas","Je ne veux pas douze crevettes."],
-["Если предмет без числа, то un / une / du меняются на de (перед гласной d')","Je ne veux pas de pomme."]]},
-2:{t:"J'ai… (у меня есть…)",intro:"<b>J'ai</b> значит «у меня есть» (буквально «я имею»). В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Если предмет без числа, то un / une / du меняются на de (перед гласной d')","Je ne veux pas de pomme."],
+["Вопрос задаём интонацией и меняем лицо на tu (ты). Перед знаком ? во французском ставим пробел","Tu veux douze crevettes ?"]]},
+2:{t:"J'ai… (у меня есть…)",intro:"<b>J'ai</b> значит «у меня есть» (буквально «я имею»). Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол avoir","j'ai, tu as, il a"],
 ["Несколько предметов называем с числом и добавляем -s","J'ai vingt-trois voitures."],
 ["Меру, вес и объём соединяем с предметом словом de","deux litres de lait, deux cent cinquante grammes de beurre"],
@@ -271,8 +280,9 @@ const THEORY={
 ["Отрицание ставится вокруг avoir (перед гласной n')","Je n'ai pas vingt-trois voitures."],
 ["С числом артикль не нужен","Je n'ai pas douze euros."],
 ["Без числа вместо un / une / des ставим de или d'","Je n'ai pas de sœur. Je n'ai pas d'amis."],
-["По-русски после «нет» слово стоит в родительном падеже","нет сестры, нет двенадцати евро"]]},
-3:{t:"Je prends… (я беру…)",intro:"<b>Je prends</b> значит «я беру». В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["По-русски после «нет» слово стоит в родительном падеже","нет сестры, нет двенадцати евро"],
+["Вопрос с tu as (у тебя есть). Возраст спрашиваем так же","Tu as vingt-trois voitures ? Tu as vingt-huit ans ?"]]},
+3:{t:"Je prends… (я беру…)",intro:"<b>Je prends</b> значит «я беру». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол prendre","je prends, tu prends, il prend"],
 ["Беру, покупаю","Je prends deux croissants."],
 ["Еду на транспорте","Je prends le bus. Je prends le train."],
@@ -281,15 +291,17 @@ const THEORY={
 ["Меру и вес соединяем с предметом словом de","trois kilos de fraises, cent trente grammes de fromage"],
 ["Отрицание ставится вокруг глагола ne … pas","Je ne prends pas le bus."],
 ["После отрицания un / une / du меняются на de","Je ne prends pas de café."],
-["Слова le / la / ce / cette и числа остаются","Je ne prends pas cette robe. Je ne prends pas neuf yaourts."]]},
-4:{t:"Je voudrais… (я бы хотела…)",intro:"<b>Je voudrais</b> это вежливая форма от vouloir. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Слова le / la / ce / cette и числа остаются","Je ne prends pas cette robe. Je ne prends pas neuf yaourts."],
+["Вопрос с tu prends, мы же обращаемся на «ты»","Tu prends deux croissants ?"]]},
+4:{t:"Je voudrais… (я бы хотела…)",intro:"<b>Je voudrais</b> это вежливая форма от vouloir. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Je voudrais мягче и вежливее, чем Je veux","Je voudrais un café."],
 ["Подходит для кафе, магазина и отеля. Лучше добавить s'il vous plaît (пожалуйста)","Je voudrais payer, s'il vous plaît."],
 ["После него стоит существительное или глагол в начальной форме","Je voudrais un dessert. Je voudrais payer."],
 ["Порции и меры соединяем с предметом словом de","deux boules de glace, huit tranches de jambon"],
 ["Отрицание ставится вокруг voudrais","Je ne voudrais pas payer."],
-["Без числа un / une / de l' меняются на de или d'","Je ne voudrais pas de café. Je ne voudrais pas d'eau."]]},
-5:{t:"Je cherche… (я ищу…)",intro:"<b>Je cherche</b> значит «я ищу». В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Без числа un / une / de l' меняются на de или d'","Je ne voudrais pas de café. Je ne voudrais pas d'eau."],
+["В вопросе к незнакомым и в магазине говорим на «вы», и voudrais становится voudriez","Vous voudriez un café ?"]]},
+5:{t:"Je cherche… (я ищу…)",intro:"<b>Je cherche</b> значит «я ищу». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол chercher (искать), предлог не нужен","Je cherche la gare."],
 ["Начать можно с Excusez-moi (извините)","Excusez-moi, je cherche l'hôtel."],
 ["Расстояние называем через à","un café à deux cents mètres, un supermarché à deux kilomètres"],
@@ -297,67 +309,76 @@ const THEORY={
 ["Номера говорим словами и ставим в конце","la chambre trente-deux, le quai neuf"],
 ["Отрицание ставится вокруг cherche","Je ne cherche pas la gare."],
 ["Без числа un / une / des меняются на de или d'","Je ne cherche pas de travail. Je ne cherche pas d'appartement."],
-["Слова la, le, mon и меры остаются","Je ne cherche pas mon sac. Je ne cherche pas un kilo de farine."]]},
-6:{t:"Je peux… / Je ne peux pas…",intro:"<b>Je peux</b> значит «я могу». В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Слова la, le, mon и меры остаются","Je ne cherche pas mon sac. Je ne cherche pas un kilo de farine."],
+["Вопрос на «вы» меняет cherche на cherchez, а mon / ma / mes на votre / vos","Vous cherchez la gare ?"]]},
+6:{t:"Je peux… / Je ne peux pas…",intro:"<b>Je peux</b> значит «я могу». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол pouvoir (мочь)","je peux, tu peux, il peut"],
 ["После него стоит глагол в начальной форме","Je peux payer. Je peux venir."],
 ["Je peux avoir … значит «я могу получить …»","Je peux avoir un café."],
 ["Просьбу «Можно мне …?» говорят так же, но вопросом. Перед знаком ? во французском ставят пробел","Je peux avoir un café ?"],
 ["Для вещей, которые не считаем штуками, берём du / de la / de l'","du fromage, du lait"],
 ["Отрицание ставится вокруг peux","Je ne peux pas payer."],
-["После отрицания du / un / une меняются на de","Je ne peux pas manger de fromage. Je ne peux pas avoir de table."]]},
-7:{t:"Je vais + глагол (я собираюсь…)",intro:"<b>Je vais</b> и глагол в начальной форме значит «я собираюсь». В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["После отрицания du / un / une меняются на de","Je ne peux pas manger de fromage. Je ne peux pas avoir de table."],
+["Вопрос с tu peux (ты можешь)","Tu peux payer ?"]]},
+7:{t:"Je vais + глагол (я собираюсь…)",intro:"<b>Je vais</b> и глагол в начальной форме значит «я собираюсь». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол aller (идти, ехать)","je vais, tu vas, il va"],
 ["Je vais + глагол это ближайшее будущее","Je vais manger."],
 ["Второй глагол не меняется","Je vais acheter deux billets."],
 ["Числа, меры и расстояния стоят как в обычной фразе","Je vais marcher trois kilomètres."],
 ["Часто добавляют время","demain, ce soir"],
-["Отрицание ставится вокруг vais, а второй глагол остаётся","Je ne vais pas manger."]]},
-8:{t:"J'ai + причастие (я сделала…)",intro:"<b>Passé composé</b> это прошедшее время. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Отрицание ставится вокруг vais, а второй глагол остаётся","Je ne vais pas manger."],
+["Вопрос с tu vas (ты собираешься)","Tu vas manger ?"]]},
+8:{t:"J'ai + причастие (я сделала…)",intro:"<b>Passé composé</b> это прошедшее время. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Оно состоит из J'ai и причастия (особой формы глагола)","J'ai mangé."],
 ["Глаголы на -er получают -é","manger → mangé, acheter → acheté, travailler → travaillé"],
 ["Глаголы на -re часто получают -u","attendre → attendu, perdre → perdu"],
 ["Неправильные нужно запомнить","prendre → pris, lire → lu, écrire → écrit, faire → fait"],
 ["После J'ai причастие обычно не меняется по роду и числу","J'ai pris le bus."],
 ["Отрицание ставится вокруг J'ai, причастие остаётся после","Je n'ai pas mangé."],
-["Без числа un / une меняются на de","Je n'ai pas commandé de pizza."]]},
-9:{t:"Je suis… (я…)",intro:"<b>Je suis</b> от глагола être. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Без числа un / une меняются на de","Je n'ai pas commandé de pizza."],
+["Вопрос с tu as и причастием. Слова mon / ma / mes в вопросе становятся ton / ta / tes","Tu as mangé ? Tu as oublié ton téléphone ?"]]},
+9:{t:"Je suis… (я…)",intro:"<b>Je suis</b> от глагола être. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол être (быть)","je suis, tu es, il est"],
 ["В русском «есть» пропускают, а во французском suis нужен всегда","Je suis fatiguée."],
 ["Для женщины добавляем -e","fatiguée, contente, occupée, perdue"],
 ["Профессия и роль идут без артикля","Je suis étudiante. Je suis touriste."],
 ["Место передают через à, au (= à + le) и dans","à Nice, à l'hôtel, au troisième étage, dans le bus"],
 ["Расстояние через à и de","à dix kilomètres de Nice"],
-["Отрицание ставится вокруг suis","Je ne suis pas fatiguée."]]},
-10:{t:"Il y a… (есть, имеется)",intro:"<b>Il y a</b> значит «есть, имеется». В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["Отрицание ставится вокруг suis","Je ne suis pas fatiguée."],
+["Вопрос с tu es (ты). Женский род остаётся","Tu es fatiguée ?"]]},
+10:{t:"Il y a… (есть, имеется)",intro:"<b>Il y a</b> значит «есть, имеется». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Il y a звучит одинаково для одного предмета и для многих","Il y a un café. Il y a trois chambres."],
 ["Вопрос делается интонацией","Il y a un parc ?"],
 ["Расстояние называем через à","Il y a un parc à deux kilomètres."],
 ["Отрицание Il n'y a pas","Il n'y a pas trois chambres."],
 ["Без числа после pas всегда de (перед гласной d')","Il n'y a pas de café. Il n'y a pas d'ascenseur."],
-["По-русски после «нет» слово стоит в родительном падеже","нет кафе, нет банка, нет трёх комнат"]]},
-11:{t:"В приложении: покупки",intro:"Слова и фразы из магазинов в приложениях. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["По-русски после «нет» слово стоит в родительном падеже","нет кафе, нет банка, нет трёх комнат"],
+["Вопрос получается из той же фразы интонацией. Можно добавить Est-ce qu'","Il y a un café ? Est-ce qu'il y a un café ?"]]},
+11:{t:"В приложении: покупки",intro:"Слова и фразы из магазинов в приложениях. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["На кнопках глагол стоит в начальной форме","Ajouter au panier. Payer. Rechercher un produit."],
 ["Отрицание на кнопке делается словами Ne pas перед начальной формой","Ne pas ajouter au panier."],
 ["Слова","le panier — корзина, la commande — заказ, l'achat — покупка, le produit — товар, la livraison — доставка, le code promo — промокод"],
 ["au = à + le, aux = à + les","au panier, aux favoris"],
 ["disponible значит «в наличии», с отрицанием «нет в наличии»","Le produit n'est pas disponible."],
-["После отрицания un / une меняются на de","Ne pas rechercher de produit. Ne pas entrer de code promo."]]},
-12:{t:"В приложении: аккаунт и настройки",intro:"Слова и фразы из аккаунта и настроек. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["После отрицания un / une меняются на de","Ne pas rechercher de produit. Ne pas entrer de code promo."],
+["Окно подтверждения начинается с Voulez-vous (хотите) и начальной формы глагола","Voulez-vous ajouter au panier ?"]]},
+12:{t:"В приложении: аккаунт и настройки",intro:"Слова и фразы из аккаунта и настроек. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Возвратные глаголы с se. В кнопке se остаётся как есть","Se connecter. Se déconnecter."],
 ["Отрицание делается словами Ne pas, а se остаётся после","Ne pas se connecter."],
 ["Слова","un compte — аккаунт, un mot de passe — пароль, les paramètres — настройки, les notifications — уведомления"],
 ["mon / ma / mes значит «мой, моя, мои»","mon profil, ma commande, mes adresses"],
 ["Глаголы","activer — включить, désactiver — отключить, autoriser — разрешить, supprimer — удалить"],
 ["В обычной речи отрицание ставится вокруг глагола ne … pas","Je n'accepte pas les conditions. Je ne veux pas de notifications."],
-["du в этой фразе это de + le","Je ne me souviens pas du mot de passe."]]},
-13:{t:"В приложении: кнопки и сообщения",intro:"Короткие слова и сообщения из интерфейса. В каждой карточке два предложения. Обычное и такое же с отрицанием.",rules:[
+["du в этой фразе это de + le","Je ne me souviens pas du mot de passe."],
+["Вопрос о действии начинается с Voulez-vous (хотите). Вопрос к другу начинается с tu","Voulez-vous vous connecter ? Tu as un compte ?"]]},
+13:{t:"В приложении: кнопки и сообщения",intro:"Короткие слова и сообщения из интерфейса. Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Названия разделов (существительные)","Accueil, Retour, Aide"],
 ["Действия на кнопках в начальной форме","Valider, Enregistrer, Supprimer, Partager, Télécharger"],
 ["Запрет действия делается словами Ne pas","Ne pas enregistrer. Ne pas fermer."],
 ["Сообщения системы","Chargement en cours — идёт загрузка. Aucun résultat — ничего не найдено"],
 ["Если что-то не получается, говорим с ne … pas","Je ne comprends pas. Je ne trouve pas le bouton."],
-["В сообщении отрицание ставится вокруг глагола","La connexion ne fonctionne pas. Il n'y a pas d'erreur."]]}
+["В сообщении отрицание ставится вокруг глагола","La connexion ne fonctionne pas. Il n'y a pas d'erreur."],
+["Вопрос о действии начинается с Voulez-vous. Вопрос о состоянии с Est-ce que","Voulez-vous enregistrer ? Est-ce que la connexion fonctionne ?"]]}
 };
 function theoryHtml(th){ return '<p>'+th.intro+'</p><ul class="rules">'+th.rules.map(r=>'<li><span class="r">'+r[0]+'</span>'+(r[1]?'<span class="ex" lang="fr">'+r[1]+'</span>':'')+'</li>').join("")+'</ul>'; }
 function theoryBlock(open){
@@ -392,12 +413,12 @@ const REV_SUBS = [
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:4, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
+const fresh = () => ({v:5, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
-  if(s.state && s.state.v===4){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; }
-  else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; } // карточки изменились (по 12 с отрицанием), уровень начинается заново
+  if(s.state && s.state.v===5){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; }
+  else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; } // карточки изменились (21: утверждение, отрицание, вопрос), уровень начинается заново
 } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved})); }catch(e){} }
 function levelData(n){ return BUILTIN[n] || generated[n] || null; }
@@ -479,31 +500,47 @@ async function marcelTip(el, target, said, ru){
 }
 
 /* ---------- SPEECH ---------- */
-// голос и скорость озвучки сохраняются на этом устройстве
+// два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
-let speechRate=0.75, voiceURI="", frVoice=null;
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; voiceURI=v.voice||""; } }catch(e){}
-function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate, voice:voiceURI})); }catch(e){} }
+let speechRate=0.75, voiceURIs={1:"",2:""}, frVoices12={1:null,2:null};
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; voiceURIs={1:v.v1||v.voice||"",2:v.v2||""}; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate, v1:voiceURIs[1], v2:voiceURIs[2]})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
 function pickVoice(){
-  const list=frVoices();
-  frVoice=list.find(x=>x.voiceURI===voiceURI) || list.find(x=>x.lang.replace("_","-")==="fr-FR") || list[0] || null;
-  const sel=$("voicePick"); if(!sel) return;
-  sel.innerHTML=""; list.forEach(v=>{ const o=document.createElement("option"); o.value=v.voiceURI; o.textContent=v.name+" ("+v.lang+")"; sel.appendChild(o); });
-  if(frVoice) sel.value=frVoice.voiceURI;
-  $("voiceRow").hidden=!list.length; $("voiceLbl").textContent=list.length>1?"Голос озвучки":(list.length?"Голос озвучки (на этом устройстве один)":"");
-  $("voiceLbl").hidden=!list.length;
+  const list=frVoices(), isFR=x=>x.lang.replace("_","-")==="fr-FR";
+  const v1=list.find(x=>x.voiceURI===voiceURIs[1]) || list.find(isFR) || list[0] || null;
+  const v2=list.find(x=>x.voiceURI===voiceURIs[2] && x!==v1) || list.find(x=>x!==v1 && isFR(x)) || list.find(x=>x!==v1) || v1;
+  frVoices12={1:v1,2:v2};
+  [[1,"voicePick"],[2,"voicePick2"]].forEach(([n,id])=>{
+    const sel=$(id); if(!sel) return; sel.innerHTML="";
+    list.forEach(v=>{ const o=document.createElement("option"); o.value=v.voiceURI; o.textContent=v.name+" ("+v.lang+")"; sel.appendChild(o); });
+    if(frVoices12[n]) sel.value=frVoices12[n].voiceURI;
+  });
+  $("voiceRow").hidden=!list.length; $("voiceRow2").hidden=!list.length; $("voiceLbl").hidden=!list.length;
+  $("voiceLbl").textContent=list.length>1?"Голоса озвучки (две кнопки «Голос 1» и «Голос 2»)":"Голос озвучки (на этом устройстве один, поэтому «Голос 2» говорит тем же голосом, но ниже)";
 }
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
-function speak(text){
+function speak(text,n){
+  n=n||1;
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
-  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=frVoice?frVoice.lang:"fr-FR"; if(frVoice)u.voice=frVoice; u.rate=speechRate; speechSynthesis.speak(u);
+  const v=frVoices12[n]||frVoices12[1];
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=v?v.lang:"fr-FR"; if(v)u.voice=v; u.rate=speechRate;
+  if(n===2 && frVoices12[1]===frVoices12[2]) u.pitch=0.7;
+  speechSynthesis.speak(u);
 }
-document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes."); }; });
-$("voicePick").onchange=()=>{ voiceURI=$("voicePick").value; frVoice=frVoices().find(x=>x.voiceURI===voiceURI)||frVoice; saveVoice(); speak("Bonjour, je suis Marcel."); };
-$("voiceTest").onclick=()=>speak("Bonjour, je suis Marcel. Je veux deux pommes.");
+// две синие кнопки с разными голосами
+function listenRow(text){
+  const row=document.createElement("div"); row.className="listen-row";
+  [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Голос "+n; b.onclick=()=>speak(text,n); row.appendChild(b); });
+  return row;
+}
+document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
+[[1,"voicePick","voiceTest"],[2,"voicePick2","voiceTest2"]].forEach(([n,id,tid])=>{
+  $(id).onchange=()=>{ voiceURIs[n]=$(id).value; saveVoice(); pickVoice(); speak("Bonjour, je suis Marcel.",n); };
+  $(tid).onclick=()=>speak("Bonjour, je suis Marcel. Je veux deux pommes.",n);
+});
 renderSpeed();
-if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; } else { $("voiceRow").hidden=true; $("voiceLbl").hidden=true; }
+if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; } else { $("voiceRow").hidden=true; $("voiceRow2").hidden=true; $("voiceLbl").hidden=true; }
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
 function listen(btn, onText, onLive){
@@ -540,7 +577,7 @@ const isRev=k=>k.indexOf("rev_")===0;
 function stageCount(k){
   if(k==="rev") return 3*state.forgot.length;
   if(isRev(k)) return state.forgot.length;
-  const d=levelData(state.level); return d?d.phrases.length:12;
+  const d=levelData(state.level); return d?d.phrases.length:21;
 }
 function doneCount(k){
   if(k==="rev") return REV_SUBS.reduce((n,x)=>n+doneCount(x.key),0);
@@ -563,7 +600,7 @@ function makeOrder(n){
   return {lv:state.level, n, rep:range(n), ass, dis, fin};
 }
 function order(name){
-  const d=levelData(state.level), n=d?d.phrases.length:12;
+  const d=levelData(state.level), n=d?d.phrases.length:21;
   if(!state.order || state.order.lv!==state.level || state.order.n!==n || !state.order.fin || state.order.fin.length!==n){ state.order=makeOrder(n); save(); }
   return state.order[name];
 }
@@ -654,9 +691,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     (showFr?'<div class="fr" lang="fr">'+linesHtml(fr)+'</div>':"")+'<div class="ru'+(ruOnly?" big":"")+'">'+linesHtml(ru)+'</div></div></div>'+
     '<div class="actions"></div><div class="fbwrap"></div>';
   const actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
-  if(!ruOnly || settled){
-    const lb=document.createElement("button"); lb.className="btn"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); actions.appendChild(lb);
-  }
+  if(!ruOnly || settled) actions.appendChild(listenRow(fr));
   const known=document.createElement("label"); known.className="known";
   known.innerHTML='<input type="checkbox"> Je sais';
   const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx] && !isForgot;
@@ -880,43 +915,32 @@ function ruVariants(text){
   }
   return res;
 }
-// карточка — два предложения (обычное и с отрицанием). Ошибку вносим в обоих одинаково, чтобы пара выглядела правдоподобно
-function replaceWord(str,from,to){ const re=new RegExp("(^|[^A-Za-zÀ-ÿŒœА-Яа-яЁё])"+from.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![A-Za-zÀ-ÿŒœА-Яа-яЁё])","g"); return str.replace(re,(m,a)=>a+to); }
-function pairVariants(text,raw,keepAll){
-  const [s1,s2]=splitPair(text), out=[];
-  raw(s1).forEach(v=>{ if(!s2){ out.push(v); return; }
-    const has=s2.includes(v.from);
-    if(!has && !keepAll(v)) return;
-    out.push({type:v.type, text:v.text+" "+(has?replaceWord(s2,v.from,v.to):s2)}); });
-  if(s2) out.push({type:"neg", text:s2+" "+s1});   // предложения в другом порядке
-  return out;
-}
-const frPairVariants=t=>pairVariants(t,frVariants,v=>v.type==="gender");
-const ruPairVariants=t=>pairVariants(t,ruVariants,v=>false);
 const normText=t=>t.toLowerCase().replace(/[^a-zà-ÿœа-яё0-9]+/g,"");
-// два самых похожих неверных варианта: сначала «числа» и «правописание/созвучие», потом ближайшие карточки уровня
+// два самых похожих неверных варианта. Один это та же фраза в другой форме (утверждение, отрицание или вопрос),
+// другой это та же фраза с одной ошибкой (число, правописание, созвучное слово, род)
 function pickDistractors(idx,d,toRu){
   const [fr,ru]=d.phrases[idx], col=toRu?1:0, right=d.phrases[idx][col], seen=new Set([normText(right)]);
-  const vars=toRu ? ruPairVariants(ru) : frPairVariants(fr);
-  const byType={}; shuffle(vars).forEach(v=>{ (byType[v.type]=byType[v.type]||[]).push(v); });
-  const picks=[], take=v=>{ const k=normText(v.text); if(seen.has(k)) return false; seen.add(k); picks.push({i:-1,text:v.text}); return true; };
-  const order=shuffle(Object.keys(byType)); ["neg","num"].forEach(t=>{ if(order.includes(t)){ order.splice(order.indexOf(t),1); order.unshift(t); } });
-  for(const t of order){ if(picks.length>=2) break; for(const v of byType[t]){ if(take(v)) break; } }
-  for(const t of order){ if(picks.length>=2) break; for(const v of byType[t]){ if(picks.length>=2) break; take(v); } }
+  const picks=[], take=t=>{ if(!t) return false; const k=normText(t); if(seen.has(k)) return false; seen.add(k); picks.push({i:-1,text:t}); return true; };
+  const g=Math.floor(idx/3)*3, sibs=shuffle([g,g+1,g+2].filter(i=>i!==idx && d.phrases[i])).map(i=>d.phrases[i][col]);
+  const byType={}; shuffle(toRu ? ruVariants(ru) : frVariants(fr)).forEach(v=>{ (byType[v.type]=byType[v.type]||[]).push(v.text); });
+  const order=["num","hom","spell","gender"].filter(t=>byType[t]);
+  take(sibs[0]);
+  for(const t of order){ if(picks.length>=2) break; for(const x of byType[t]){ if(take(x)) break; } }
+  if(picks.length<2) take(sibs[1]);
+  for(const t of order){ if(picks.length>=2) break; for(const x of byType[t]){ if(picks.length>=2) break; take(x); } }
   if(picks.length<2){
-    const near=d.phrases.map((p,i)=>({i, text:p[col], score:sim(p[0],fr)+sim(p[1],ru)})).filter(c=>c.i!==idx).sort((x,y)=>y.score-x.score).slice(0,6);
-    for(const c of shuffle(near)){ if(picks.length>=2) break; take(c); }
+    const near=d.phrases.map((q,i)=>({text:q[col], i, score:sim(q[0],fr)+sim(q[1],ru)})).filter(c=>c.i!==idx).sort((x,y)=>y.score-x.score).slice(0,6);
+    for(const c of shuffle(near)){ if(picks.length>=2) break; take(c.text); }
   }
   return picks;
 }
-
 function assItem(idx, d, k, n){
-  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0 && ruPairVariants(ru).length>0, col=toRu?1:0, right=d.phrases[idx][col];
+  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
   const opts=shuffle([{i:idx, text:right},...pickDistractors(idx,d,toRu)]);
   const pos=n, isForgot = k==="ass" && state.fg.ass.indexOf(idx)>=0;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
   el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+linesHtml(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
-  if(toRu){ const lb=document.createElement("button"); lb.className="btn ghost"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); el.querySelector(".item-top").appendChild(lb); }
+  if(toRu){ const lr=listenRow(fr); el.querySelector(".item-top").appendChild(lr); }
   if(k==="ass"){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
@@ -952,13 +976,13 @@ async function generateLevel(btn, out){
   btn.disabled=true; out.textContent="Марсель готовит фразы… это может занять до минуты 🐈";
   const prompt=`Составь материалы для урока разговорного французского (уровень начинающий, ученица говорит по-русски).
 Конструкция уровня: "${p.fr}" (${p.ru}). Темы: ${p.theme}.
-Нужно ровно 12 коротких фраз, где КАЖДАЯ использует только эту конструкцию (меняются слова и числа).
+Нужно ровно 7 коротких фраз, и для каждой три карточки (утверждение, отрицание, вопрос), всего 21 карточка, где КАЖДАЯ использует только эту конструкцию (меняются слова и числа).
 Фразы — естественный современный разговорный французский, 3–7 слов, реальная бытовая лексика. Если в конструкции есть количество, используй числа от 1 до 100 (сначала маленькие, потом больше), всегда словами, а не цифрами. Перевод — естественный русский. Все русские переводы должны быть разными.
-Ответь ТОЛЬКО JSON без пояснений: {"phrases":[["фраза fr","перевод ru"], ... 12 штук]}`;
+Ответь ТОЛЬКО JSON без пояснений: {"phrases":[["фраза fr","перевод ru"], ... 21 штука]}`;
   try{
     const data=await sample.json(prompt,{modelTier:"default"});
-    if(!data || !Array.isArray(data.phrases) || data.phrases.length<12) throw {code:"bad"};
-    generated[state.level]={fr:p.fr, ru:p.ru, phrases:data.phrases.slice(0,12)};
+    if(!data || !Array.isArray(data.phrases) || data.phrases.length<21) throw {code:"bad"};
+    generated[state.level]={fr:p.fr, ru:p.ru, phrases:data.phrases.slice(0,21)};
     save(); renderAll();
   }catch(e){
     btn.disabled=false;
