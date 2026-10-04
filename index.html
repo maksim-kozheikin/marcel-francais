@@ -148,6 +148,9 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item.sp .item-top{flex-wrap:wrap;align-items:center}
   .item.sp .item-top .num{order:1}
   .item.sp .item-top .marks{order:2}
+  .item.sp .marks{gap:6px;flex-wrap:nowrap}
+  .item.sp .known{padding:0 8px;gap:5px;font-size:.85rem}
+  .item.sp .known input{width:18px;height:18px}
   .item.sp .item-top .texts{order:3;flex:1 1 100%}
   .item.sp .item-top > .btn{order:4;flex:1 1 100%;min-height:54px;font-size:1.05rem}
   .item.sp .actions{flex-direction:column;align-items:stretch}
@@ -309,7 +312,7 @@ let sampleOff=false;
 async function marcelTip(el, target, said, ru){
   if(sampleOff) return;
   const sample = await samplePromise; if(!sample){ return; }
-  el.textContent="Марсель думает…";
+  el.textContent="Marcel réfléchit…";
   const prompt = `Ты Марсель — дружелюбный французский кот, преподаватель французского для начинающей ученицы, объясняешь по-русски.
 Ученица должна была сказать: "${target}" (${ru}).
 Браузерное распознавание речи услышало: "${said}".
@@ -335,7 +338,7 @@ function listen(btn, onText, onLive){
   let got="", heard="", timer=null;
   // не обрываем на первой паузе: останавливаемся, когда тишина длится дольше
   const arm=ms=>{ clearTimeout(timer); timer=setTimeout(()=>{ try{me.stop();}catch(e){} }, ms); };
-  me.onstart=()=>{btn.classList.add("listening");btn.textContent="⏹ Стоп"; if(onLive) onLive("…"); arm(8000);};
+  me.onstart=()=>{btn.classList.add("listening");btn.textContent="⏹ Stop"; if(onLive) onLive("…"); arm(8000);};
   me.onresult=e=>{
     const fin=[], tmp=[];
     for(const r of e.results){ (r.isFinal?fin:tmp).push(r[0].transcript.trim()); }
@@ -345,12 +348,12 @@ function listen(btn, onText, onLive){
   };
   me.onerror=e=>{
     if(e.error==="not-allowed"||e.error==="service-not-allowed"||e.error==="audio-capture"){ micBroken=true; renderNotice(); renderMain(); }
-    else if(e.error==="no-speech") toast("Ничего не услышала. Говори чуть громче 🎤");
+    else if(e.error==="no-speech") toast("Je n'ai rien entendu. Parle un peu plus fort 🎤");
   };
   me.onend=()=>{ clearTimeout(timer); btn.classList.remove("listening"); btn.textContent="🎤 Parler";
     if(rec===me){ rec=null; recBtn=null; }
     const text=(got||heard).trim();
-    if(text) onText(text); else if(onLive) onLive("ничего не распознано, попробуй ещё раз"); };
+    if(text) onText(text); else if(onLive) onLive("rien entendu, essaie encore"); };
   try{ me.start(); }catch(e){ micBroken=true; renderNotice(); renderMain(); }
 }
 function renderNotice(){
@@ -443,15 +446,15 @@ function unmarkDone(k, idx){
 }
 
 function feedbackHtml(res, said, target, showAnswer, mode){
-  const verb = mode==="typed" ? "Ты написала" : "Ты сказала";
-  const heard='<div class="said"><span class="lbl">'+verb+':</span> '+res.sHtml+'</div>';
-  if(res.ok) return '<div class="fb ok">'+heard+'<div>'+(res.accent?"Presque parfait ! ✅ Проверь акценты: "+esc(target):"Très bien ! ✅🐾")+'</div>'+
-    (res.near?'<div class="note">Оранжевые слова записаны иначе, но звучат так же. Произношение засчитано.</div>':"")+'</div>';
+  const verb = mode==="typed" ? "Tu as écrit" : "Tu as dit";
+  const heard='<div class="said"><span class="lbl">'+verb+' :</span> '+res.sHtml+'</div>';
+  if(res.ok) return '<div class="fb ok">'+heard+'<div>'+(res.accent?"Presque parfait ! ✅ Vérifie les accents : "+esc(target):"Très bien ! ✅🐾")+'</div>'+
+    (res.near?'<div class="note">Les mots orange sont écrits autrement, mais ça sonne pareil. Prononciation acceptée.</div>':"")+'</div>';
   // когда французский скрыт (Dis-le, повтор, финальный тест), только «неверно» — без подсказок и правильной фразы
-  if(showAnswer) return '<div class="fb bad">'+heard+'<div><b>Неверно.</b> Попробуй ещё раз.</div></div>';
+  if(showAnswer) return '<div class="fb bad">'+heard+'<div><b>Faux.</b> Essaie encore.</div></div>';
   return '<div class="fb bad">'+heard+
-    '<div class="said"><span class="lbl">Нужно:</span> '+res.tHtml+'</div>'+
-    '<div><b>Presque !</b> Encore une fois. Ещё раз.</div><div class="tip" hidden></div></div>';
+    '<div class="said"><span class="lbl">Il faut :</span> '+res.tHtml+'</div>'+
+    '<div><b>Presque !</b> Encore une fois.</div><div class="tip" hidden></div></div>';
 }
 
 function speechItem(idx, fr, ru, k, ruOnly, n){
@@ -466,7 +469,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     const lb=document.createElement("button"); lb.className="btn"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); actions.appendChild(lb);
   }
   const known=document.createElement("label"); known.className="known";
-  known.innerHTML='<input type="checkbox"> Я это знаю';
+  known.innerHTML='<input type="checkbox"> Je sais';
   const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx] && !isForgot;
   const refresh=(sel)=>{
     if(!el.isConnected) return;
@@ -483,7 +486,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
   const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(known);
   if(k==="dis"){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
-    fg.innerHTML='<input type="checkbox"> Не помню';
+    fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
       if(fc.checked){ setForgot(idx,true,"dis"); if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true); }
@@ -507,11 +510,11 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
   };
   if(!micBroken){
     const mb=document.createElement("button"); mb.className="btn red mic"; mb.textContent="🎤 Parler";
-    mb.onclick=()=>listen(mb, said=>handle(said,"speech"), live=>{ fbw.innerHTML='<div class="fb live"><span class="lbl">Слышу:</span> '+esc(live)+'</div>'; }); actions.appendChild(mb);
+    mb.onclick=()=>listen(mb, said=>handle(said,"speech"), live=>{ fbw.innerHTML='<div class="fb live"><span class="lbl">J\'entends :</span> '+esc(live)+'</div>'; }); actions.appendChild(mb);
   }
   if(micBroken || ruOnly){
     const row=document.createElement("div"); row.className="typerow"; row.style.flex="1 1 220px";
-    row.innerHTML='<input type="text" lang="fr" placeholder="✍️ Напиши по-французски" aria-label="Ответ по-французски"><button class="btn ghost">OK</button>';
+    row.innerHTML='<input type="text" lang="fr" placeholder="✍️ Écris en français" aria-label="Réponse en français"><button class="btn ghost">OK</button>';
     const inp=row.querySelector("input"); const go=()=>{ if(inp.value.trim()) handle(inp.value.trim(), micBroken&&!ruOnly?"speech":"typed"); };
     row.querySelector("button").onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go();};
     actions.appendChild(row);
@@ -541,7 +544,7 @@ function assItem(idx, d, k, n){
   if(toRu){ const lb=document.createElement("button"); lb.className="btn ghost"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); el.querySelector(".item-top").appendChild(lb); }
   if(k==="ass"){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
-    fg.innerHTML='<input type="checkbox"> Не помню';
+    fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
       if(fc.checked){ setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true); }
@@ -560,7 +563,7 @@ function assItem(idx, d, k, n){
     b.onclick=()=>{
       if(o.i===idx){ b.classList.add("right"); box.querySelectorAll(".opt").forEach(x=>x.disabled=true);
         el.querySelector(".fbwrap").innerHTML='<div class="fb ok">Très bien ! ✅</div>'; el.classList.add("done"); el.querySelector(".num").textContent="✓"; markDone(k, idx); }
-      else { b.classList.add("no"); b.disabled=true; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Попробуй ещё раз.</div>'; }
+      else { b.classList.add("no"); b.disabled=true; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Essaie encore.</div>'; }
     };
     box.appendChild(b);
   });
