@@ -131,8 +131,16 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .opt.no{border-color:var(--bad);background:var(--badbg);text-decoration:line-through}
 .q{font-size:1.15rem;font-weight:600}
 
-.speed{display:flex;align-items:center;gap:8px;color:var(--soft);font-size:.95rem}
-.speed input{flex:1}
+.wrap>*{min-width:0}
+.voicebox{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:10px;min-width:0}
+.voicebox .lbl{font-size:.9rem;color:var(--soft)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1 1 0;min-width:0;font:inherit;font-size:.88rem;line-height:1.15;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;min-height:46px;padding:4px 6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg button:focus-visible,.voicerow select:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
+.voicerow{display:flex;gap:6px}
+.voicerow select{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:46px;padding:0 8px}
+.voicerow .btn{flex:none;min-height:46px}
 .notice{background:var(--badbg);border-radius:14px;padding:10px 14px}
 
 .aqua{position:relative;border-radius:24px 24px 18px 18px;overflow:hidden;border:3px solid var(--ink);background:var(--bg)}
@@ -187,7 +195,16 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
     </div>
     <div class="bar" role="progressbar" aria-valuemin="0" id="barWrap"><span id="bar"></span></div>
     <div class="prog" id="prog"></div>
-    <div class="speed" style="margin-top:8px"><span>🐢</span><input type="range" id="rate" min="0.5" max="1.1" step="0.1" value="0.8" aria-label="Скорость озвучки"><span>🐇</span></div>
+    <div class="voicebox">
+      <div class="lbl">Скорость озвучки</div>
+      <div class="seg" id="speedSeg" role="group" aria-label="Скорость озвучки">
+        <button type="button" data-rate="0.5">🐢 Очень медленно</button>
+        <button type="button" data-rate="0.75">🐌 Медленно</button>
+        <button type="button" data-rate="1">🐇 Нормально</button>
+      </div>
+      <div class="lbl" id="voiceLbl">Голос озвучки</div>
+      <div class="voicerow" id="voiceRow"><select id="voicePick" aria-label="Голос озвучки"></select><button type="button" class="btn ghost" id="voiceTest" aria-label="Проверить голос">🔊</button></div>
+    </div>
   </section>
 
   <div id="micNotice"></div>
@@ -420,13 +437,31 @@ async function marcelTip(el, target, said, ru){
 }
 
 /* ---------- SPEECH ---------- */
-let frVoice=null;
-function pickVoice(){const v=speechSynthesis.getVoices();frVoice=v.find(x=>x.lang==="fr-FR")||v.find(x=>x.lang&&x.lang.startsWith("fr"))||null;}
-if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+// голос и скорость озвучки сохраняются на этом устройстве
+const VKEY="marcel-voice";
+let speechRate=0.75, voiceURI="", frVoice=null;
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; voiceURI=v.voice||""; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate, voice:voiceURI})); }catch(e){} }
+function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
+function pickVoice(){
+  const list=frVoices();
+  frVoice=list.find(x=>x.voiceURI===voiceURI) || list.find(x=>x.lang.replace("_","-")==="fr-FR") || list[0] || null;
+  const sel=$("voicePick"); if(!sel) return;
+  sel.innerHTML=""; list.forEach(v=>{ const o=document.createElement("option"); o.value=v.voiceURI; o.textContent=v.name+" ("+v.lang+")"; sel.appendChild(o); });
+  if(frVoice) sel.value=frVoice.voiceURI;
+  $("voiceRow").hidden=!list.length; $("voiceLbl").textContent=list.length>1?"Голос озвучки":(list.length?"Голос озвучки (на этом устройстве один)":"");
+  $("voiceLbl").hidden=!list.length;
+}
+function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
 function speak(text){
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
-  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="fr-FR"; if(frVoice)u.voice=frVoice; u.rate=+$("rate").value; speechSynthesis.speak(u);
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=frVoice?frVoice.lang:"fr-FR"; if(frVoice)u.voice=frVoice; u.rate=speechRate; speechSynthesis.speak(u);
 }
+document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes."); }; });
+$("voicePick").onchange=()=>{ voiceURI=$("voicePick").value; frVoice=frVoices().find(x=>x.voiceURI===voiceURI)||frVoice; saveVoice(); speak("Bonjour, je suis Marcel."); };
+$("voiceTest").onclick=()=>speak("Bonjour, je suis Marcel. Je veux deux pommes.");
+renderSpeed();
+if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; } else { $("voiceRow").hidden=true; $("voiceLbl").hidden=true; }
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
 function listen(btn, onText, onLive){
