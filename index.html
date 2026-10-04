@@ -864,6 +864,16 @@ function misspell(w){
   if(lw.length>4 && lw.endsWith("s")) out.push(lw.slice(0,-1));
   return out.filter(x=>x!==lw && !/^œ/.test(lw)).map(x=>keepCase(w,x));
 }
+// запасные ошибки для коротких слов: пропущенная буква, переставленные буквы, подмена гласной
+function misspell2(w){
+  const lw=w.toLowerCase(), out=[], V="aeiouy", swapV={a:"e",e:"a",i:"y",y:"i",o:"u",u:"o"};
+  for(let i=1;i<lw.length-1;i++){
+    out.push(lw.slice(0,i)+lw.slice(i+1));
+    if(lw[i]!==lw[i+1]) out.push(lw.slice(0,i)+lw[i+1]+lw[i]+lw.slice(i+2));
+    if(swapV[lw[i]]) out.push(lw.slice(0,i)+swapV[lw[i]]+lw.slice(i+1));
+  }
+  return [...new Set(out)].filter(x=>x!==lw && !/^œ/.test(lw)).map(x=>keepCase(w,x));
+}
 // варианты французской фразы с одной «ошибкой»: числа, созвучные слова, правописание, род
 function frVariants(text){
   const parts=text.match(WORD_RE)||[], runs=frRuns(parts), inRun=new Set(); runs.forEach(r=>{ for(let k=r.from;k<=r.to;k++) inRun.add(k); });
@@ -880,7 +890,10 @@ function frVariants(text){
     if(!isWord(p) || inRun.has(i)) return;
     const lw=p.toLowerCase();
     (HOM[lw]||[]).forEach(alt=>{ if(alt!==lw) res.push({type:"hom", from:p, to:keepCase(p,alt), text:join([...parts.slice(0,i),keepCase(p,alt),...parts.slice(i+1)])}); });
-    if(lw.length>=4) misspell(p).forEach(alt=>res.push({type:"spell", from:p, to:alt, text:join([...parts.slice(0,i),alt,...parts.slice(i+1)])}));
+    if(lw.length>=4){
+      misspell(p).forEach(alt=>res.push({type:"spell", from:p, to:alt, text:join([...parts.slice(0,i),alt,...parts.slice(i+1)])}));
+      misspell2(p).forEach(alt=>res.push({type:"spell2", from:p, to:alt, text:join([...parts.slice(0,i),alt,...parts.slice(i+1)])}));
+    }
   });
   return res;
 }
@@ -916,26 +929,40 @@ function ruVariants(text){
   return res;
 }
 const normText=t=>t.toLowerCase().replace(/[^a-zà-ÿœа-яё0-9]+/g,"");
-// два самых похожих неверных варианта. Один это та же фраза в другой форме (утверждение, отрицание или вопрос),
-// другой это та же фраза с одной ошибкой (число, правописание, созвучное слово, род)
-function pickDistractors(idx,d,toRu){
+// три неверных варианта, каждый отличается от правильного одной мелкой ошибкой (число, правописание, созвучное слово, род),
+// поэтому все четыре варианта выглядят похоже и различать их нужно внимательно
+function similarVariants(text,toRu){
+  const byType={}; shuffle(toRu ? ruVariants(text) : frVariants(text)).forEach(v=>{ (byType[v.type]=byType[v.type]||[]).push(v.text); });
+  return byType;
+}
+function distinctCount(byType,right){ const seen=new Set([normText(right)]); Object.values(byType).forEach(a=>a.forEach(t=>seen.add(normText(t)))); return seen.size-1; }
+function pickDistractors(idx,d,toRu,want){
+  want=want||3;
   const [fr,ru]=d.phrases[idx], col=toRu?1:0, right=d.phrases[idx][col], seen=new Set([normText(right)]);
   const picks=[], take=t=>{ if(!t) return false; const k=normText(t); if(seen.has(k)) return false; seen.add(k); picks.push({i:-1,text:t}); return true; };
-  const g=Math.floor(idx/3)*3, sibs=shuffle([g,g+1,g+2].filter(i=>i!==idx && d.phrases[i])).map(i=>d.phrases[i][col]);
-  const byType={}; shuffle(toRu ? ruVariants(ru) : frVariants(fr)).forEach(v=>{ (byType[v.type]=byType[v.type]||[]).push(v.text); });
-  const order=["num","hom","spell","gender"].filter(t=>byType[t]);
-  take(sibs[0]);
-  for(const t of order){ if(picks.length>=2) break; for(const x of byType[t]){ if(take(x)) break; } }
-  if(picks.length<2) take(sibs[1]);
-  for(const t of order){ if(picks.length>=2) break; for(const x of byType[t]){ if(picks.length>=2) break; take(x); } }
-  if(picks.length<2){
-    const near=d.phrases.map((q,i)=>({text:q[col], i, score:sim(q[0],fr)+sim(q[1],ru)})).filter(c=>c.i!==idx).sort((x,y)=>y.score-x.score).slice(0,6);
-    for(const c of shuffle(near)){ if(picks.length>=2) break; take(c.text); }
+  const byType=similarVariants(right,toRu);
+  const types=shuffle(Object.keys(byType)); if(types.includes("num")){ types.splice(types.indexOf("num"),1); types.unshift("num"); }
+  if(types.includes("spell2")){ types.splice(types.indexOf("spell2"),1); types.push("spell2"); }
+  // по кругу: по одному варианту каждого типа, пока не наберём нужное число
+  for(let round=0; picks.length<want && round<12; round++){
+    let added=false;
+    for(const t of types){ if(picks.length>=want) break; const list=byType[t]; while(list.length){ if(take(list.shift())){ added=true; break; } } }
+    if(!added) break;
+  }
+  // если ошибок не хватило, делаем ошибку в уже сделанном варианте
+  for(const base of picks.slice()){
+    if(picks.length>=want) break;
+    const more=similarVariants(base.text,toRu);
+    for(const t of Object.keys(more)){ for(const x of more[t]){ if(picks.length>=want) break; take(x); } }
+  }
+  if(picks.length<want){
+    const g=Math.floor(idx/3)*3, near=d.phrases.map((q,i)=>({text:q[col], i, score:sim(q[0],fr)+sim(q[1],ru)})).filter(c=>c.i!==idx && Math.floor(c.i/3)*3!==g).sort((x,y)=>y.score-x.score).slice(0,8);
+    for(const c of shuffle(near)){ if(picks.length>=want) break; take(c.text); }
   }
   return picks;
 }
 function assItem(idx, d, k, n){
-  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
+  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0 && distinctCount(similarVariants(ru,true),ru)>=3, col=toRu?1:0, right=d.phrases[idx][col];
   const opts=shuffle([{i:idx, text:right},...pickDistractors(idx,d,toRu)]);
   const pos=n, isForgot = k==="ass" && state.fg.ass.indexOf(idx)>=0;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
