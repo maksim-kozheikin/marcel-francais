@@ -134,9 +134,14 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .toast.show{opacity:1}
 @media (max-width:480px){.cat{font-size:50px}.fr{font-size:1.12rem}}
 @media (max-width:600px){
-  .item .actions .btn{flex:1 1 0;min-height:54px;font-size:1.05rem}
-  .item .actions .typerow{flex:1 1 100%!important}
-  .item .actions .typerow .btn{flex:none;min-width:64px}
+  .item.sp .item-top{flex-wrap:wrap;align-items:center}
+  .item.sp .item-top .num{order:1}
+  .item.sp .item-top .known{order:2}
+  .item.sp .item-top .texts{order:3;flex:1 1 100%}
+  .item.sp .actions{flex-direction:column;align-items:stretch}
+  .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
+  .item .actions .typerow{flex:none!important;width:100%}
+  .item .actions .typerow .btn{flex:none;width:auto;min-width:64px}
   .item .actions .typerow input{min-height:54px;font-size:1rem}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -379,7 +384,7 @@ function feedbackHtml(res, said, target, showAnswer, mode){
 }
 
 function speechItem(idx, fr, ru, k, ruOnly){
-  const el=document.createElement("article"); el.className="item"+(state.done[k][idx]?" done":"");
+  const el=document.createElement("article"); el.className="item sp"+(state.done[k][idx]?" done":"");
   const showFr = !ruOnly || state.done[k][idx];
   el.innerHTML='<div class="item-top"><div class="num">'+(state.done[k][idx]?"✓":idx+1)+'</div><div class="texts">'+
     (showFr?'<div class="fr" lang="fr">'+esc(fr)+'</div>':"")+'<div class="ru'+(ruOnly?" big":"")+'">'+esc(ru)+'</div></div></div>'+
