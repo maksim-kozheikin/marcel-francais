@@ -428,13 +428,22 @@ function speechItem(idx, fr, ru, k, ruOnly){
   return el;
 }
 
-function rng(seed){ return ()=>{ seed=(seed*9301+49297)%233280; return seed/233280; }; }
+/* варианты похожи на правильный ответ, порядок каждый раз новый */
+function wordsOf(t){ return new Set(t.toLowerCase().replace(/[’'\-.,!?;:«»"()…]/g," ").split(/\s+/).filter(Boolean)); }
+function jacc(a,b){ let n=0; a.forEach(x=>{ if(b.has(x)) n++; }); return n/((a.size+b.size-n)||1); }
+function lev(a,b){
+  let prev=Array.from({length:b.length+1},(_,j)=>j);
+  for(let i=1;i<=a.length;i++){ const cur=[i]; for(let j=1;j<=b.length;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; }
+  return prev[b.length];
+}
+function sim(a,b){ return jacc(wordsOf(a),wordsOf(b)) + 1 - lev(a,b)/(Math.max(a.length,b.length)||1); }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 function assItem(idx, d){
-  const k="ass", [fr,ru]=d.phrases[idx], toRu = idx%2===0;
-  const r=rng(state.level*1000+idx*7+3);
-  const others=d.phrases.map((p,i)=>i).filter(i=>i!==idx);
-  const picks=[]; while(picks.length<2){ const c=others[Math.floor(r()*others.length)]; if(!picks.includes(c) && d.phrases[c][toRu?1:0]!==(toRu?ru:fr)) picks.push(c); }
-  const opts=[idx,...picks].map(i=>({i, text:d.phrases[i][toRu?1:0]})).sort(()=>r()-0.5);
+  const k="ass", [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
+  const close=d.phrases.map((p,i)=>({i, text:p[col], score:sim(p[0],fr)+sim(p[1],ru)}))
+    .filter(c=>c.i!==idx && c.text!==right).sort((x,y)=>y.score-x.score).slice(0,6);
+  const picks=[]; for(const c of shuffle(close)){ if(picks.length<2 && !picks.some(x=>x.text===c.text)) picks.push(c); }
+  const opts=shuffle([{i:idx, text:right},...picks]);
   const el=document.createElement("article"); el.className="item"+(state.done[k][idx]?" done":"");
   el.innerHTML='<div class="item-top"><div class="num">'+(state.done[k][idx]?"✓":idx+1)+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+esc(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
   if(toRu){ const lb=document.createElement("button"); lb.className="btn ghost"; lb.textContent="🔊"; lb.setAttribute("aria-label","Послушать"); lb.style.minHeight="38px"; lb.onclick=()=>speak(fr); el.querySelector(".item-top").appendChild(lb); }
