@@ -522,12 +522,163 @@ function lev(a,b){
 }
 function sim(a,b){ return jacc(wordsOf(a),wordsOf(b)) + 1 - lev(a,b)/(Math.max(a.length,b.length)||1); }
 function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+/* ---------- очень похожие неправильные варианты для «Associe» ---------- */
+const FR_NUM={un:1,une:1,deux:2,trois:3,quatre:4,cinq:5,six:6,sept:7,huit:8,neuf:9,dix:10,onze:11,douze:12,treize:13,quatorze:14,quinze:15,seize:16,vingt:20,vingts:20,trente:30,quarante:40,cinquante:50,soixante:60,cent:100,cents:100};
+function frWords(n){
+  if(n<20) return U[n];
+  if(n<70){ const t=Math.floor(n/10), u=n%10; return TENS[t]+(u===0?"":u===1?" et un":"-"+U[u]); }
+  if(n<80) return n===71 ? "soixante et onze" : "soixante-"+U[n-60];
+  if(n<100) return n===80 ? "quatre-vingts" : "quatre-vingt-"+U[n-80];
+  const h=Math.floor(n/100), r=n%100, c=h===1?"cent":U[h]+" cent"+(r===0?"s":"");
+  return r ? c+" "+frWords(r) : c;
+}
+function frParse(words){
+  let total=0, cur=0, prev="";
+  for(const t of words){
+    if(t==="et") continue;
+    if(t==="vingt"||t==="vingts") cur = prev==="quatre" ? cur-4+80 : cur+20;
+    else if(t==="cent"||t==="cents"){ cur=(cur||1)*100; total+=cur; cur=0; }
+    else cur+=FR_NUM[t];
+    prev=t;
+  }
+  return total+cur;
+}
+const WORD_RE=/[A-Za-zÀ-ÿŒœ]+|[^A-Za-zÀ-ÿŒœ]+/g;
+function isWord(p){ return /^[A-Za-zÀ-ÿŒœ]/.test(p); }
+// числа во фразе: [{from, to (индексы частей), words, value}]
+function frRuns(parts){
+  const runs=[]; let i=0;
+  while(i<parts.length){
+    if(isWord(parts[i]) && FR_NUM[parts[i].toLowerCase()]!==undefined){
+      let j=i, words=[parts[i].toLowerCase()];
+      while(j+2<parts.length && /^[ -]$/.test(parts[j+1])){
+        const w=parts[j+2].toLowerCase();
+        if(FR_NUM[w]!==undefined || (w==="et" && parts[j+4] && FR_NUM[parts[j+4].toLowerCase()]!==undefined)){ words.push(w); j+=2; } else break;
+      }
+      runs.push({from:i, to:j, words, value:frParse(words)}); i=j+1;
+    } else i++;
+  }
+  return runs;
+}
+function numNeighbours(n){
+  const s=new Set(), t=String(n);
+  if(t.length>=2){ const sw=+(t[t.length-1]+t.slice(0,-1).split("").reverse().join("")); if(sw!==n && sw>=2) s.add(sw); }
+  if(t.length===2 && t[0]!==t[1]){ const sw=+(t[1]+t[0]); if(sw>=2) s.add(sw); }
+  [1,-1,10,-10].forEach(k=>{ if(n+k>=2 && n+k<1000) s.add(n+k); });
+  if(n>=2&&n<=9) s.add(n+10);
+  if(n>=12&&n<=19){ s.add(n-10); s.add((n-10)*10); }
+  if(n>=20&&n<=90&&n%10===0){ s.add(n/10+10); }
+  if(n>=100&&n%100===0){ s.add(n+10); s.add(n/100+10); }
+  if(n>=101){ const h=Math.floor(n/100), r=n%100; if(r>=10){ s.add(h*100+(r%10)*10+Math.floor(r/10)); } }
+  s.delete(n); return [...s].filter(x=>x>=2&&x<1000);
+}
+const HOM={
+  pain:["pin","plein"],pains:["pins"],vin:["vingt","vain"],vingt:["vin","vent"],verre:["vert","vers"],verres:["verts","vers"],lait:["laid","les"],
+  sel:["celle","selle"],sucre:["sucré"],poires:["poivres","poires"],poivrons:["poivres","poires"],"pêches":["péchés","pèches"],cerises:["cerisiers","serises"],
+  fraises:["fraîches","frais"],beurre:["bœuf","beure"],tarte:["tard","tarde"],eau:["os","au"],"café":["cave","cafard"],"cafés":["caves"],gare:["guerre","gars"],
+  "hôtel":["autel","hotêl"],parc:["par","parque"],plage:["plaque","plague"],banque:["bande","banc"],boulangerie:["boucherie","boulangère"],
+  "marché":["marcher","marchée"],veux:["veut","veulent"],peux:["peut","peu"],vais:["vas","vait"],suis:["suit","suie"],prends:["prend","prands"],
+  voudrais:["voudrait","voudrai"],cherche:["cherches","cherch"],a:["à","as"],"à":["a","as"],dans:["d'en","dent"],"sœur":["sueur","cœur"],mer:["mère"],
+  chat:["chas","chaud"],chien:["chiot","chiens"],amie:["ami","amis"],amis:["amies","ami"],nuits:["nuit","nuits"],cent:["sans","sang"],cents:["sans","cent"],
+  dix:["dis","dit"],six:["si","cis"],sept:["cette","set"],huit:["huile","uit"],neuf:["œuf","neuve"],trois:["troie","trois"],quatre:["quatres","catre"],
+  cinq:["sain","cinque"],trente:["tente","trante"],quarante:["carante","quarente"],cinquante:["cinquente","cinquent"],soixante:["soixent","soissante"],
+  "œufs":["œuf","neufs"],oignons:["ognons","oignon"],radis:["radi","radius"],kiwis:["kiwi","kiwys"],huîtres:["huitres","huître"],"champignons":["champignon","champigion"],
+  saumon:["salmon","somon"],jambon:["jambom","jambons"],fromage:["fromages","fromaje"],yaourts:["yaourt","yahourts"],
+  tranches:["tranche","trenches"],boules:["boule","bouls"],cuillères:["cuillère","cuilléres"],bouteilles:["bouteille","bouteilles"],
+  litres:["litre","litrs"],grammes:["gramme","grames"],mètres:["mètre","métres"],"kilomètres":["kilomètre","kilométres"],kilos:["kilo","killos"],
+  croissants:["croissant","croisants"],baguettes:["baguette","baguètes"],tomates:["tomate","tommates"],carottes:["carotte","carrotes"],
+  bananes:["banane","bananas"],citrons:["citron","cytrons"],oranges:["orange","orenges"],pommes:["pomme","pomes"],pomme:["pommes","pome"],
+  abricots:["abricot","abricos"],courgettes:["courgette","courjettes"],concombres:["concombre","concombes"],sardines:["sardine","sardinnes"],
+  saucisses:["saucisse","sausisses"],bonbons:["bonbon","bombons"],"éclairs":["éclair","eclairs"],crevettes:["crevette","crevetes"],
+  appartement:["appartment","apartement"],pharmacie:["farmacie","pharmacy"],restaurant:["restorant","restaurent"],supermarché:["supermarché","supermarcher"],
+  ascenseur:["ascenceur","assenseur"],parking:["parquing","parkin"],musée:["musé","musée"],chambre:["chambre","chanbre"],chambres:["chambre","chanbres"],
+  billet:["billet","billets"],billets:["billet","bilets"],valise:["valisse","vallise"],valises:["valisses","valise"],question:["quéstion","qestion"],
+  téléphone:["télephone","téléfone"],clé:["clef","clée"],clés:["clefs","clées"],"fatiguée":["fatigué","fatiguer"],occupée:["occupé","occuppée"],
+  perdue:["perdu","perdue"],contente:["content","contante"],étudiante:["étudiant","étudiente"],touriste:["tourist","touriste"]
+};
+const SPELL_OPS=[["eau","au"],["an","en"],["en","an"],["ai","ei"],["ou","u"],["ch","sh"],["qu","k"],["gn","n"],["ph","f"],["oi","oa"],["au","o"],["ge","je"],["tt","t"],["ll","l"],["mm","m"],["nn","n"],["rr","r"],["ss","s"]];
+const ACCENT={"é":["e","è"],"è":["e","é"],"ê":["e","è"],"à":["a"],"â":["a"],"î":["i"],"ô":["o"],"û":["u"],"ù":["u"],"ç":["c"]};
+function keepCase(src,dst){ return src[0]!==src[0].toLowerCase() ? dst[0].toUpperCase()+dst.slice(1) : dst; }
+function pickOne(a){ return a[Math.floor(Math.random()*a.length)]; }
+function misspell(w){
+  const lw=w.toLowerCase(), out=[];
+  for(const [i,ch] of [...lw].entries()) if(ACCENT[ch]) ACCENT[ch].forEach(r=>out.push(lw.slice(0,i)+r+lw.slice(i+1)));
+  for(const [a,b] of SPELL_OPS){ let at=lw.indexOf(a,1); while(at>=0){ out.push(lw.slice(0,at)+b+lw.slice(at+a.length)); at=lw.indexOf(a,at+1); } }
+  for(let i=1;i<lw.length-1;i++) if("tlnmrsfpc".includes(lw[i]) && "aeiouyéèêàâîôû".includes(lw[i-1]) && "aeiouyéèêàâîôû".includes(lw[i+1])) out.push(lw.slice(0,i)+lw[i]+lw.slice(i));
+  if(lw.length>4 && lw.endsWith("s")) out.push(lw.slice(0,-1));
+  return out.filter(x=>x!==lw && !/^œ/.test(lw)).map(x=>keepCase(w,x));
+}
+// варианты французской фразы с одной «ошибкой»: числа, созвучные слова, правописание, род
+function frVariants(text){
+  const parts=text.match(WORD_RE)||[], runs=frRuns(parts), inRun=new Set(); runs.forEach(r=>{ for(let k=r.from;k<=r.to;k++) inRun.add(k); });
+  const res=[], join=a=>a.join("");
+  runs.forEach(r=>{
+    const last=parts[r.to].toLowerCase();
+    if(r.value===1){ const sw={un:"une",une:"un"}[last]; if(sw) res.push({type:"gender", text:join([...parts.slice(0,r.to),keepCase(parts[r.to],sw),...parts.slice(r.to+1)])}); return; }
+    numNeighbours(r.value).forEach(n=>{
+      let w=frWords(n); if(/ un$/.test(w)||w==="un"){ if(last!=="un"&&last!=="une") return; w=w.replace(/un$/,last); }
+      res.push({type:"num", text:join([...parts.slice(0,r.from), keepCase(parts[r.from],w), ...parts.slice(r.to+1)])});
+    });
+  });
+  parts.forEach((p,i)=>{
+    if(!isWord(p) || inRun.has(i)) return;
+    const lw=p.toLowerCase();
+    (HOM[lw]||[]).forEach(alt=>{ if(alt!==lw) res.push({type:"hom", text:join([...parts.slice(0,i),keepCase(p,alt),...parts.slice(i+1)])}); });
+    if(lw.length>=4) misspell(p).forEach(alt=>res.push({type:"spell", text:join([...parts.slice(0,i),alt,...parts.slice(i+1)])}));
+  });
+  return res;
+}
+// русские числительные: меняем так, чтобы падеж существительного остался верным
+const RU_TENS=["двадцать","тридцать","сорок","пятьдесят","шестьдесят","семьдесят","восемьдесят","девяносто"], RU_HUND=["сто","двести","триста","четыреста","пятьсот","шестьсот","семьсот","восемьсот","девятьсот"];
+const RU_UNITS=["пять","шесть","семь","восемь","девять"], RU_TEENS=["десять","одиннадцать","двенадцать","тринадцать","четырнадцать","пятнадцать","шестнадцать","семнадцать","восемнадцать","девятнадцать"];
+const RU_ALT={два:["три","четыре"],две:["три","четыре"],три:["четыре"],четыре:["три"],
+  пять:["пятнадцать","пятьдесят","шесть"],шесть:["шестнадцать","шестьдесят","семь"],семь:["семнадцать","семьдесят","шесть"],восемь:["восемнадцать","восемьдесят","девять"],девять:["девятнадцать","девяносто","восемь"],
+  десять:["девять","двенадцать"],двенадцать:["двадцать","десять"],тринадцать:["тридцать","двенадцать"],четырнадцать:["сорок","тринадцать"],пятнадцать:["пятьдесят","пять"],шестнадцать:["шестьдесят","пятнадцать"],семнадцать:["семьдесят","семь"],восемнадцать:["восемьдесят","девятнадцать"],девятнадцать:["девяносто","девять"],
+  двадцать:["двенадцать","тридцать"],тридцать:["тринадцать","двадцать"],сорок:["четырнадцать","пятьдесят"],пятьдесят:["пятнадцать","шестьдесят"],шестьдесят:["шестнадцать","семьдесят"],семьдесят:["семнадцать","восемьдесят"],восемьдесят:["восемнадцать","девяносто"],девяносто:["девятнадцать","восемьдесят"],
+  сто:["сорок","двести"],двести:["триста","двадцать"],триста:["тридцать","двести"],четыреста:["четырнадцать","триста"],пятьсот:["пятьдесят","шестьсот"]};
+const RU_NUMS=new Set(["один","одно","одна","два","две","три","четыре",...RU_UNITS,...RU_TEENS,...RU_TENS,...RU_HUND]);
+function ruVariants(text){
+  const parts=text.match(/[А-Яа-яЁё]+|[^А-Яа-яЁё]+/g)||[], res=[];
+  let i=0;
+  while(i<parts.length){
+    if(!(/^[А-Яа-яЁё]/.test(parts[i]) && RU_NUMS.has(parts[i].toLowerCase()))){ i++; continue; }
+    let j=i; while(j+2<parts.length && parts[j+1]===" " && RU_NUMS.has(parts[j+2].toLowerCase())) j+=2;
+    const compound=j>i;
+    for(let k=i;k<=j;k+=2){
+      const w=parts[k].toLowerCase(), isLast=k===j, same=set=>set.includes(w)?set:null;
+      const cls=["один","одно","одна"].includes(w)?"1":["два","две","три","четыре"].includes(w)?"A":"B";
+      let alts=RU_ALT[w]||[];
+      if(!isLast) { const set=same(RU_TENS)||same(RU_HUND); alts=set?alts.filter(a=>set.includes(a)):[]; }
+      else if(cls==="1") alts=[];
+      else if(cls==="A") alts=alts.filter(a=>["три","четыре"].includes(a));
+      else if(compound){ const set=same(RU_UNITS)||same(RU_TENS)||same(RU_TEENS)||same(RU_HUND); alts=set?alts.filter(a=>set.includes(a)):[]; }
+      else alts=alts.filter(a=>!["два","две","три","четыре"].includes(a));
+      alts.forEach(a=>res.push({type:"num", text:[...parts.slice(0,k),keepCase(parts[k],a),...parts.slice(k+1)].join("")}));
+    }
+    i=j+1;
+  }
+  return res;
+}
+const normText=t=>t.toLowerCase().replace(/[^a-zà-ÿœа-яё0-9]+/g,"");
+// два самых похожих неверных варианта: сначала «числа» и «правописание/созвучие», потом ближайшие карточки уровня
+function pickDistractors(idx,d,toRu){
+  const [fr,ru]=d.phrases[idx], col=toRu?1:0, right=d.phrases[idx][col], seen=new Set([normText(right)]);
+  const vars=toRu ? ruVariants(ru) : frVariants(fr);
+  const byType={}; shuffle(vars).forEach(v=>{ (byType[v.type]=byType[v.type]||[]).push(v); });
+  const picks=[], take=v=>{ const k=normText(v.text); if(seen.has(k)) return false; seen.add(k); picks.push({i:-1,text:v.text}); return true; };
+  const order=shuffle(Object.keys(byType)); if(order.includes("num")){ order.splice(order.indexOf("num"),1); order.unshift("num"); }
+  for(const t of order){ if(picks.length>=2) break; for(const v of byType[t]){ if(take(v)) break; } }
+  for(const t of order){ if(picks.length>=2) break; for(const v of byType[t]){ if(picks.length>=2) break; take(v); } }
+  if(picks.length<2){
+    const near=d.phrases.map((p,i)=>({i, text:p[col], score:sim(p[0],fr)+sim(p[1],ru)})).filter(c=>c.i!==idx).sort((x,y)=>y.score-x.score).slice(0,6);
+    for(const c of shuffle(near)){ if(picks.length>=2) break; take(c); }
+  }
+  return picks;
+}
+
 function assItem(idx, d, k, n){
-  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0, col=toRu?1:0, right=d.phrases[idx][col];
-  const close=d.phrases.map((p,i)=>({i, text:p[col], score:sim(p[0],fr)+sim(p[1],ru)}))
-    .filter(c=>c.i!==idx && c.text!==right).sort((x,y)=>y.score-x.score).slice(0,6);
-  const picks=[]; for(const c of shuffle(close)){ if(picks.length<2 && !picks.some(x=>x.text===c.text)) picks.push(c); }
-  const opts=shuffle([{i:idx, text:right},...picks]);
+  k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0 && ruVariants(ru).length>0, col=toRu?1:0, right=d.phrases[idx][col];
+  const opts=shuffle([{i:idx, text:right},...pickDistractors(idx,d,toRu)]);
   const pos=n, isForgot = k==="ass" && state.fg.ass.indexOf(idx)>=0;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
   el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+esc(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
