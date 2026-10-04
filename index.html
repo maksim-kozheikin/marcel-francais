@@ -834,6 +834,7 @@ const HOM={
   fraises:["fraîches","frais"],beurre:["bœuf","beure"],tarte:["tard","tarde"],eau:["os","au"],"café":["cave","cafard"],"cafés":["caves"],gare:["guerre","gars"],
   "hôtel":["autel","hotêl"],parc:["par","parque"],plage:["plaque","plague"],banque:["bande","banc"],boulangerie:["boucherie","boulangère"],
   "marché":["marcher","marchée"],veux:["veut","veulent"],peux:["peut","peu"],vais:["vas","vait"],suis:["suit","suie"],prends:["prend","prands"],
+  as:["a","à"],es:["est","et"],est:["et","es"],et:["est"],ou:["où"],sont:["son"],ces:["ses"],
   voudrais:["voudrait","voudrai"],cherche:["cherches","cherch"],a:["à","as"],"à":["a","as"],dans:["d'en","dent"],"sœur":["sueur","cœur"],mer:["mère"],
   chat:["chas","chaud"],chien:["chiot","chiens"],amie:["ami","amis"],amis:["amies","ami"],nuits:["nuit","nuits"],cent:["sans","sang"],cents:["sans","cent"],
   dix:["dis","dit"],six:["si","cis"],sept:["cette","set"],huit:["huile","uit"],neuf:["œuf","neuve"],trois:["troie","trois"],quatre:["quatres","catre"],
@@ -874,10 +875,46 @@ function misspell2(w){
   }
   return [...new Set(out)].filter(x=>x!==lw && !/^œ/.test(lw)).map(x=>keepCase(w,x));
 }
+// типичные ошибки по правилам из теории (ne без pas, артикль после отрицания, дефисы в числах, элизия, род, множественное -s)
+function ruleVariants(text,parts,runs){
+  const out=[], push=t=>{ if(t && t!==text) out.push({type:"rule", text:t}); };
+  // отрицание
+  if(/\bn'/.test(text)||/\bne /.test(text)){
+    // «Je veux pas» и «J'ai pas» не берём, в разговорной речи это допустимо
+    push(text.replace(/ pas(?= )/,""));                                                                // Je ne veux douze …
+    push(text.replace(/\bn'ai pas\b/,"n'ai").replace(/\bne (\S+) pas\b/,"ne $1"));
+  }
+  const mp=text.match(/\bpas (de|d')\s?(\S+)/);
+  if(mp){ push(text.replace(/\bpas (de|d')\s?/,"pas un ")); push(text.replace(/\bpas (de|d')\s?/,"pas des ")); push(text.replace(/\bpas (de|d')\s?/,"pas du ")); }
+  // числа: дефисы, et, -s у cent и vingt
+  runs.forEach(r=>{
+    const orig=parts.slice(r.from,r.to+1).join(""), put=t=>{ if(t!==orig) push(parts.slice(0,r.from).join("")+t+parts.slice(r.to+1).join("")); };
+    if(r.words.length>1){
+      if(/-/.test(orig)) put(orig.replace(/-/g," "));
+      if(/ et /.test(orig)) put(orig.replace(/ et /," "));
+      if(/soixante et onze/.test(orig)) put(orig.replace("soixante et onze","soixante-onze"));
+    }
+    if(/quatre-vingts$/.test(orig)) put(orig.replace(/quatre-vingts$/,"quatre-vingt"));
+    if(/quatre-vingt-/.test(orig)) put(orig.replace("quatre-vingt-","quatre-vingts-"));
+    if(/\bcents\b/.test(orig)) put(orig.replace(/\bcents\b/,"cent"));
+    if(/\bcent\b(?! (?:un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|vingt|trente|quarante|cinquante|soixante))/.test(orig) && r.words.length>1) put(orig.replace(/\bcent\b/,"cents"));
+    if(/\bcent\b(?= \S)/.test(orig)) put(orig.replace(/\bcent\b(?= \S)/,"cents"));
+  });
+  // элизия
+  push(text.replace(/\bJ'ai\b/,"Je ai")); push(text.replace(/\bn'/,"ne ")); push(text.replace(/\bl'(?=[aeiouhéèêàâîôû])/i,"le ")); push(text.replace(/\bd'(?=[aeiouhéèêàâîôû])/i,"de ")); push(text.replace(/\bl'(?=[aeiouhéèêàâîôû])/i,"la "));
+  // род артиклей и указательных слов
+  [["le","la"],["la","le"],["ce","cette"],["cette","ce"],["mon","ma"],["ma","mon"],["un","une"],["une","un"],["du","de la"],["des","du"]].forEach(([a,b])=>{
+    const re=new RegExp("(^|[^A-Za-zÀ-ÿŒœ'])"+a+"(?= [A-Za-zÀ-ÿ])"); if(re.test(text) && !runs.some(r=>r.words.length===1&&r.words[0]===a)) push(text.replace(re,(m,x)=>x+b));
+  });
+  // лишнее -s после артикля единственного числа
+  const mt=text.match(/\b(un|une|le|la|cette|ce|mon|ma) ([a-zà-ÿ]{4,})\b/);
+  if(mt && !/s$/.test(mt[2])) push(text.replace(mt[0],mt[1]+" "+mt[2]+"s"));
+  return out;
+}
 // варианты французской фразы с одной «ошибкой»: числа, созвучные слова, правописание, род
 function frVariants(text){
   const parts=text.match(WORD_RE)||[], runs=frRuns(parts), inRun=new Set(); runs.forEach(r=>{ for(let k=r.from;k<=r.to;k++) inRun.add(k); });
-  const res=[], join=a=>a.join("");
+  const res=ruleVariants(text,parts,runs), join=a=>a.join("");
   runs.forEach(r=>{
     const last=parts[r.to].toLowerCase();
     if(r.value===1){ const sw={un:"une",une:"un"}[last]; if(sw) res.push({type:"gender", from:parts[r.to], to:keepCase(parts[r.to],sw), text:join([...parts.slice(0,r.to),keepCase(parts[r.to],sw),...parts.slice(r.to+1)])}); return; }
@@ -928,7 +965,7 @@ function ruVariants(text){
   }
   return res;
 }
-const normText=t=>t.toLowerCase().replace(/[^a-zà-ÿœа-яё0-9]+/g,"");
+const normText=t=>t.toLowerCase().replace(/\s+/g," ").replace(/[.?!]+\s*$/,"").trim();
 // три неверных варианта, каждый отличается от правильного одной мелкой ошибкой (число, правописание, созвучное слово, род),
 // поэтому все четыре варианта выглядят похоже и различать их нужно внимательно
 function similarVariants(text,toRu){
@@ -941,8 +978,8 @@ function pickDistractors(idx,d,toRu,want){
   const [fr,ru]=d.phrases[idx], col=toRu?1:0, right=d.phrases[idx][col], seen=new Set([normText(right)]);
   const picks=[], take=t=>{ if(!t) return false; const k=normText(t); if(seen.has(k)) return false; seen.add(k); picks.push({i:-1,text:t}); return true; };
   const byType=similarVariants(right,toRu);
-  const types=shuffle(Object.keys(byType)); if(types.includes("num")){ types.splice(types.indexOf("num"),1); types.unshift("num"); }
-  if(types.includes("spell2")){ types.splice(types.indexOf("spell2"),1); types.push("spell2"); }
+  const types=["rule","num","hom","gender","spell","spell2"].filter(t=>byType[t]);
+  types.forEach(t=>byType[t].sort((a,b)=>lev(a,right)-lev(b,right)||0.5-Math.random()));
   // по кругу: по одному варианту каждого типа, пока не наберём нужное число
   for(let round=0; picks.length<want && round<12; round++){
     let added=false;
@@ -989,6 +1026,13 @@ function assItem(idx, d, k, n){
     b.onclick=()=>{
       if(o.i===idx){ b.classList.add("right"); box.querySelectorAll(".opt").forEach(x=>x.disabled=true);
         el.querySelector(".fbwrap").innerHTML='<div class="fb ok">Très bien ! ✅</div>'; el.classList.add("done"); el.querySelector(".num").textContent="✓"; markDone(k, idx); }
+      else if(k==="ass"){   // неверный вариант на вкладке «Associe» сразу отправляет карточку на повтор
+        setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true);
+        toast("Faux ! La carte part en révision 🔁");
+        if(!el.isConnected) return;
+        if(doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+        el.replaceWith(assItem(idx,d,k,pos));
+      }
       else { b.classList.add("no"); b.disabled=true; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Essaie encore.</div>'; }
     };
     box.appendChild(b);
