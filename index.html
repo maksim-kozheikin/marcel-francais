@@ -85,8 +85,8 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .btn:focus-visible,.stage:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .typerow{display:flex;gap:8px}
-.known{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-weight:600;font-size:1rem;cursor:pointer}
-.known input{width:22px;height:22px;margin:0;accent-color:var(--ok);cursor:pointer}
+.known{display:inline-flex;align-items:center;gap:6px;flex:none;margin-left:auto;min-height:40px;padding:0 10px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-weight:600;font-size:.9rem;line-height:1.1;cursor:pointer}
+.known input{width:20px;height:20px;margin:0;accent-color:var(--ok);cursor:pointer}
 .item.done .known{border-color:var(--ok);background:var(--paper)}
 .known:focus-within{outline:3px solid var(--rouge);outline-offset:2px}
 
@@ -133,6 +133,12 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 @media (max-width:480px){.cat{font-size:50px}.fr{font-size:1.12rem}}
+@media (max-width:600px){
+  .item .actions .btn{flex:1 1 0;min-height:54px;font-size:1.05rem}
+  .item .actions .typerow{flex:1 1 100%!important}
+  .item .actions .typerow .btn{flex:none;min-width:64px}
+  .item .actions .typerow input{min-height:54px;font-size:1rem}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -304,7 +310,7 @@ function listen(btn, onText, onLive){
     for(const r of e.results){ (r.isFinal?fin:tmp).push(r[0].transcript.trim()); }
     got=fin.join(" ").trim(); heard=fin.concat(tmp).join(" ").trim();
     if(onLive) onLive(heard||"…");
-    arm(3000);
+    arm(2000);
   };
   me.onerror=e=>{
     if(e.error==="not-allowed"||e.error==="service-not-allowed"||e.error==="audio-capture"){ micBroken=true; renderNotice(); renderMain(); }
@@ -389,7 +395,8 @@ function speechItem(idx, fr, ru, k, ruOnly){
     if(cb.checked) markDone(k, idx); else unmarkDone(k, idx);
     if(el.isConnected){ const fresh=speechItem(idx, fr, ru, k, ruOnly); el.replaceWith(fresh); const c=fresh.querySelector(".known input"); if(c) c.focus({preventScroll:true}); }
   };
-  if(state.done[k][idx]){ actions.appendChild(known); return el; }
+  el.querySelector(".item-top").appendChild(known);
+  if(state.done[k][idx]){ return el; }
   const handle=(said, mode)=>{
     const res=check(fr, said, mode);
     fbw.innerHTML=feedbackHtml(res, said, fr, ruOnly, mode);
@@ -413,7 +420,6 @@ function speechItem(idx, fr, ru, k, ruOnly){
     row.querySelector("button").onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go();};
     actions.appendChild(row);
   }
-  actions.appendChild(known);
   return el;
 }
 
