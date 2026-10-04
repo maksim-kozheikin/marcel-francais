@@ -85,6 +85,10 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .btn:focus-visible,.stage:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .typerow{display:flex;gap:8px}
+.known{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 14px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-weight:600;font-size:1rem;cursor:pointer}
+.known input{width:22px;height:22px;margin:0;accent-color:var(--ok);cursor:pointer}
+.item.done .known{border-color:var(--ok);background:var(--paper)}
+.known:focus-within{outline:3px solid var(--rouge);outline-offset:2px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
 .fb.ok{background:var(--okbg);color:var(--ok);font-weight:600}
@@ -323,21 +327,28 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
 function listen(btn, onText, onLive){
   if(rec){ try{rec.stop();}catch(e){} if(recBtn===btn) return; }
-  rec=new SR(); rec.lang="fr-FR"; rec.interimResults=true; rec.maxAlternatives=1; recBtn=btn;
-  let got="";
-  rec.onstart=()=>{btn.classList.add("listening");btn.textContent="⏹ Стоп"; if(onLive) onLive("…");};
-  rec.onresult=e=>{
-    let fin="", tmp="";
-    for(const r of e.results){ if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript; }
-    got=fin; if(onLive) onLive((fin+" "+tmp).trim()||"…");
+  const me=new SR(); rec=me; recBtn=btn;
+  me.lang="fr-FR"; me.interimResults=true; me.continuous=true; me.maxAlternatives=1;
+  let got="", heard="", timer=null;
+  // не обрываем на первой паузе: останавливаемся, когда тишина длится дольше
+  const arm=ms=>{ clearTimeout(timer); timer=setTimeout(()=>{ try{me.stop();}catch(e){} }, ms); };
+  me.onstart=()=>{btn.classList.add("listening");btn.textContent="⏹ Стоп"; if(onLive) onLive("…"); arm(8000);};
+  me.onresult=e=>{
+    const fin=[], tmp=[];
+    for(const r of e.results){ (r.isFinal?fin:tmp).push(r[0].transcript.trim()); }
+    got=fin.join(" ").trim(); heard=fin.concat(tmp).join(" ").trim();
+    if(onLive) onLive(heard||"…");
+    arm(3000);
   };
-  rec.onerror=e=>{
+  me.onerror=e=>{
     if(e.error==="not-allowed"||e.error==="service-not-allowed"||e.error==="audio-capture"){ micBroken=true; renderNotice(); renderMain(); }
     else if(e.error==="no-speech") toast("Ничего не услышала. Говори чуть громче 🎤");
   };
-  rec.onend=()=>{ btn.classList.remove("listening"); btn.textContent="🎤 Parler"; rec=null; recBtn=null;
-    if(got.trim()) onText(got.trim()); else if(onLive) onLive("ничего не распознано, попробуй ещё раз"); };
-  try{ rec.start(); }catch(e){ micBroken=true; renderNotice(); renderMain(); }
+  me.onend=()=>{ clearTimeout(timer); btn.classList.remove("listening"); btn.textContent="🎤 Parler";
+    if(rec===me){ rec=null; recBtn=null; }
+    const text=(got||heard).trim();
+    if(text) onText(text); else if(onLive) onLive("ничего не распознано, попробуй ещё раз"); };
+  try{ me.start(); }catch(e){ micBroken=true; renderNotice(); renderMain(); }
 }
 function renderNotice(){
   $("micNotice").innerHTML = micBroken ? '<div class="notice">🎤 Микрофон недоступен в этом браузере или окне. Лучше всего открыть страницу в Chrome или Edge и разрешить микрофон. Пока можно вводить ответы текстом ✍️.</div>' : "";
@@ -372,11 +383,17 @@ function markDone(k, idx){
   const tot=stageCount(k);
   if(doneCount(k)>=tot){
     const si=STAGES.findIndex(s=>s.key===k);
-    if(k==="fin"){ state.shrimps++; state.won=true; toast("Bravo ! Tu gagnes une crevette ! 🦐"); }
+    if(k==="fin"){ if(!state.won) state.shrimps++; state.won=true; toast("Bravo ! Tu gagnes une crevette ! 🦐"); }
     else if(si+1>state.unlocked){ state.unlocked=si+1; toast("Bravo ! Этап открыт: "+STAGES[si+1].tab); }
   }
   save(); renderHeader(); renderAqua();
   if(doneCount(k)>=tot) renderMain();
+}
+
+function unmarkDone(k, idx){
+  const wasComplete=doneCount(k)>=stageCount(k);
+  state.done[k][idx]=false; save(); renderHeader();
+  if(wasComplete){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); }
 }
 
 function feedbackHtml(res, said, target, showAnswer, mode){
@@ -399,13 +416,20 @@ function speechItem(idx, fr, ru, k, ruOnly){
   if(!ruOnly || state.done[k][idx]){
     const lb=document.createElement("button"); lb.className="btn"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); actions.appendChild(lb);
   }
-  if(state.done[k][idx]){ return el; }
+  const known=document.createElement("label"); known.className="known";
+  known.innerHTML='<input type="checkbox"> Я это знаю';
+  const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx];
+  cb.onchange=()=>{
+    if(cb.checked) markDone(k, idx); else unmarkDone(k, idx);
+    if(el.isConnected){ const fresh=speechItem(idx, fr, ru, k, ruOnly); el.replaceWith(fresh); const c=fresh.querySelector(".known input"); if(c) c.focus({preventScroll:true}); }
+  };
+  if(state.done[k][idx]){ actions.appendChild(known); return el; }
   const handle=(said, mode)=>{
     const res=check(fr, said, mode);
     fbw.innerHTML=feedbackHtml(res, said, fr, ruOnly, mode);
     if(res.ok){ el.classList.remove("wrong"); markDone(k, idx); el.classList.add("done"); el.querySelector(".num").textContent="✓";
       if(ruOnly){ const t=el.querySelector(".texts"); if(!t.querySelector(".fr")) t.insertAdjacentHTML("afterbegin",'<div class="fr" lang="fr">'+esc(fr)+'</div>'); }
-      actions.querySelectorAll(".mic,.typerow").forEach(x=>x.remove());
+      actions.querySelectorAll(".mic,.typerow").forEach(x=>x.remove()); cb.checked=true;
     } else {
       el.classList.add("wrong");
       const tip=fbw.querySelector(".tip"); if(tip && mode==="speech"){ tip.hidden=false; marcelTip(tip, fr, said, ru); }
@@ -423,6 +447,7 @@ function speechItem(idx, fr, ru, k, ruOnly){
     row.querySelector("button").onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go();};
     actions.appendChild(row);
   }
+  actions.appendChild(known);
   return el;
 }
 
