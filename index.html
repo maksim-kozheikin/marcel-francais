@@ -315,7 +315,7 @@ function listen(btn, onText, onLive){
     for(const r of e.results){ (r.isFinal?fin:tmp).push(r[0].transcript.trim()); }
     got=fin.join(" ").trim(); heard=fin.concat(tmp).join(" ").trim();
     if(onLive) onLive(heard||"…");
-    arm(2000);
+    arm(1500);
   };
   me.onerror=e=>{
     if(e.error==="not-allowed"||e.error==="service-not-allowed"||e.error==="audio-capture"){ micBroken=true; renderNotice(); renderMain(); }
