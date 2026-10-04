@@ -149,6 +149,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item.sp .item-top .num{order:1}
   .item.sp .item-top .marks{order:2}
   .item.sp .item-top .texts{order:3;flex:1 1 100%}
+  .item.sp .item-top > .btn{order:4;flex:1 1 100%;min-height:54px;font-size:1.05rem}
   .item.sp .actions{flex-direction:column;align-items:stretch}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
   .item .actions .typerow{flex:none!important;width:100%}
@@ -233,11 +234,11 @@ const REV_SUBS = [
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:2, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
+const fresh = () => ({v:2, level:1, shrimps:0, unlocked:0, view:0, revView:0, order:null, forgot:[], fg:{ass:[],dis:[]}, done:{rep:[],ass:[],dis:[],fin:[],rev_rep:[],rev_ass:[],rev_dis:[]}, won:false});
 let state = fresh(), generated = {}, admin = false;
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin;
-  if(s.state && s.state.v===2){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; }
+  if(s.state && s.state.v===2){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; if(!state.fg) state.fg={ass:[],dis:(state.forgot||[]).slice()}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; } // карточки изменились (по 20 штук), текущий уровень начинается заново
 } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin})); }catch(e){} }
@@ -388,10 +389,13 @@ function order(name){
   if(!state.order || state.order.lv!==state.level || state.order.n!==n){ state.order=makeOrder(n,d?d.final.length:5); save(); }
   return state.order[name];
 }
-function setForgot(idx,on){
-  const i=state.forgot.indexOf(idx);
-  if(on && i<0){ state.forgot.push(idx); state.forgot.sort((a,b)=>a-b); }
-  if(!on && i>=0) state.forgot.splice(i,1);
+// state.fg хранит отметки по этапам («Associe», «Dis-le»), state.forgot — все отложенные карточки для шага «Повтор»
+function setForgot(idx,on,stage){
+  const had=state.forgot.indexOf(idx)>=0, a=state.fg[stage], i=a.indexOf(idx);
+  if(on && i<0) a.push(idx);
+  if(!on && i>=0) a.splice(i,1);
+  state.forgot=[...new Set([...state.fg.ass,...state.fg.dis])].sort((x,y)=>x-y);
+  if(on && !had && state.unlocked>=4 && !state.won) state.unlocked=3;
 }
 
 function renderHeader(){
@@ -400,7 +404,7 @@ function renderHeader(){
   $("construction").textContent=p.fr+" — "+p.ru;
   if(state.view>unl()) state.view=unl();
   const k=STAGES[state.view].key, tot=stageCount(k), dn=doneCount(k);
-  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot+(k==="dis"&&state.forgot.length?" · отложено "+state.forgot.length:"");
+  $("prog").textContent=STAGES[state.view].tab+": "+dn+" / "+tot+((k==="dis"||k==="ass")&&state.fg[k].length?" · отложено "+state.fg[k].length:"");
   $("bar").style.width=(tot?dn/tot*100:100)+"%"; $("barWrap").setAttribute("aria-valuemax",tot); $("barWrap").setAttribute("aria-valuenow",dn);
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const st=STAGES[state.view]; $("sayFr").textContent=st.fr; $("sayRu").textContent=st.ru;
@@ -451,7 +455,7 @@ function feedbackHtml(res, said, target, showAnswer, mode){
 }
 
 function speechItem(idx, fr, ru, k, ruOnly, n){
-  const isForgot = k==="dis" && state.forgot.indexOf(idx)>=0;
+  const isForgot = k==="dis" && state.fg.dis.indexOf(idx)>=0;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
   const showFr = !ruOnly || state.done[k][idx];
   el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts">'+
@@ -471,7 +475,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
   };
   cb.onchange=()=>{
     if(cb.checked){
-      if(isForgot){ setForgot(idx,false); syncUnlock(); save(); renderHeader(); }
+      if(isForgot){ setForgot(idx,false,"dis"); syncUnlock(); save(); renderHeader(); }
       else markDone(k, idx);
     } else unmarkDone(k, idx);
     refresh(".known input");
@@ -482,8 +486,8 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     fg.innerHTML='<input type="checkbox"> Не помню';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
-      if(fc.checked){ setForgot(idx,true); if(state.unlocked>=4 && !state.won) state.unlocked=3; if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true); }
-      else { setForgot(idx,false); unmarkDone("dis", idx); }
+      if(fc.checked){ setForgot(idx,true,"dis"); if(state.done.dis[idx]){ syncUnlock(); save(); renderHeader(); } else markDone("dis", idx, true); }
+      else { setForgot(idx,false,"dis"); unmarkDone("dis", idx); }
       refresh(".forgot-mark input");
     };
     marks.appendChild(fg);
@@ -531,9 +535,24 @@ function assItem(idx, d, k, n){
     .filter(c=>c.i!==idx && c.text!==right).sort((x,y)=>y.score-x.score).slice(0,6);
   const picks=[]; for(const c of shuffle(close)){ if(picks.length<2 && !picks.some(x=>x.text===c.text)) picks.push(c); }
   const opts=shuffle([{i:idx, text:right},...picks]);
-  const el=document.createElement("article"); el.className="item"+(state.done[k][idx]?" done":"");
-  el.innerHTML='<div class="item-top"><div class="num">'+(state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+esc(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
-  if(toRu){ const lb=document.createElement("button"); lb.className="btn ghost"; lb.textContent="🔊"; lb.setAttribute("aria-label","Послушать"); lb.style.minHeight="38px"; lb.onclick=()=>speak(fr); el.querySelector(".item-top").appendChild(lb); }
+  const pos=n, isForgot = k==="ass" && state.fg.ass.indexOf(idx)>=0;
+  const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
+  el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+esc(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
+  if(toRu){ const lb=document.createElement("button"); lb.className="btn ghost"; lb.textContent="🔊 Écouter"; lb.onclick=()=>speak(fr); el.querySelector(".item-top").appendChild(lb); }
+  if(k==="ass"){
+    const fg=document.createElement("label"); fg.className="known forgot-mark";
+    fg.innerHTML='<input type="checkbox"> Не помню';
+    const fc=fg.querySelector("input"); fc.checked=isForgot;
+    fc.onchange=()=>{
+      if(fc.checked){ setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true); }
+      else { setForgot(idx,false,"ass"); unmarkDone("ass", idx); }
+      if(!el.isConnected) return;
+      if(doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+      const fresh=assItem(idx,d,k,pos); el.replaceWith(fresh); const c=fresh.querySelector(".forgot-mark input"); if(c) c.focus({preventScroll:true});
+    };
+    const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
+    el.querySelector(".item-top").appendChild(marks);
+  }
   const box=el.querySelector(".opts");
   opts.forEach((o,n)=>{
     const b=document.createElement("button"); b.className="opt"; b.textContent=String.fromCharCode(65+n)+". "+o.text;
