@@ -148,6 +148,11 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .voicerow select{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:46px;padding:0 8px}
 .voicerow .btn{flex:none;min-height:46px}
 .voicerow .vn{flex:none;align-self:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-content:center;font-size:.8rem;font-weight:600}
+.gap{display:inline-block;width:5.5em;height:1.05em;border-bottom:3px solid var(--bleu);vertical-align:-.12em;margin:0 .2em}
+.gapword{color:var(--ok);font-weight:700;border-bottom:3px solid var(--ok)}
+.dictrow{display:flex;gap:8px;flex:1 1 100%}
+.dictrow input{flex:1;min-width:0;min-height:54px;font-size:1.1rem}
+.dictrow .btn{flex:none;min-width:64px}
 .listen-row{display:flex;gap:8px;flex:0 0 auto}
 .actions .listen-row{flex:1 1 100%}
 .listen-row .btn{flex:1 1 0;min-width:0}
@@ -183,6 +188,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item.sp .item-top > .listen-row .btn{min-height:54px;font-size:1rem}
   .item.sp .actions{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
   .item.sp .actions .listen-row{flex:none;width:100%}
+  .item.sp .actions .dictrow{flex:none;width:100%}
+  .item.sp .actions .dictrow .btn{width:auto;min-width:72px}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
   .item .actions .listen-row .btn{flex:1 1 0;width:auto;min-width:0;font-size:1rem}
 }
@@ -251,7 +258,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 
 <script>
 /* ---------- DATA ---------- */
-const BUILTIN = {"1": {fr: "Je veux + nombre + nom", ru: "Я хочу + количество + предмет", phrases: [["Je veux une pomme.", "Я хочу одно яблоко."], ["Je ne veux pas de pomme.", "Я не хочу одно яблоко."], ["Tu veux une pomme ?", "Ты хочешь одно яблоко?"], ["Je veux douze crevettes.", "Я хочу двенадцать креветок."], ["Je ne veux pas douze crevettes.", "Я не хочу двенадцать креветок."], ["Tu veux douze crevettes ?", "Ты хочешь двенадцать креветок?"], ["Je veux vingt et un citrons.", "Я хочу двадцать один лимон."], ["Je ne veux pas vingt et un citrons.", "Я не хочу двадцать один лимон."], ["Tu veux vingt et un citrons ?", "Ты хочешь двадцать один лимон?"], ["Je veux trente-six bonbons.", "Я хочу тридцать шесть конфет."], ["Je ne veux pas trente-six bonbons.", "Я не хочу тридцать шесть конфет."], ["Tu veux trente-six bonbons ?", "Ты хочешь тридцать шесть конфет?"], ["Il veut quarante-deux courgettes.", "Он хочет сорок два кабачка."], ["Il ne veut pas quarante-deux courgettes.", "Он не хочет сорок два кабачка."], ["Il veut quarante-deux courgettes ?", "Он хочет сорок два кабачка?"], ["Nous voulons soixante et onze baguettes.", "Мы хотим семьдесят один багет."], ["Nous ne voulons pas soixante et onze baguettes.", "Мы не хотим семьдесят один багет."], ["Nous voulons soixante et onze baguettes ?", "Мы хотим семьдесят один багет?"], ["Elles veulent quatre-vingt-trois bouteilles de lait.", "Они хотят восемьдесят три бутылки молока."], ["Elles ne veulent pas quatre-vingt-trois bouteilles de lait.", "Они не хотят восемьдесят три бутылки молока."], ["Elles veulent quatre-vingt-trois bouteilles de lait ?", "Они хотят восемьдесят три бутылки молока?"]]}, "2": {fr: "J'ai…", ru: "У меня есть…", phrases: [["J'ai vingt-trois voitures.", "У меня есть двадцать три машины."], ["Je n'ai pas vingt-trois voitures.", "У меня нет двадцати трёх машин."], ["Tu as vingt-trois voitures ?", "У тебя есть двадцать три машины?"], ["J'ai quatre-vingt-trois réservations.", "У меня есть восемьдесят три брони."], ["Je n'ai pas quatre-vingt-trois réservations.", "У меня нет восьмидесяти трёх броней."], ["Tu as quatre-vingt-trois réservations ?", "У тебя есть восемьдесят три брони?"], ["J'ai deux sœurs.", "У меня есть две сестры."], ["Je n'ai pas deux sœurs.", "У меня нет двух сестёр."], ["Tu as deux sœurs ?", "У тебя есть две сестры?"], ["J'ai cinq chats.", "У меня есть пять котов."], ["Je n'ai pas cinq chats.", "У меня нет пяти котов."], ["Tu as cinq chats ?", "У тебя есть пять котов?"], ["Il a soixante et onze euros.", "У него есть семьдесят один евро."], ["Il n'a pas soixante et onze euros.", "У него нет семидесяти одного евро."], ["Il a soixante et onze euros ?", "У него есть семьдесят один евро?"], ["Nous avons deux cent cinquante grammes de beurre.", "У нас есть двести пятьдесят грамм масла."], ["Nous n'avons pas deux cent cinquante grammes de beurre.", "У нас нет двухсот пятидесяти грамм масла."], ["Nous avons deux cent cinquante grammes de beurre ?", "У нас есть двести пятьдесят грамм масла?"], ["Elle a vingt-huit ans.", "Ей двадцать восемь лет."], ["Elle n'a pas vingt-huit ans.", "Ей не двадцать восемь лет."], ["Elle a vingt-huit ans ?", "Ей двадцать восемь лет?"]]}, "3": {fr: "Je prends…", ru: "Я беру…", phrases: [["Je prends un café.", "Я беру кофе."], ["Je ne prends pas de café.", "Я не беру кофе."], ["Tu prends un café ?", "Ты берёшь кофе?"], ["Je prends deux croissants.", "Я беру два круассана."], ["Je ne prends pas deux croissants.", "Я не беру два круассана."], ["Tu prends deux croissants ?", "Ты берёшь два круассана?"], ["Je prends le bus.", "Я еду на автобусе."], ["Je ne prends pas le bus.", "Я не еду на автобусе."], ["Tu prends le bus ?", "Ты едешь на автобусе?"], ["Je prends cette robe.", "Я беру это платье."], ["Je ne prends pas cette robe.", "Я не беру это платье."], ["Tu prends cette robe ?", "Ты берёшь это платье?"], ["Il prend deux verres d'eau.", "Он берёт два стакана воды."], ["Il ne prend pas deux verres d'eau.", "Он не берёт два стакана воды."], ["Il prend deux verres d'eau ?", "Он берёт два стакана воды?"], ["Nous prenons cent trente grammes de fromage.", "Мы берём сто тридцать грамм сыра."], ["Nous ne prenons pas cent trente grammes de fromage.", "Мы не берём сто тридцать грамм сыра."], ["Nous prenons cent trente grammes de fromage ?", "Мы берём сто тридцать грамм сыра?"], ["Elles prennent trois kilos de fraises.", "Они берут три килограмма клубники."], ["Elles ne prennent pas trois kilos de fraises.", "Они не берут три килограмма клубники."], ["Elles prennent trois kilos de fraises ?", "Они берут три килограмма клубники?"]]}, "4": {fr: "Je voudrais…", ru: "Я бы хотела…", phrases: [["Je voudrais un café.", "Я бы хотела кофе."], ["Je ne voudrais pas de café.", "Я бы не хотела кофе."], ["Vous voudriez un café ?", "Вы бы хотели кофе?"], ["Je voudrais de l'eau.", "Я бы хотела воды."], ["Je ne voudrais pas d'eau.", "Я бы не хотела воды."], ["Vous voudriez de l'eau ?", "Вы бы хотели воды?"], ["Je voudrais deux billets.", "Я бы хотела два билета."], ["Je ne voudrais pas deux billets.", "Я бы не хотела два билета."], ["Vous voudriez deux billets ?", "Вы бы хотели два билета?"], ["Je voudrais une table pour deux.", "Я бы хотела столик на двоих."], ["Je ne voudrais pas de table pour deux.", "Я бы не хотела столик на двоих."], ["Vous voudriez une table pour deux ?", "Вы бы хотели столик на двоих?"], ["Il voudrait cent cinquante grammes de jambon.", "Он бы хотел сто пятьдесят грамм ветчины."], ["Il ne voudrait pas cent cinquante grammes de jambon.", "Он бы не хотел сто пятьдесят грамм ветчины."], ["Il voudrait cent cinquante grammes de jambon ?", "Он бы хотел сто пятьдесят грамм ветчины?"], ["Nous voudrions deux boules de glace.", "Мы бы хотели два шарика мороженого."], ["Nous ne voudrions pas deux boules de glace.", "Мы бы не хотели два шарика мороженого."], ["Nous voudrions deux boules de glace ?", "Мы бы хотели два шарика мороженого?"], ["Elles voudraient payer.", "Они бы хотели заплатить."], ["Elles ne voudraient pas payer.", "Они бы не хотели заплатить."], ["Elles voudraient payer ?", "Они бы хотели заплатить?"]]}, "5": {fr: "Je cherche…", ru: "Я ищу…", phrases: [["Je cherche la gare.", "Я ищу вокзал."], ["Je ne cherche pas la gare.", "Я не ищу вокзал."], ["Vous cherchez la gare ?", "Вы ищете вокзал?"], ["Je cherche l'hôtel.", "Я ищу гостиницу."], ["Je ne cherche pas l'hôtel.", "Я не ищу гостиницу."], ["Vous cherchez l'hôtel ?", "Вы ищете гостиницу?"], ["Je cherche une pharmacie.", "Я ищу аптеку."], ["Je ne cherche pas de pharmacie.", "Я не ищу аптеку."], ["Vous cherchez une pharmacie ?", "Вы ищете аптеку?"], ["Je cherche mon sac.", "Я ищу свою сумку."], ["Je ne cherche pas mon sac.", "Я не ищу свою сумку."], ["Vous cherchez votre sac ?", "Вы ищете свою сумку?"], ["Il cherche la chambre trente-deux.", "Он ищет номер тридцать два."], ["Il ne cherche pas la chambre trente-deux.", "Он не ищет номер тридцать два."], ["Il cherche la chambre trente-deux ?", "Он ищет номер тридцать два?"], ["Nous cherchons un café à deux cents mètres.", "Мы ищем кафе в двухстах метрах."], ["Nous ne cherchons pas de café à deux cents mètres.", "Мы не ищем кафе в двухстах метрах."], ["Nous cherchons un café à deux cents mètres ?", "Мы ищем кафе в двухстах метрах?"], ["Elles cherchent un appartement de cinquante mètres carrés.", "Они ищут квартиру в пятьдесят квадратных метров."], ["Elles ne cherchent pas d'appartement de cinquante mètres carrés.", "Они не ищут квартиру в пятьдесят квадратных метров."], ["Elles cherchent un appartement de cinquante mètres carrés ?", "Они ищут квартиру в пятьдесят квадратных метров?"]]}, "6": {fr: "Je peux… / Je ne peux pas…", ru: "Я могу… / Я не могу…", phrases: [["Je peux payer.", "Я могу заплатить."], ["Je ne peux pas payer.", "Я не могу заплатить."], ["Tu peux payer ?", "Ты можешь заплатить?"], ["Je peux venir.", "Я могу прийти."], ["Je ne peux pas venir.", "Я не могу прийти."], ["Tu peux venir ?", "Ты можешь прийти?"], ["Je peux attendre vingt minutes.", "Я могу ждать двадцать минут."], ["Je ne peux pas attendre vingt minutes.", "Я не могу ждать двадцать минут."], ["Tu peux attendre vingt minutes ?", "Ты можешь ждать двадцать минут?"], ["Je peux manger du fromage.", "Я могу есть сыр."], ["Je ne peux pas manger de fromage.", "Я не могу есть сыр."], ["Tu peux manger du fromage ?", "Ты можешь есть сыр?"], ["Il peut avoir un café.", "Он может получить кофе."], ["Il ne peut pas avoir de café.", "Он не может получить кофе."], ["Il peut avoir un café ?", "Он может получить кофе?"], ["Nous pouvons avoir deux boules de glace.", "Мы можем получить два шарика мороженого."], ["Nous ne pouvons pas avoir deux boules de glace.", "Мы не можем получить два шарика мороженого."], ["Nous pouvons avoir deux boules de glace ?", "Мы можем получить два шарика мороженого?"], ["Elles peuvent marcher trois kilomètres.", "Они могут пройти три километра."], ["Elles ne peuvent pas marcher trois kilomètres.", "Они не могут пройти три километра."], ["Elles peuvent marcher trois kilomètres ?", "Они могут пройти три километра?"]]}, "7": {fr: "Je vais + infinitif", ru: "Я собираюсь… (futur proche)", phrases: [["Je vais manger.", "Я собираюсь поесть."], ["Je ne vais pas manger.", "Я не собираюсь есть."], ["Tu vais manger ?", "Ты собираешься поесть?"], ["Je vais payer.", "Я собираюсь заплатить."], ["Je ne vais pas payer.", "Я не собираюсь платить."], ["Tu vais payer ?", "Ты собираешься заплатить?"], ["Je vais acheter deux billets.", "Я собираюсь купить два билета."], ["Je ne vais pas acheter deux billets.", "Я не собираюсь покупать два билета."], ["Tu vais acheter deux billets ?", "Ты собираешься купить два билета?"], ["Je vais attendre trente-cinq minutes.", "Я собираюсь подождать тридцать пять минут."], ["Je ne vais pas attendre trente-cinq minutes.", "Я не собираюсь ждать тридцать пять минут."], ["Tu vais attendre trente-cinq minutes ?", "Ты собираешься подождать тридцать пять минут?"], ["Il va marcher trois kilomètres.", "Он собирается пройти три километра."], ["Il ne va pas marcher trois kilomètres.", "Он не собирается идти три километра."], ["Il va marcher trois kilomètres ?", "Он собирается пройти три километра?"], ["Nous allons courir dix kilomètres.", "Мы собираемся пробежать десять километров."], ["Nous n'allons pas courir dix kilomètres.", "Мы не собираемся бежать десять километров."], ["Nous allons courir dix kilomètres ?", "Мы собираемся пробежать десять километров?"], ["Elles vont dépenser soixante-dix euros.", "Они собираются потратить семьдесят евро."], ["Elles ne vont pas dépenser soixante-dix euros.", "Они не собираются тратить семьдесят евро."], ["Elles vont dépenser soixante-dix euros ?", "Они собираются потратить семьдесят евро?"]]}, "8": {fr: "J'ai + participe passé", ru: "Я (сделала)… (passé composé)", phrases: [["J'ai mangé.", "Я поела."], ["Je n'ai pas mangé.", "Я не ела."], ["Tu as mangé ?", "Ты поела?"], ["J'ai acheté deux billets.", "Я купила два билета."], ["Je n'ai pas acheté deux billets.", "Я не купила два билета."], ["Tu as acheté deux billets ?", "Ты купила два билета?"], ["J'ai dépensé quatre-vingt-dix euros.", "Я потратила девяносто евро."], ["Je n'ai pas dépensé quatre-vingt-dix euros.", "Я не потратила девяносто евро."], ["Tu as dépensé quatre-vingt-dix euros ?", "Ты потратила девяносто евро?"], ["J'ai attendu cinquante-cinq minutes.", "Я ждала пятьдесят пять минут."], ["Je n'ai pas attendu cinquante-cinq minutes.", "Я не ждала пятьдесят пять минут."], ["Tu as attendu cinquante-cinq minutes ?", "Ты ждала пятьдесят пять минут?"], ["Il a marché cinq kilomètres.", "Он прошёл пять километров."], ["Il n'a pas marché cinq kilomètres.", "Он не прошёл пять километров."], ["Il a marché cinq kilomètres ?", "Он прошёл пять километров?"], ["Nous avons commandé une pizza.", "Мы заказали пиццу."], ["Nous n'avons pas commandé de pizza.", "Мы не заказали пиццу."], ["Nous avons commandé une pizza ?", "Мы заказали пиццу?"], ["Elle a oublié son téléphone.", "Она забыла свой телефон."], ["Elle n'a pas oublié son téléphone.", "Она не забыла свой телефон."], ["Elle a oublié son téléphone ?", "Она забыла свой телефон?"]]}, "9": {fr: "Je suis…", ru: "Я (есть)… / Я нахожусь…", phrases: [["Je suis fatiguée.", "Я устала."], ["Je ne suis pas fatiguée.", "Я не устала."], ["Tu es fatiguée ?", "Ты устала?"], ["Je suis en retard.", "Я опаздываю."], ["Je ne suis pas en retard.", "Я не опаздываю."], ["Tu es en retard ?", "Ты опаздываешь?"], ["Je suis libre.", "Я свободна."], ["Je ne suis pas libre.", "Я не свободна."], ["Tu es libre ?", "Ты свободна?"], ["Je suis touriste.", "Я туристка."], ["Je ne suis pas touriste.", "Я не туристка."], ["Tu es touriste ?", "Ты туристка?"], ["Il est fatigué.", "Он устал."], ["Il n'est pas fatigué.", "Он не устал."], ["Il est fatigué ?", "Он устал?"], ["Nous sommes libres.", "Мы свободны."], ["Nous ne sommes pas libres.", "Мы не свободны."], ["Nous sommes libres ?", "Мы свободны?"], ["Elles sont à l'hôtel.", "Они в гостинице."], ["Elles ne sont pas à l'hôtel.", "Они не в гостинице."], ["Elles sont à l'hôtel ?", "Они в гостинице?"]]}, "10": {fr: "Il y a…", ru: "Есть / Здесь есть…", phrases: [["Il y a un café.", "Здесь есть кафе."], ["Il n'y a pas de café.", "Здесь нет кафе."], ["Il y a un café ?", "Здесь есть кафе?"], ["Il y a une banque.", "Здесь есть банк."], ["Il n'y a pas de banque.", "Здесь нет банка."], ["Il y a une banque ?", "Здесь есть банк?"], ["Il y a trois chambres.", "Есть три комнаты."], ["Il n'y a pas trois chambres.", "Нет трёх комнат."], ["Il y a trois chambres ?", "Есть три комнаты?"], ["Il y a une chambre libre.", "Есть свободный номер."], ["Il n'y a pas de chambre libre.", "Нет свободного номера."], ["Il y a une chambre libre ?", "Есть свободный номер?"], ["Il est ici.", "Он здесь."], ["Il n'est pas ici.", "Он не здесь."], ["Il est ici ?", "Он здесь?"], ["Elle est là.", "Она здесь."], ["Elle n'est pas là.", "Она не здесь."], ["Elle est là ?", "Она здесь?"], ["Ils sont là-bas.", "Они там."], ["Ils ne sont pas là-bas.", "Они не там."], ["Ils sont là-bas ?", "Они там?"]]}, "11": {fr: "Dans l'appli — achats", ru: "В приложении — покупки", phrases: [["Ajouter au panier.", "Добавить в корзину."], ["Ne pas ajouter au panier.", "Не добавлять в корзину."], ["Voulez-vous ajouter au panier ?", "Хотите добавить в корзину?"], ["Payer mon achat.", "Оплатить покупку."], ["Ne pas payer mon achat.", "Не оплачивать покупку."], ["Voulez-vous payer votre achat ?", "Хотите оплатить покупку?"], ["Passer la commande.", "Оформить заказ."], ["Ne pas passer la commande.", "Не оформлять заказ."], ["Voulez-vous passer la commande ?", "Хотите оформить заказ?"], ["Rechercher un produit.", "Найти товар."], ["Ne pas rechercher de produit.", "Не искать товар."], ["Voulez-vous rechercher un produit ?", "Хотите найти товар?"], ["Elle a reçu sa commande.", "Она получила свой заказ."], ["Elle n'a pas reçu sa commande.", "Она не получила свой заказ."], ["Elle a reçu sa commande ?", "Она получила свой заказ?"], ["Nous avons payé notre achat.", "Мы оплатили покупку."], ["Nous n'avons pas payé notre achat.", "Мы не оплатили покупку."], ["Nous avons payé notre achat ?", "Мы оплатили покупку?"], ["Ils veulent ajouter au panier.", "Они хотят добавить в корзину."], ["Ils ne veulent pas ajouter au panier.", "Они не хотят добавить в корзину."], ["Ils veulent ajouter au panier ?", "Они хотят добавить в корзину?"]]}, "12": {fr: "Dans l'appli — compte", ru: "В приложении — аккаунт и настройки", phrases: [["Se connecter.", "Войти."], ["Ne pas se connecter.", "Не входить."], ["Voulez-vous vous connecter ?", "Хотите войти?"], ["Créer un compte.", "Создать аккаунт."], ["Ne pas créer de compte.", "Не создавать аккаунт."], ["Voulez-vous créer un compte ?", "Хотите создать аккаунт?"], ["Changer le mot de passe.", "Сменить пароль."], ["Ne pas changer le mot de passe.", "Не менять пароль."], ["Voulez-vous changer le mot de passe ?", "Хотите сменить пароль?"], ["Activer les notifications.", "Включить уведомления."], ["Ne pas activer les notifications.", "Не включать уведомления."], ["Voulez-vous activer les notifications ?", "Хотите включить уведомления?"], ["Il a un compte.", "У него есть аккаунт."], ["Il n'a pas de compte.", "У него нет аккаунта."], ["Il a un compte ?", "У него есть аккаунт?"], ["Nous nous souvenons du mot de passe.", "Мы помним пароль."], ["Nous ne nous souvenons pas du mot de passe.", "Мы не помним пароль."], ["Nous nous souvenons du mot de passe ?", "Мы помним пароль?"], ["Elles veulent des notifications.", "Они хотят уведомления."], ["Elles ne veulent pas de notifications.", "Они не хотят уведомления."], ["Elles veulent des notifications ?", "Они хотят уведомления?"]]}, "13": {fr: "Dans l'appli — boutons et messages", ru: "В приложении — кнопки и сообщения", phrases: [["Valider.", "Подтвердить."], ["Ne pas valider.", "Не подтверждать."], ["Voulez-vous valider ?", "Хотите подтвердить?"], ["Enregistrer.", "Сохранить."], ["Ne pas enregistrer.", "Не сохранять."], ["Voulez-vous enregistrer ?", "Хотите сохранить?"], ["Supprimer.", "Удалить."], ["Ne pas supprimer.", "Не удалять."], ["Voulez-vous supprimer ?", "Хотите удалить?"], ["Mettre à jour l'application.", "Обновить приложение."], ["Ne pas mettre à jour l'application.", "Не обновлять приложение."], ["Voulez-vous mettre à jour l'application ?", "Хотите обновить приложение?"], ["Il comprend.", "Он понимает."], ["Il ne comprend. pas", "Он не понимает."], ["Il comprend ?", "Он понимает?"], ["Nous trouvons le bouton.", "Мы находим кнопку."], ["Nous ne trouvons pas le bouton.", "Мы не находим кнопку."], ["Nous trouvons le bouton ?", "Мы находим кнопку?"], ["Elles comprennent.", "Они понимают."], ["Elles ne comprennent. pas", "Они не понимают."], ["Elles comprennent ?", "Они понимают?"]]}};
+const BUILTIN = {"1": {fr: "Je veux + nombre + nom", ru: "Я хочу + количество + предмет", phrases: [["Je veux une pomme.", "Я хочу одно яблоко."], ["Je ne veux pas de pomme.", "Я не хочу одно яблоко."], ["Tu veux une pomme ?", "Ты хочешь одно яблоко?"], ["Je veux douze crevettes.", "Я хочу двенадцать креветок."], ["Je ne veux pas douze crevettes.", "Я не хочу двенадцать креветок."], ["Tu veux douze crevettes ?", "Ты хочешь двенадцать креветок?"], ["Je veux vingt et un citrons.", "Я хочу двадцать один лимон."], ["Je ne veux pas vingt et un citrons.", "Я не хочу двадцать один лимон."], ["Tu veux vingt et un citrons ?", "Ты хочешь двадцать один лимон?"], ["Je veux trente-six bonbons.", "Я хочу тридцать шесть конфет."], ["Je ne veux pas trente-six bonbons.", "Я не хочу тридцать шесть конфет."], ["Tu veux trente-six bonbons ?", "Ты хочешь тридцать шесть конфет?"], ["Il veut quarante-deux courgettes.", "Он хочет сорок два кабачка."], ["Il ne veut pas quarante-deux courgettes.", "Он не хочет сорок два кабачка."], ["Il veut quarante-deux courgettes ?", "Он хочет сорок два кабачка?"], ["Nous voulons soixante et onze baguettes.", "Мы хотим семьдесят один багет."], ["Nous ne voulons pas soixante et onze baguettes.", "Мы не хотим семьдесят один багет."], ["Nous voulons soixante et onze baguettes ?", "Мы хотим семьдесят один багет?"], ["Elles veulent quatre-vingt-trois bouteilles de lait.", "Они хотят восемьдесят три бутылки молока."], ["Elles ne veulent pas quatre-vingt-trois bouteilles de lait.", "Они не хотят восемьдесят три бутылки молока."], ["Elles veulent quatre-vingt-trois bouteilles de lait ?", "Они хотят восемьдесят три бутылки молока?"]]}, "2": {fr: "J'ai…", ru: "У меня есть…", phrases: [["J'ai vingt-trois voitures.", "У меня есть двадцать три машины."], ["Je n'ai pas vingt-trois voitures.", "У меня нет двадцати трёх машин."], ["Tu as vingt-trois voitures ?", "У тебя есть двадцать три машины?"], ["J'ai quatre-vingt-trois réservations.", "У меня есть восемьдесят три брони."], ["Je n'ai pas quatre-vingt-trois réservations.", "У меня нет восьмидесяти трёх броней."], ["Tu as quatre-vingt-trois réservations ?", "У тебя есть восемьдесят три брони?"], ["J'ai deux sœurs.", "У меня есть две сестры."], ["Je n'ai pas deux sœurs.", "У меня нет двух сестёр."], ["Tu as deux sœurs ?", "У тебя есть две сестры?"], ["J'ai cinq chats.", "У меня есть пять котов."], ["Je n'ai pas cinq chats.", "У меня нет пяти котов."], ["Tu as cinq chats ?", "У тебя есть пять котов?"], ["Il a soixante et onze euros.", "У него есть семьдесят один евро."], ["Il n'a pas soixante et onze euros.", "У него нет семидесяти одного евро."], ["Il a soixante et onze euros ?", "У него есть семьдесят один евро?"], ["Nous avons deux cent cinquante grammes de beurre.", "У нас есть двести пятьдесят грамм масла."], ["Nous n'avons pas deux cent cinquante grammes de beurre.", "У нас нет двухсот пятидесяти грамм масла."], ["Nous avons deux cent cinquante grammes de beurre ?", "У нас есть двести пятьдесят грамм масла?"], ["Elle a vingt-huit ans.", "Ей двадцать восемь лет."], ["Elle n'a pas vingt-huit ans.", "Ей не двадцать восемь лет."], ["Elle a vingt-huit ans ?", "Ей двадцать восемь лет?"]]}, "3": {fr: "Je prends…", ru: "Я беру…", phrases: [["Je prends un café.", "Я беру кофе."], ["Je ne prends pas de café.", "Я не беру кофе."], ["Tu prends un café ?", "Ты берёшь кофе?"], ["Je prends deux croissants.", "Я беру два круассана."], ["Je ne prends pas deux croissants.", "Я не беру два круассана."], ["Tu prends deux croissants ?", "Ты берёшь два круассана?"], ["Je prends le bus.", "Я еду на автобусе."], ["Je ne prends pas le bus.", "Я не еду на автобусе."], ["Tu prends le bus ?", "Ты едешь на автобусе?"], ["Je prends cette robe.", "Я беру это платье."], ["Je ne prends pas cette robe.", "Я не беру это платье."], ["Tu prends cette robe ?", "Ты берёшь это платье?"], ["Il prend deux verres d'eau.", "Он берёт два стакана воды."], ["Il ne prend pas deux verres d'eau.", "Он не берёт два стакана воды."], ["Il prend deux verres d'eau ?", "Он берёт два стакана воды?"], ["Nous prenons cent trente grammes de fromage.", "Мы берём сто тридцать грамм сыра."], ["Nous ne prenons pas cent trente grammes de fromage.", "Мы не берём сто тридцать грамм сыра."], ["Nous prenons cent trente grammes de fromage ?", "Мы берём сто тридцать грамм сыра?"], ["Elles prennent trois kilos de fraises.", "Они берут три килограмма клубники."], ["Elles ne prennent pas trois kilos de fraises.", "Они не берут три килограмма клубники."], ["Elles prennent trois kilos de fraises ?", "Они берут три килограмма клубники?"]]}, "4": {fr: "Je voudrais…", ru: "Я бы хотела…", phrases: [["Je voudrais un café.", "Я бы хотела кофе."], ["Je ne voudrais pas de café.", "Я бы не хотела кофе."], ["Vous voudriez un café ?", "Вы бы хотели кофе?"], ["Je voudrais de l'eau.", "Я бы хотела воды."], ["Je ne voudrais pas d'eau.", "Я бы не хотела воды."], ["Vous voudriez de l'eau ?", "Вы бы хотели воды?"], ["Je voudrais deux billets.", "Я бы хотела два билета."], ["Je ne voudrais pas deux billets.", "Я бы не хотела два билета."], ["Vous voudriez deux billets ?", "Вы бы хотели два билета?"], ["Je voudrais une table pour deux.", "Я бы хотела столик на двоих."], ["Je ne voudrais pas de table pour deux.", "Я бы не хотела столик на двоих."], ["Vous voudriez une table pour deux ?", "Вы бы хотели столик на двоих?"], ["Il voudrait cent cinquante grammes de jambon.", "Он бы хотел сто пятьдесят грамм ветчины."], ["Il ne voudrait pas cent cinquante grammes de jambon.", "Он бы не хотел сто пятьдесят грамм ветчины."], ["Il voudrait cent cinquante grammes de jambon ?", "Он бы хотел сто пятьдесят грамм ветчины?"], ["Nous voudrions deux boules de glace.", "Мы бы хотели два шарика мороженого."], ["Nous ne voudrions pas deux boules de glace.", "Мы бы не хотели два шарика мороженого."], ["Nous voudrions deux boules de glace ?", "Мы бы хотели два шарика мороженого?"], ["Elles voudraient payer.", "Они бы хотели заплатить."], ["Elles ne voudraient pas payer.", "Они бы не хотели заплатить."], ["Elles voudraient payer ?", "Они бы хотели заплатить?"]]}, "5": {fr: "Je cherche…", ru: "Я ищу…", phrases: [["Je cherche la gare.", "Я ищу вокзал."], ["Je ne cherche pas la gare.", "Я не ищу вокзал."], ["Vous cherchez la gare ?", "Вы ищете вокзал?"], ["Je cherche l'hôtel.", "Я ищу гостиницу."], ["Je ne cherche pas l'hôtel.", "Я не ищу гостиницу."], ["Vous cherchez l'hôtel ?", "Вы ищете гостиницу?"], ["Je cherche une pharmacie.", "Я ищу аптеку."], ["Je ne cherche pas de pharmacie.", "Я не ищу аптеку."], ["Vous cherchez une pharmacie ?", "Вы ищете аптеку?"], ["Je cherche mon sac.", "Я ищу свою сумку."], ["Je ne cherche pas mon sac.", "Я не ищу свою сумку."], ["Vous cherchez votre sac ?", "Вы ищете свою сумку?"], ["Il cherche la chambre trente-deux.", "Он ищет номер тридцать два."], ["Il ne cherche pas la chambre trente-deux.", "Он не ищет номер тридцать два."], ["Il cherche la chambre trente-deux ?", "Он ищет номер тридцать два?"], ["Nous cherchons un café à deux cents mètres.", "Мы ищем кафе в двухстах метрах."], ["Nous ne cherchons pas de café à deux cents mètres.", "Мы не ищем кафе в двухстах метрах."], ["Nous cherchons un café à deux cents mètres ?", "Мы ищем кафе в двухстах метрах?"], ["Elles cherchent un appartement de cinquante mètres carrés.", "Они ищут квартиру в пятьдесят квадратных метров."], ["Elles ne cherchent pas d'appartement de cinquante mètres carrés.", "Они не ищут квартиру в пятьдесят квадратных метров."], ["Elles cherchent un appartement de cinquante mètres carrés ?", "Они ищут квартиру в пятьдесят квадратных метров?"]]}, "6": {fr: "Je peux… / Je ne peux pas…", ru: "Я могу… / Я не могу…", phrases: [["Je peux payer.", "Я могу заплатить."], ["Je ne peux pas payer.", "Я не могу заплатить."], ["Tu peux payer ?", "Ты можешь заплатить?"], ["Je peux venir.", "Я могу прийти."], ["Je ne peux pas venir.", "Я не могу прийти."], ["Tu peux venir ?", "Ты можешь прийти?"], ["Je peux attendre vingt minutes.", "Я могу ждать двадцать минут."], ["Je ne peux pas attendre vingt minutes.", "Я не могу ждать двадцать минут."], ["Tu peux attendre vingt minutes ?", "Ты можешь ждать двадцать минут?"], ["Je peux manger du fromage.", "Я могу есть сыр."], ["Je ne peux pas manger de fromage.", "Я не могу есть сыр."], ["Tu peux manger du fromage ?", "Ты можешь есть сыр?"], ["Il peut avoir un café.", "Он может получить кофе."], ["Il ne peut pas avoir de café.", "Он не может получить кофе."], ["Il peut avoir un café ?", "Он может получить кофе?"], ["Nous pouvons avoir deux boules de glace.", "Мы можем получить два шарика мороженого."], ["Nous ne pouvons pas avoir deux boules de glace.", "Мы не можем получить два шарика мороженого."], ["Nous pouvons avoir deux boules de glace ?", "Мы можем получить два шарика мороженого?"], ["Elles peuvent marcher trois kilomètres.", "Они могут пройти три километра."], ["Elles ne peuvent pas marcher trois kilomètres.", "Они не могут пройти три километра."], ["Elles peuvent marcher trois kilomètres ?", "Они могут пройти три километра?"]]}, "7": {fr: "Je vais + infinitif", ru: "Я собираюсь… (futur proche)", phrases: [["Je vais manger.", "Я собираюсь поесть."], ["Je ne vais pas manger.", "Я не собираюсь есть."], ["Tu vas manger ?", "Ты собираешься поесть?"], ["Je vais payer.", "Я собираюсь заплатить."], ["Je ne vais pas payer.", "Я не собираюсь платить."], ["Tu vas payer ?", "Ты собираешься заплатить?"], ["Je vais acheter deux billets.", "Я собираюсь купить два билета."], ["Je ne vais pas acheter deux billets.", "Я не собираюсь покупать два билета."], ["Tu vas acheter deux billets ?", "Ты собираешься купить два билета?"], ["Je vais attendre trente-cinq minutes.", "Я собираюсь подождать тридцать пять минут."], ["Je ne vais pas attendre trente-cinq minutes.", "Я не собираюсь ждать тридцать пять минут."], ["Tu vas attendre trente-cinq minutes ?", "Ты собираешься подождать тридцать пять минут?"], ["Il va marcher trois kilomètres.", "Он собирается пройти три километра."], ["Il ne va pas marcher trois kilomètres.", "Он не собирается идти три километра."], ["Il va marcher trois kilomètres ?", "Он собирается пройти три километра?"], ["Nous allons courir dix kilomètres.", "Мы собираемся пробежать десять километров."], ["Nous n'allons pas courir dix kilomètres.", "Мы не собираемся бежать десять километров."], ["Nous allons courir dix kilomètres ?", "Мы собираемся пробежать десять километров?"], ["Elles vont dépenser soixante-dix euros.", "Они собираются потратить семьдесят евро."], ["Elles ne vont pas dépenser soixante-dix euros.", "Они не собираются тратить семьдесят евро."], ["Elles vont dépenser soixante-dix euros ?", "Они собираются потратить семьдесят евро?"]]}, "8": {fr: "J'ai + participe passé", ru: "Я (сделала)… (passé composé)", phrases: [["J'ai mangé.", "Я поела."], ["Je n'ai pas mangé.", "Я не ела."], ["Tu as mangé ?", "Ты поела?"], ["J'ai acheté deux billets.", "Я купила два билета."], ["Je n'ai pas acheté deux billets.", "Я не купила два билета."], ["Tu as acheté deux billets ?", "Ты купила два билета?"], ["J'ai dépensé quatre-vingt-dix euros.", "Я потратила девяносто евро."], ["Je n'ai pas dépensé quatre-vingt-dix euros.", "Я не потратила девяносто евро."], ["Tu as dépensé quatre-vingt-dix euros ?", "Ты потратила девяносто евро?"], ["J'ai attendu cinquante-cinq minutes.", "Я ждала пятьдесят пять минут."], ["Je n'ai pas attendu cinquante-cinq minutes.", "Я не ждала пятьдесят пять минут."], ["Tu as attendu cinquante-cinq minutes ?", "Ты ждала пятьдесят пять минут?"], ["Il a marché cinq kilomètres.", "Он прошёл пять километров."], ["Il n'a pas marché cinq kilomètres.", "Он не прошёл пять километров."], ["Il a marché cinq kilomètres ?", "Он прошёл пять километров?"], ["Nous avons commandé une pizza.", "Мы заказали пиццу."], ["Nous n'avons pas commandé de pizza.", "Мы не заказали пиццу."], ["Nous avons commandé une pizza ?", "Мы заказали пиццу?"], ["Elle a oublié son téléphone.", "Она забыла свой телефон."], ["Elle n'a pas oublié son téléphone.", "Она не забыла свой телефон."], ["Elle a oublié son téléphone ?", "Она забыла свой телефон?"]]}, "9": {fr: "Je suis…", ru: "Я (есть)… / Я нахожусь…", phrases: [["Je suis fatiguée.", "Я устала."], ["Je ne suis pas fatiguée.", "Я не устала."], ["Tu es fatiguée ?", "Ты устала?"], ["Je suis en retard.", "Я опаздываю."], ["Je ne suis pas en retard.", "Я не опаздываю."], ["Tu es en retard ?", "Ты опаздываешь?"], ["Je suis libre.", "Я свободна."], ["Je ne suis pas libre.", "Я не свободна."], ["Tu es libre ?", "Ты свободна?"], ["Je suis touriste.", "Я туристка."], ["Je ne suis pas touriste.", "Я не туристка."], ["Tu es touriste ?", "Ты туристка?"], ["Il est fatigué.", "Он устал."], ["Il n'est pas fatigué.", "Он не устал."], ["Il est fatigué ?", "Он устал?"], ["Nous sommes libres.", "Мы свободны."], ["Nous ne sommes pas libres.", "Мы не свободны."], ["Nous sommes libres ?", "Мы свободны?"], ["Elles sont à l'hôtel.", "Они в гостинице."], ["Elles ne sont pas à l'hôtel.", "Они не в гостинице."], ["Elles sont à l'hôtel ?", "Они в гостинице?"]]}, "10": {fr: "Il y a…", ru: "Есть / Здесь есть…", phrases: [["Il y a un café.", "Здесь есть кафе."], ["Il n'y a pas de café.", "Здесь нет кафе."], ["Il y a un café ?", "Здесь есть кафе?"], ["Il y a une banque.", "Здесь есть банк."], ["Il n'y a pas de banque.", "Здесь нет банка."], ["Il y a une banque ?", "Здесь есть банк?"], ["Il y a trois chambres.", "Есть три комнаты."], ["Il n'y a pas trois chambres.", "Нет трёх комнат."], ["Il y a trois chambres ?", "Есть три комнаты?"], ["Il y a une chambre libre.", "Есть свободный номер."], ["Il n'y a pas de chambre libre.", "Нет свободного номера."], ["Il y a une chambre libre ?", "Есть свободный номер?"], ["Il est ici.", "Он здесь."], ["Il n'est pas ici.", "Он не здесь."], ["Il est ici ?", "Он здесь?"], ["Elle est là.", "Она здесь."], ["Elle n'est pas là.", "Она не здесь."], ["Elle est là ?", "Она здесь?"], ["Ils sont là-bas.", "Они там."], ["Ils ne sont pas là-bas.", "Они не там."], ["Ils sont là-bas ?", "Они там?"]]}, "11": {fr: "Dans l'appli — achats", ru: "В приложении — покупки", phrases: [["Ajouter au panier.", "Добавить в корзину."], ["Ne pas ajouter au panier.", "Не добавлять в корзину."], ["Voulez-vous ajouter au panier ?", "Хотите добавить в корзину?"], ["Payer mon achat.", "Оплатить покупку."], ["Ne pas payer mon achat.", "Не оплачивать покупку."], ["Voulez-vous payer votre achat ?", "Хотите оплатить покупку?"], ["Passer la commande.", "Оформить заказ."], ["Ne pas passer la commande.", "Не оформлять заказ."], ["Voulez-vous passer la commande ?", "Хотите оформить заказ?"], ["Rechercher un produit.", "Найти товар."], ["Ne pas rechercher de produit.", "Не искать товар."], ["Voulez-vous rechercher un produit ?", "Хотите найти товар?"], ["Elle a reçu sa commande.", "Она получила свой заказ."], ["Elle n'a pas reçu sa commande.", "Она не получила свой заказ."], ["Elle a reçu sa commande ?", "Она получила свой заказ?"], ["Nous avons payé notre achat.", "Мы оплатили покупку."], ["Nous n'avons pas payé notre achat.", "Мы не оплатили покупку."], ["Nous avons payé notre achat ?", "Мы оплатили покупку?"], ["Ils veulent ajouter au panier.", "Они хотят добавить в корзину."], ["Ils ne veulent pas ajouter au panier.", "Они не хотят добавить в корзину."], ["Ils veulent ajouter au panier ?", "Они хотят добавить в корзину?"]]}, "12": {fr: "Dans l'appli — compte", ru: "В приложении — аккаунт и настройки", phrases: [["Se connecter.", "Войти."], ["Ne pas se connecter.", "Не входить."], ["Voulez-vous vous connecter ?", "Хотите войти?"], ["Créer un compte.", "Создать аккаунт."], ["Ne pas créer de compte.", "Не создавать аккаунт."], ["Voulez-vous créer un compte ?", "Хотите создать аккаунт?"], ["Changer le mot de passe.", "Сменить пароль."], ["Ne pas changer le mot de passe.", "Не менять пароль."], ["Voulez-vous changer le mot de passe ?", "Хотите сменить пароль?"], ["Activer les notifications.", "Включить уведомления."], ["Ne pas activer les notifications.", "Не включать уведомления."], ["Voulez-vous activer les notifications ?", "Хотите включить уведомления?"], ["Il a un compte.", "У него есть аккаунт."], ["Il n'a pas de compte.", "У него нет аккаунта."], ["Il a un compte ?", "У него есть аккаунт?"], ["Nous nous souvenons du mot de passe.", "Мы помним пароль."], ["Nous ne nous souvenons pas du mot de passe.", "Мы не помним пароль."], ["Nous nous souvenons du mot de passe ?", "Мы помним пароль?"], ["Elles veulent des notifications.", "Они хотят уведомления."], ["Elles ne veulent pas de notifications.", "Они не хотят уведомления."], ["Elles veulent des notifications ?", "Они хотят уведомления?"]]}, "13": {fr: "Dans l'appli — boutons et messages", ru: "В приложении — кнопки и сообщения", phrases: [["Valider.", "Подтвердить."], ["Ne pas valider.", "Не подтверждать."], ["Voulez-vous valider ?", "Хотите подтвердить?"], ["Enregistrer.", "Сохранить."], ["Ne pas enregistrer.", "Не сохранять."], ["Voulez-vous enregistrer ?", "Хотите сохранить?"], ["Supprimer.", "Удалить."], ["Ne pas supprimer.", "Не удалять."], ["Voulez-vous supprimer ?", "Хотите удалить?"], ["Mettre à jour l'application.", "Обновить приложение."], ["Ne pas mettre à jour l'application.", "Не обновлять приложение."], ["Voulez-vous mettre à jour l'application ?", "Хотите обновить приложение?"], ["Il comprend.", "Он понимает."], ["Il ne comprend pas.", "Он не понимает."], ["Il comprend ?", "Он понимает?"], ["Nous trouvons le bouton.", "Мы находим кнопку."], ["Nous ne trouvons pas le bouton.", "Мы не находим кнопку."], ["Nous trouvons le bouton ?", "Мы находим кнопку?"], ["Elles comprennent.", "Они понимают."], ["Elles ne comprennent pas.", "Они не понимают."], ["Elles comprennent ?", "Они понимают?"]]}};
 /* ---------- теория в начале каждого уровня (каждое правило с новой строки) ---------- */
 const THEORY={
 1:{t:"Je veux + число + предмет",intro:"<b>Je veux</b> значит «я хочу». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
@@ -430,20 +437,20 @@ const STAGES = [
   {key:"rep", tab:"🎧 Écoute & répète", fr:"Écoute et répète.", ru:"Послушай и повтори каждую фразу."},
   {key:"ass", tab:"🔗 Associe", fr:"Associe.", ru:"Выбери правильный перевод."},
   {key:"dis", tab:"🇷🇺 Dis-le", fr:"Dis-le en français.", ru:"Скажи это по-французски."},
-  {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила."},
-  {key:"fin", tab:"🏁 Test final", fr:"Le test final !", ru:"Финальная проверка. Скажи по-французски все фразы уровня."}
+  {key:"fin", tab:"✍️ Dictée", fr:"La dictée !", ru:"Послушай фразу и впиши пропущенное слово."},
+  {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила. Это последний этап уровня."}
 ];
 // повтор по разделам: в каждом только карточки, отложенные именно в этом разделе
 const REV_SUBS = [
   {key:"rev_ass", tab:"🔗 Associe", src:"ass"},
   {key:"rev_dis", tab:"🇷🇺 Dis-le", src:"dis"},
-  {key:"rev_fin", tab:"🏁 Test final", src:"fin"}
+  {key:"rev_fin", tab:"✍️ Dictée", src:"fin"}
 ];
 const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:6, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[]}, won:false});
+const fresh = () => ({v:7, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[]}, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
@@ -454,9 +461,17 @@ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
     ["ass","dis","fin"].forEach(k=>{ st.fg[k]=st.fg[k].filter(i=>i<12); });
     st.forgot=[...new Set([...st.fg.ass,...st.fg.dis,...st.fg.fin])].sort((a,b)=>a-b); st.order=null; st.v=6; return st;
   };
-  Object.keys(levelsSaved).forEach(n=>{ levelsSaved[n]=upgrade(levelsSaved[n]); });
+  const upgrade6=st=>{ // версия 6 -> 7: финальный тест заменён диктантом, а «Повтор» стал последним этапом
+    if(!st || st.v!==6) return st;
+    st.done={...fresh().done,...st.done}; st.fg={ass:[],dis:[],fin:[],...st.fg}; st.again={rev_ass:[],rev_dis:[],rev_fin:[],...st.again}; st.tail={rev_ass:[],rev_dis:[],rev_fin:[],...st.tail};
+    st.unlocked=Math.min(st.unlocked,3); st.view=st.view===3?4:st.view===4?3:st.view;
+    st.done.fin=[]; st.done.rev_fin=[]; st.fg.fin=[]; st.again.rev_fin=[]; st.tail.rev_fin=[];
+    st.forgot=[...new Set([...st.fg.ass,...st.fg.dis])].sort((a,b)=>a-b); st.order=null; st.revKey=""; st.v=7; return st;
+  };
+  Object.keys(levelsSaved).forEach(n=>{ levelsSaved[n]=upgrade6(upgrade(levelsSaved[n])); });
   if(s.state && s.state.v===5) s.state=upgrade(s.state);
-  if(s.state && s.state.v===6){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; }
+  if(s.state && s.state.v===6) s.state=upgrade6(s.state);
+  if(s.state && s.state.v===7){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; } // карточки изменились (21: утверждение, отрицание, вопрос), уровень начинается заново
 } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved})); }catch(e){} }
@@ -627,10 +642,14 @@ function unl(){ return admin ? STAGES.length-1 : state.unlocked; }
 function revDone(){ return doneCount("rev")>=stageCount("rev"); }
 // разделы повтора, в которых есть карточки
 function revSections(){ return REV_SUBS.filter(x=>state.fg[x.src].length); }
-// «Повтор» открывается после «Dis-le», «Test final» — когда нечего повторять или всё повторено
+// «Dictée» открывается после «Dis-le», «Повтор» (последний этап) после «Dictée»
 function syncUnlock(){
-  if(doneCount("dis")<stageCount("dis")) return;
-  state.unlocked = revDone() ? Math.max(state.unlocked,4) : 3;
+  if(doneCount("dis")>=stageCount("dis")) state.unlocked=Math.max(state.unlocked,3);
+  if(doneCount("fin")>=stageCount("fin")) state.unlocked=Math.max(state.unlocked,4);
+}
+// уровень пройден, когда сделана «Dictée» и пройден весь повтор (или повторять нечего)
+function checkWon(){
+  if(!state.won && doneCount("fin")>=stageCount("fin") && revDone()){ state.won=true; save(); toast("Bravo ! Niveau terminé ! 🎉"); }
 }
 // у каждой вкладки свой порядок карточек, он сохраняется на весь уровень
 function range(n){ return Array.from({length:n},(_,i)=>i); }
@@ -659,7 +678,6 @@ function setForgot(idx,on,stage){
   if(on && i<0){ a.push(idx); state.done["rev_"+stage][idx]=false; state.again["rev_"+stage]=state.again["rev_"+stage].filter(x=>x!==idx); }
   if(!on && i>=0) a.splice(i,1);
   syncForgot();
-  if(on && !had){ if(stage!=="fin" && state.unlocked>=4 && !state.won) state.unlocked=3; }
 }
 
 function renderHeader(){
@@ -683,24 +701,24 @@ function renderHeader(){
   });
 }
 
-// за каждую из четырёх вкладок («Écoute & répète», «Associe», «Dis-le», «Test final») одна креветка за уровень
+// за каждую из четырёх вкладок («Écoute & répète», «Associe», «Dis-le», «Dictée») одна креветка за уровень
 function award(k){ if(state.earned[k]) return false; state.earned[k]=true; state.shrimps++; return true; }
 function stageComplete(k){
-  if(k==="fin"){ const got=award("fin"); state.won=true; toast(got?"Bravo ! +1 🦐 Niveau terminé !":"Bravo ! Niveau terminé !"); }
+  if(k==="fin"){
+    const got=award("fin"), before=state.unlocked; syncUnlock();
+    toast(got?"Bravo ! +1 🦐 "+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !"):"Bravo !");
+  }
   else if(k==="rep"||k==="ass"){
     const got=award(k), si=STAGES.findIndex(s=>s.key===k), pre=got?"+1 🦐 ":"";
     if(si+1>state.unlocked){ state.unlocked=si+1; toast("Bravo ! "+pre+"Этап открыт: "+STAGES[si+1].tab); } else if(got) toast("Bravo ! +1 🦐");
   }
   else if(k==="dis"){
     const got=award("dis"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
-    if(state.unlocked>before) toast("Bravo ! "+pre+"Этап открыт: "+STAGES[state.unlocked].tab); else if(got) toast("Bravo ! +1 🦐");
+    if(state.unlocked>before) toast("Bravo ! "+pre+"Этап открыт: "+STAGES[3].tab); else if(got) toast("Bravo ! +1 🦐");
   }
   else if(isRev(k)){
     if(revDone()){
       REV_SUBS.forEach(x=>{ state.again[x.key]=[]; state.tail[x.key]=[]; });
-      if(state.fg.fin.length){ state.fg.fin=[]; syncForgot(); toast("Bravo ! Карточки вернулись в "+STAGES[4].tab); }
-      else { const before=state.unlocked; syncUnlock(); if(state.unlocked>before) toast("Bravo ! Этап открыт: "+STAGES[4].tab); }
-      syncUnlock();
     }
     else toast("Bravo ! Следующий шаг открыт");
   }
@@ -724,7 +742,7 @@ function feedbackHtml(res, said, target, showAnswer, mode){
   const heard='<div class="said"><span class="lbl">'+verb+' :</span> '+res.sHtml+'</div>';
   if(res.ok) return '<div class="fb ok">'+heard+'<div>'+(res.accent?"Presque parfait ! ✅ Vérifie les accents : "+esc(target):"Très bien ! ✅🐾")+'</div>'+
     (res.near?'<div class="note">Les mots orange sont écrits autrement, mais ça sonne pareil. Prononciation acceptée.</div>':"")+'</div>';
-  // когда французский скрыт (Dis-le, повтор, финальный тест), только «неверно» — без подсказок и правильной фразы
+  // когда французский скрыт (Dis-le, повтор), только «неверно» — без подсказок и правильной фразы
   if(showAnswer) return '<div class="fb bad">'+heard+'<div><b>Faux.</b> Essaie encore.</div></div>';
   return '<div class="fb bad">'+heard+
     '<div class="said"><span class="lbl">Il faut :</span> '+res.tHtml+'</div>'+
@@ -795,6 +813,83 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     const mb=document.createElement("button"); mb.className="btn red mic"; mb.textContent="🎤 Parler";
     mb.onclick=()=>listen(mb, said=>handle(said,"speech"), live=>{ fbw.innerHTML='<div class="fb live"><span class="lbl">J\'entends :</span> '+esc(live)+'</div>'; }); actions.appendChild(mb);
   }
+  return el;
+}
+
+
+/* ---------- диктант: слушаем фразу и вписываем пропущенное слово ---------- */
+const GAP_STOP=new Set(["je","tu","il","elle","on","nous","vous","ils","elles","le","la","les","un","une","l","d","j","n","m","t","s","c","qu","ne","à","et","ou","en","y"]);
+const GAP_SMALL=new Set(["pas","de","du","des"]);
+// слово для пропуска выбирается по номеру карточки, поэтому в разных карточках оно разное и не меняется при перезагрузке
+function gapCands(fr){
+  const parts=fr.match(WORD_RE)||[], runs=frRuns(parts), inRun=new Set(); runs.forEach(r=>{ for(let k=r.from;k<=r.to;k++) inRun.add(k); });
+  const cands=[], seen=new Set();
+  const add=(from,to)=>{ const key=parts.slice(from,to+1).join("").toLowerCase(); if(seen.has(key)) return; seen.add(key); cands.push({from,to,key}); };
+  runs.forEach(r=>{ if(r.value>=2) add(r.from,r.to); });
+  parts.forEach((p,i)=>{ if(!isWord(p)||inRun.has(i)) return; const lw=p.toLowerCase(); if(GAP_STOP.has(lw)) return; if(GAP_SMALL.has(lw)||lw.length>=2) add(i,i); });
+  if(!cands.length){ const w=parts.map((p,i)=>isWord(p)?i:-1).filter(i=>i>=0); if(!w.length) return {parts,cands:[]}; const i=w[w.length-1]; cands.push({from:i,to:i,key:parts[i].toLowerCase()}); }
+  const extra=[]; parts.forEach((p,i)=>{ const lw=p.toLowerCase(); if(isWord(p)&&p.length>=2&&!seen.has(lw)&&!inRun.has(i)){ seen.add(lw); extra.push({from:i,to:i,key:lw}); } });
+  return {parts,cands,extra};
+}
+function pickGap(fr,idx){
+  // карточки идут тройками (утверждение, отрицание, вопрос). Слова выбираются по очереди и не повторяются внутри тройки.
+  // Частые слова (veux, pas) берутся в последнюю очередь, чтобы пропуск не был всегда один и тот же.
+  const d=levelData(state.level), g0=idx-idx%3, used=new Set(); let res=null;
+  const COMMON=new Set(["pas","veux","veut","peux","peut","voudrais","ai","as","a","suis","est","sont","fais","vais","va","avez","avons","est-ce","de","du","des","d"]);
+  for(let j=g0;j<=idx;j++){
+    const src=j===idx?fr:(d&&d.phrases[j]?d.phrases[j][0]:fr), {parts,cands,extra}=gapCands(src);
+    if(!cands.length){ if(j===idx) return null; continue; }
+    const h=((Math.floor(j/3)+1)*2654435761 + state.level*40503 + (j%3)*97)>>>0;
+    const fresh=cands.filter(c=>!used.has(c.key)), rare=fresh.filter(c=>!COMMON.has(c.key));
+    const spare=extra.filter(c=>!used.has(c.key)), pool=rare.length?rare:(fresh.length?fresh:(spare.length?spare:cands));
+    const c=pool[h%pool.length]; used.add(c.key);
+    if(j===idx) res={before:parts.slice(0,c.from).join(""), word:parts.slice(c.from,c.to+1).join(""), after:parts.slice(c.to+1).join("")};
+  }
+  return res;
+}
+function dictNorm(x){ return x.trim().toLowerCase().replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/\s+/g," "); }
+function dictCheck(ans,word){ const a=dictNorm(ans), w=dictNorm(word); if(a===w) return "ok"; if(a && deaccent(a)===deaccent(w)) return "accent"; return false; }
+function dictItem(idx, fr, ru, k, n){
+  const isAgain = k==="rev_fin" && state.again.rev_fin.indexOf(idx)>=0;
+  const isForgot = (k==="fin" && state.fg.fin.indexOf(idx)>=0) || isAgain, done=!!state.done[k][idx], settled=done||isForgot;
+  const g=pickGap(fr,idx)||{before:"",word:fr,after:""};
+  const el=document.createElement("article"); el.className="item sp dict"+(isForgot?" forgot":done?" done":"");
+  const gapHtml=settled ? '<span class="gapword">'+esc(g.word)+'</span>' : '<span class="gap" role="img" aria-label="пропущенное слово"></span>';
+  el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":done?"✓":(n||idx+1))+'</div><div class="texts">'+
+    '<div class="fr dictfr" lang="fr">'+esc(g.before)+gapHtml+esc(g.after)+'</div>'+(settled?'<div class="ru">'+esc(ru)+'</div>':'')+'</div></div><div class="actions"></div><div class="fbwrap"></div>';
+  const actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
+  actions.appendChild(listenRow(fr));
+  const refresh=(note)=>{
+    if(!el.isConnected) return;
+    if(doneCount(k)>=stageCount(k)){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+    const fresh=dictItem(idx,fr,ru,k,n); el.replaceWith(fresh); if(note) fresh.querySelector(".fbwrap").innerHTML=note;
+  };
+  // «Je ne sais plus»
+  const fg=document.createElement("label"); fg.className="known forgot-mark";
+  fg.innerHTML='<input type="checkbox"> Je ne sais plus';
+  const fc=fg.querySelector("input"); fc.checked=isForgot;
+  fc.onchange=()=>{
+    if(k==="rev_fin"){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; renderMain(); renderHeader(); window.scrollTo(0,y); return; }
+    if(fc.checked){ setForgot(idx,true,"fin"); if(done){ save(); renderHeader(); } else markDone("fin",idx,true); }
+    else { setForgot(idx,false,"fin"); unmarkDone("fin",idx); }
+    refresh();
+  };
+  const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
+  el.querySelector(".item-top").appendChild(marks);
+  if(isAgain) fbw.innerHTML='<p class="hint">Запомни слово и сними отметку «Je ne sais plus», чтобы написать его ещё раз. Карточка вернётся в конец списка.</p>';
+  if(settled) return el;
+  const row=document.createElement("div"); row.className="dictrow";
+  row.innerHTML='<input type="text" lang="fr" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Пропущенное слово" aria-label="Пропущенное слово"><button type="button" class="btn ghost">OK</button>';
+  const inp=row.querySelector("input");
+  const go=()=>{
+    const r=dictCheck(inp.value,g.word);
+    if(!r){ fbw.innerHTML='<div class="fb bad">'+(inp.value.trim()?'<div class="said"><span class="lbl">Tu as écrit :</span> '+esc(inp.value.trim())+'</div>':"")+'<div><b>Faux.</b> Essaie encore.</div></div>'; inp.focus(); return; }
+    if(k==="rev_fin") setAgain(k,idx,false);
+    markDone(k,idx);
+    refresh(r==="accent" ? '<div class="fb ok">Presque parfait ! ✅ Vérifie les accents : <b>'+esc(g.word)+'</b></div>' : '<div class="fb ok">Très bien ! ✅🐾</div>');
+  };
+  row.querySelector("button").onclick=go; inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } };
+  actions.appendChild(row);
   return el;
 }
 
@@ -1131,6 +1226,7 @@ function ruShrimp(n){ return n%10===1&&n%100!==11 ? "креветку" : (n%10>=
 function renderMain(){
   const m=$("main"); m.innerHTML="";
   const d=levelData(state.level);
+  if(d) checkWon();
   if(state.won){
     const earnedN=Object.values(state.earned).filter(Boolean).length;
     const w=document.createElement("section"); w.className="panel win";
@@ -1150,17 +1246,11 @@ function renderMain(){
   if(k==="rep") order("rep").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"rep",false,n+1)));
   if(k==="ass") order("ass").forEach((i,n)=>list.appendChild(assItem(i,d,"ass",n+1)));
   if(k==="dis") order("dis").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"dis",true,n+1)));
-  if(k==="fin") order("fin").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"fin",true,n+1)));
+  if(k==="fin") order("fin").forEach((i,n)=>list.appendChild(dictItem(i,d.phrases[i][0],d.phrases[i][1],"fin",n+1)));
   m.appendChild(list);
-  if(k==="fin" && state.fg.fin.length){
-    const rv=document.createElement("div"); rv.style.marginTop="14px";
-    rv.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Отложено карточек '+state.fg.fin.length+'. Дальше: '+esc(STAGES[3].tab)+'</button>';
-    rv.querySelector("button").onclick=()=>{ state.view=3; state.revKey="rev_fin"; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
-    m.appendChild(rv);
-  }
   const tot=stageCount(k);
-  if(doneCount(k)>=tot && state.view<3){
-    const to = state.view===2 && !state.forgot.length ? 4 : state.view+1;
+  if(doneCount(k)>=tot && state.view<4){
+    const to=state.view+1;
     const nx=document.createElement("div"); nx.style.marginTop="14px";
     nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Этап пройден! Дальше: '+esc(STAGES[to].tab)+'</button>';
     nx.querySelector("button").onclick=()=>{state.view=to;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
@@ -1171,8 +1261,7 @@ function renderMain(){
 function renderReview(m,d){
   if(!state.forgot.length){
     const w=document.createElement("section"); w.className="panel win";
-    w.innerHTML='<div class="big">🐈✨</div><h2 style="margin:.3em 0">Повторять нечего!</h2><p>Ты не откладывала карточки. Можно идти на финальный тест.</p><div style="margin-top:14px"><button class="btn violet" id="goFin">Дальше: '+esc(STAGES[4].tab)+'</button></div>';
-    w.querySelector("#goFin").onclick=()=>{ state.view=4; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+    w.innerHTML='<div class="big">🐈✨</div><h2 style="margin:.3em 0">Повторять нечего!</h2><p>Ты не откладывала карточки. Повтор последний этап, поэтому после «Dictée» уровень засчитывается сам.</p>';
     m.appendChild(w); return;
   }
   const secs=revSections();
@@ -1197,16 +1286,14 @@ function renderReview(m,d){
   const tail=state.tail[key].filter(i=>inSec.indexOf(i)>=0);
   [...inSec.filter(i=>tail.indexOf(i)<0), ...tail].forEach((i,n)=>{
     const [fr,ru]=d.phrases[i];
-    list.appendChild(key==="rev_ass" ? assItem(i,d,key,n+1) : speechItem(i,fr,ru,key,true,n+1));
+    list.appendChild(key==="rev_ass" ? assItem(i,d,key,n+1) : key==="rev_fin" ? dictItem(i,fr,ru,key,n+1) : speechItem(i,fr,ru,key,true,n+1));
   });
   m.appendChild(list);
-  if(doneCount(key)>=stageCount(key)){
-    const nextSec=secs.find(x=>doneCount(x.key)<stageCount(x.key)), nx=document.createElement("div"); nx.style.marginTop="14px";
-    nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">'+(nextSec?"Раздел пройден! Дальше: "+esc(nextSec.tab):"Всё повторено! Дальше: "+esc(STAGES[4].tab))+'</button>';
-    nx.querySelector("button").onclick=()=>{
-      if(nextSec) state.revKey=nextSec.key; else state.view=4;
-      save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"});
-    };
+  const nextSec=secs.find(x=>doneCount(x.key)<stageCount(x.key));
+  if(doneCount(key)>=stageCount(key) && nextSec){
+    const nx=document.createElement("div"); nx.style.marginTop="14px";
+    nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Раздел пройден! Дальше: '+esc(nextSec.tab)+'</button>';
+    nx.querySelector("button").onclick=()=>{ state.revKey=nextSec.key; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
     m.appendChild(nx);
   }
 }
