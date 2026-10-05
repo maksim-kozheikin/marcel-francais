@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Français avec Marcel · версия 7 (диктант), выкладка 2026-10-05 -->
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -1150,9 +1149,11 @@ function pickDistractors(idx,d,toRu,want){
   }
   return picks;
 }
+const assMemo={};   // что нажали в Associe и в каком порядке стояли варианты, чтобы после неверного ответа показать выбор и правильный вариант
 function assItem(idx, d, k, n){
   k=k||"ass"; const [fr,ru]=d.phrases[idx], toRu = idx%2===0 && distinctCount(similarVariants(ru,true),ru)>=3, col=toRu?1:0, right=d.phrases[idx][col];
-  const opts=shuffle([{i:idx, text:right},...pickDistractors(idx,d,toRu)]);
+  const memo=assMemo[state.level+":"+k+":"+idx];
+  const opts=memo?memo.opts:shuffle([{i:idx, text:right},...pickDistractors(idx,d,toRu)]);
   const pos=n, isAgain = k==="rev_ass" && state.again.rev_ass.indexOf(idx)>=0, isForgot = (k==="ass" && state.fg.ass.indexOf(idx)>=0) || isAgain;
   const el=document.createElement("article"); el.className="item sp"+(isForgot?" forgot":state.done[k][idx]?" done":"");
   el.innerHTML='<div class="item-top"><div class="num">'+(isForgot?"↻":state.done[k][idx]?"✓":(n||idx+1))+'</div><div class="texts"><div class="q"'+(toRu?' lang="fr"':"")+'>'+linesHtml(toRu?fr:ru)+'</div></div></div><div class="opts"></div><div class="fbwrap"></div>';
@@ -1163,7 +1164,7 @@ function assItem(idx, d, k, n){
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
       if(fc.checked){ setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true); }
-      else { setForgot(idx,false,"ass"); unmarkDone("ass", idx); }
+      else { setForgot(idx,false,"ass"); unmarkDone("ass", idx); delete assMemo[state.level+":ass:"+idx]; }
       if(!el.isConnected) return;
       if(doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
       const fresh=assItem(idx,d,k,pos); el.replaceWith(fresh); const c=fresh.querySelector(".forgot-mark input"); if(c) c.focus({preventScroll:true});
@@ -1180,14 +1181,17 @@ function assItem(idx, d, k, n){
     el.querySelector(".item-top").appendChild(marks);
     if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">Запомни ответ и сними отметку «Je ne sais plus», чтобы выбрать его ещё раз. Карточка вернётся в конец списка.</p>';
   }
+  if(memo && isForgot && k==="ass") el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Faux !</b> Ton choix est en rouge, la bonne réponse est en vert. La carte part en révision 🔁</div>';
   const box=el.querySelector(".opts");
   opts.forEach((o,n)=>{
     const b=document.createElement("button"); b.className="opt"; b.innerHTML=String.fromCharCode(65+n)+". "+linesHtml(o.text);
     if(state.done[k][idx] || isAgain){ b.disabled=true; if(o.i===idx) b.classList.add("right"); }
+    if(memo && isForgot && k==="ass" && o.text===memo.picked && o.i!==idx) b.classList.add("no");
     b.onclick=()=>{
       if(o.i===idx){ b.classList.add("right"); box.querySelectorAll(".opt").forEach(x=>x.disabled=true);
         el.querySelector(".fbwrap").innerHTML='<div class="fb ok">Très bien ! ✅</div>'; el.classList.add("done"); el.querySelector(".num").textContent="✓"; markDone(k, idx); }
       else if(k==="ass"){   // неверный вариант на вкладке «Associe» сразу отправляет карточку на повтор
+        assMemo[state.level+":ass:"+idx]={opts,picked:o.text};
         setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true);
         toast("Faux ! La carte part en révision 🔁");
         if(!el.isConnected) return;
