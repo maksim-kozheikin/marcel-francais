@@ -436,21 +436,21 @@ const PLAN = [null,null,null,
 const STAGES = [
   {key:"rep", tab:"🎧 Écoute & répète", fr:"Écoute et répète.", ru:"Послушай и повтори каждую фразу."},
   {key:"ass", tab:"🔗 Associe", fr:"Associe.", ru:"Выбери правильный перевод."},
-  {key:"dis", tab:"🇷🇺 Dis-le", fr:"Dis-le en français.", ru:"Скажи это по-французски."},
   {key:"fin", tab:"✍️ Dictée", fr:"La dictée !", ru:"Послушай фразу и впиши пропущенное слово."},
+  {key:"dis", tab:"🇷🇺 Dis-le", fr:"Dis-le en français.", ru:"Скажи это по-французски."},
   {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила. Это последний этап уровня."}
 ];
 // повтор по разделам: в каждом только карточки, отложенные именно в этом разделе
 const REV_SUBS = [
   {key:"rev_ass", tab:"🔗 Associe", src:"ass"},
-  {key:"rev_dis", tab:"🇷🇺 Dis-le", src:"dis"},
-  {key:"rev_fin", tab:"✍️ Dictée", src:"fin"}
+  {key:"rev_fin", tab:"✍️ Dictée", src:"fin"},
+  {key:"rev_dis", tab:"🇷🇺 Dis-le", src:"dis"}
 ];
 const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:7, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[]}, won:false});
+const fresh = () => ({v:8, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[]}, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
@@ -468,10 +468,17 @@ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
     st.done.fin=[]; st.done.rev_fin=[]; st.fg.fin=[]; st.again.rev_fin=[]; st.tail.rev_fin=[];
     st.forgot=[...new Set([...st.fg.ass,...st.fg.dis])].sort((a,b)=>a-b); st.order=null; st.revKey=""; st.v=7; return st;
   };
-  Object.keys(levelsSaved).forEach(n=>{ levelsSaved[n]=upgrade6(upgrade(levelsSaved[n])); });
-  if(s.state && s.state.v===5) s.state=upgrade(s.state);
-  if(s.state && s.state.v===6) s.state=upgrade6(s.state);
-  if(s.state && s.state.v===7){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; }
+  const upgrade7=st=>{ // версия 7 -> 8: «Dictée» теперь стоит перед «Dis-le», этапы открываются по порядку заново
+    if(!st || st.v!==7) return st;
+    st.done={...fresh().done,...st.done}; st.fg={ass:[],dis:[],fin:[],...st.fg};
+    const all=a=>a&&a.length>=21&&a.slice(0,21).every(Boolean);
+    let u=Math.min(st.unlocked,2); if(st.unlocked>=2 && all(st.done.fin)){ u=3; if(all(st.done.dis)) u=4; }
+    st.unlocked=u; st.view=st.view===2?3:st.view===3?2:st.view; st.revKey=""; st.v=8; return st;
+  };
+  const upgradeAll=st=>upgrade7(upgrade6(upgrade(st)));
+  Object.keys(levelsSaved).forEach(n=>{ levelsSaved[n]=upgradeAll(levelsSaved[n]); });
+  if(s.state) s.state=upgradeAll(s.state);
+  if(s.state && s.state.v===8){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; } // карточки изменились (21: утверждение, отрицание, вопрос), уровень начинается заново
 } }catch(e){}
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved})); }catch(e){} }
@@ -642,14 +649,15 @@ function unl(){ return admin ? STAGES.length-1 : state.unlocked; }
 function revDone(){ return doneCount("rev")>=stageCount("rev"); }
 // разделы повтора, в которых есть карточки
 function revSections(){ return REV_SUBS.filter(x=>state.fg[x.src].length); }
-// «Dictée» открывается после «Dis-le», «Повтор» (последний этап) после «Dictée»
+// «Dictée» открывается после «Associe», «Dis-le» после «Dictée», «Повтор» (последний этап) после «Dis-le»
 function syncUnlock(){
-  if(doneCount("dis")>=stageCount("dis")) state.unlocked=Math.max(state.unlocked,3);
-  if(doneCount("fin")>=stageCount("fin")) state.unlocked=Math.max(state.unlocked,4);
+  if(doneCount("ass")>=stageCount("ass")) state.unlocked=Math.max(state.unlocked,2);
+  if(doneCount("fin")>=stageCount("fin")) state.unlocked=Math.max(state.unlocked,3);
+  if(doneCount("dis")>=stageCount("dis")) state.unlocked=Math.max(state.unlocked,4);
 }
-// уровень пройден, когда сделана «Dictée» и пройден весь повтор (или повторять нечего)
+// уровень пройден, когда сделаны «Dictée» и «Dis-le» и пройден весь повтор (или повторять нечего)
 function checkWon(){
-  if(!state.won && doneCount("fin")>=stageCount("fin") && revDone()){ state.won=true; save(); toast("Bravo ! Niveau terminé ! 🎉"); }
+  if(!state.won && doneCount("fin")>=stageCount("fin") && doneCount("dis")>=stageCount("dis") && revDone()){ state.won=true; save(); toast("Bravo ! Niveau terminé ! 🎉"); }
 }
 // у каждой вкладки свой порядок карточек, он сохраняется на весь уровень
 function range(n){ return Array.from({length:n},(_,i)=>i); }
@@ -701,12 +709,12 @@ function renderHeader(){
   });
 }
 
-// за каждую из четырёх вкладок («Écoute & répète», «Associe», «Dis-le», «Dictée») одна креветка за уровень
+// за каждую из четырёх вкладок («Écoute & répète», «Associe», «Dictée», «Dis-le») одна креветка за уровень
 function award(k){ if(state.earned[k]) return false; state.earned[k]=true; state.shrimps++; return true; }
 function stageComplete(k){
   if(k==="fin"){
-    const got=award("fin"), before=state.unlocked; syncUnlock();
-    toast(got?"Bravo ! +1 🦐 "+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !"):"Bravo !");
+    const got=award("fin"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
+    if(state.unlocked>before) toast("Bravo ! "+pre+"Этап открыт: "+STAGES[3].tab); else if(got) toast("Bravo ! +1 🦐");
   }
   else if(k==="rep"||k==="ass"){
     const got=award(k), si=STAGES.findIndex(s=>s.key===k), pre=got?"+1 🦐 ":"";
@@ -714,7 +722,7 @@ function stageComplete(k){
   }
   else if(k==="dis"){
     const got=award("dis"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
-    if(state.unlocked>before) toast("Bravo ! "+pre+"Этап открыт: "+STAGES[3].tab); else if(got) toast("Bravo ! +1 🦐");
+    if(state.unlocked>before) toast("Bravo ! "+pre+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !")); else if(got) toast("Bravo ! +1 🦐");
   }
   else if(isRev(k)){
     if(revDone()){
