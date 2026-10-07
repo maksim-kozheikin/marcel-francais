@@ -183,6 +183,22 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);
   padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
+body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60}
+.player{position:fixed;inset:0;z-index:50;background:var(--bg);flex-direction:column}
+.pl-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:var(--paper);border-bottom:2px solid var(--line)}
+.pl-x{flex:none;width:44px;height:44px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:1.25rem;cursor:pointer}
+.pl-mid{flex:1;min-width:0}
+.pl-title{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:.95rem}
+.pl-bar{height:12px;border-radius:99px;background:var(--bg);border:2px solid var(--line);overflow:hidden;margin-top:6px}
+.pl-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bleu),var(--rouge));transition:width .3s}
+.pl-body{flex:1;overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
+.pl-inner{max-width:680px;margin:0 auto}
+.pl-bottom{padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--line);min-height:70px}
+.pl-bottom .row{max-width:680px;margin:0 auto;display:flex;gap:8px}
+.pl-bottom .row .btn{flex:1}
+.pl-wait{width:100%;text-align:center;color:var(--soft);padding:12px 0}
+.player.browse .marks{display:none}
+.stagecard{margin-bottom:12px}
 @media (max-width:480px){.cat{font-size:50px}.fr{font-size:1.12rem}}
 @media (max-width:600px){
   .item.sp .item-top{flex-wrap:wrap;align-items:center}
@@ -262,6 +278,17 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       </div>
     </details>
   </section>
+</div>
+<div class="player" id="player" role="dialog" aria-modal="true" aria-label="Карточка" style="display:none">
+  <div class="pl-top">
+    <button type="button" class="pl-x" id="plClose" aria-label="Выйти из прохождения">✕</button>
+    <div class="pl-mid">
+      <div class="pl-title"><span id="plTitle"></span><span id="plCount"></span></div>
+      <div class="pl-bar" role="progressbar" aria-valuemin="0" id="plBarWrap"><span id="plBar"></span></div>
+    </div>
+  </div>
+  <div class="pl-body" id="plBody"><div class="pl-inner"><div class="list" id="plHost"></div></div></div>
+  <div class="pl-bottom" id="plBottom"></div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -818,10 +845,10 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
   const known=document.createElement("label"); known.className="known";
   known.innerHTML='<input type="checkbox"> Je sais';
   const cb=known.querySelector("input"); cb.checked=!!state.done[k][idx] && !isForgot;
-  if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">Запомни ответ и сними отметку «Je ne sais plus», чтобы сказать его ещё раз. Карточка вернётся в конец списка.</p>';
+  if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">'+(play?"Запомни ответ. Эта карточка вернётся в конец раздела, и ты ответишь на неё ещё раз.":"Запомни ответ и сними отметку «Je ne sais plus», чтобы сказать его ещё раз. Карточка вернётся в конец списка.")+'</p>';
   const refresh=(sel,full)=>{
     if(!el.isConnected) return;
-    if(full || (k==="dis" && doneCount("dis")>=stageCount("dis"))){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+    if(!play && (full || (k==="dis" && doneCount("dis")>=stageCount("dis")))){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
     const fresh=speechItem(idx, fr, ru, k, ruOnly, n); el.replaceWith(fresh); const c=fresh.querySelector(sel); if(c) c.focus({preventScroll:true});
   };
   cb.onchange=()=>{
@@ -838,7 +865,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
-      if(isRev(k)){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; renderMain(); renderHeader(); window.scrollTo(0,y); return; }
+      if(isRev(k)){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); return; }
       if(fc.checked){
         setForgot(idx,true,k);
         if(k==="fin"){ if(state.done.fin[idx]) unmarkDone("fin", idx); else { save(); renderHeader(); } }  // в финальном тесте карточка ждёт повтора и не засчитывается
@@ -916,7 +943,7 @@ function dictItem(idx, fr, ru, k, n){
   actions.appendChild(listenRow(fr));
   const refresh=(note)=>{
     if(!el.isConnected) return;
-    if(doneCount(k)>=stageCount(k)){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+    if(!play && doneCount(k)>=stageCount(k)){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
     const fresh=dictItem(idx,fr,ru,k,n); el.replaceWith(fresh); if(note) fresh.querySelector(".fbwrap").innerHTML=note;
   };
   // «Je ne sais plus»
@@ -924,14 +951,14 @@ function dictItem(idx, fr, ru, k, n){
   fg.innerHTML='<input type="checkbox"> Je ne sais plus';
   const fc=fg.querySelector("input"); fc.checked=isForgot;
   fc.onchange=()=>{
-    if(k==="rev_fin"){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; renderMain(); renderHeader(); window.scrollTo(0,y); return; }
+    if(k==="rev_fin"){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); return; }
     if(fc.checked){ setForgot(idx,true,"fin"); if(done){ save(); renderHeader(); } else markDone("fin",idx,true); }
     else { setForgot(idx,false,"fin"); unmarkDone("fin",idx); }
     refresh();
   };
   const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
   el.querySelector(".item-top").appendChild(marks);
-  if(isAgain) fbw.innerHTML='<p class="hint">Запомни слово и сними отметку «Je ne sais plus», чтобы написать его ещё раз. Карточка вернётся в конец списка.</p>';
+  if(isAgain) fbw.innerHTML='<p class="hint">'+(play?"Запомни слово. Эта карточка вернётся в конец раздела, и ты напишешь слово ещё раз.":"Запомни слово и сними отметку «Je ne sais plus», чтобы написать его ещё раз. Карточка вернётся в конец списка.")+'</p>';
   if(settled) return el;
   const row=document.createElement("div"); row.className="dictrow";
   row.innerHTML='<input type="text" lang="fr" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Пропущенное слово" aria-label="Пропущенное слово"><button type="button" class="btn ghost">OK</button>';
@@ -1221,7 +1248,7 @@ function assItem(idx, d, k, n){
       if(fc.checked){ setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true); }
       else { setForgot(idx,false,"ass"); unmarkDone("ass", idx); delete assMemo[state.level+":ass:"+idx]; }
       if(!el.isConnected) return;
-      if(doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+      if(!play && doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
       const fresh=assItem(idx,d,k,pos); el.replaceWith(fresh); const c=fresh.querySelector(".forgot-mark input"); if(c) c.focus({preventScroll:true});
     };
     const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
@@ -1231,10 +1258,10 @@ function assItem(idx, d, k, n){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isAgain;
-    fc.onchange=()=>{ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; renderMain(); renderHeader(); window.scrollTo(0,y); };
+    fc.onchange=()=>{ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); };
     const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
     el.querySelector(".item-top").appendChild(marks);
-    if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">Запомни ответ и сними отметку «Je ne sais plus», чтобы выбрать его ещё раз. Карточка вернётся в конец списка.</p>';
+    if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">'+(play?"Запомни ответ. Эта карточка вернётся в конец раздела, и ты выберешь ответ ещё раз.":"Запомни ответ и сними отметку «Je ne sais plus», чтобы выбрать его ещё раз. Карточка вернётся в конец списка.")+'</p>';
   }
   if(memo && isForgot && k==="ass") el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Faux !</b> Ton choix est en rouge, la bonne réponse est en vert. La carte part en révision 🔁</div>';
   const box=el.querySelector(".opts");
@@ -1250,7 +1277,7 @@ function assItem(idx, d, k, n){
         setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true);
         toast("Faux ! La carte part en révision 🔁");
         if(!el.isConnected) return;
-        if(doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
+        if(!play && doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
         el.replaceWith(assItem(idx,d,k,pos));
       }
       else { b.classList.add("no"); b.disabled=true; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Essaie encore.</div>'; }
@@ -1328,6 +1355,131 @@ function renderRecap(m){
   m.appendChild(nx);
 }
 
+/* ---------- одна карточка на экране ---------- */
+// на экране только одна карточка, поэтому ответ на другую не подсмотреть. Пройденный этап можно листать
+let play=null;   // {k, mode:"play"|"browse", cur, pos}
+let plObs=null;
+const reMain=()=>{ if(play) playRerender(); else renderMain(); };
+function stopAudio(){ try{ if(rec) rec.stop(); }catch(e){} try{ if("speechSynthesis" in window) speechSynthesis.cancel(); }catch(e){} }
+function seqFor(k){
+  if(!isRev(k)) return order(k);
+  const src=revSrc(k), inSec=order(src).filter(i=>state.fg[src].indexOf(i)>=0), tail=state.tail[k].filter(i=>inSec.indexOf(i)>=0);
+  return [...inSec.filter(i=>tail.indexOf(i)<0), ...tail];
+}
+const isSettled=(k,i)=>!!state.done[k][i] || (isRev(k) && state.again[k].indexOf(i)>=0);
+function cardEl(k,idx,n){
+  const d=levelData(state.level), [fr,ru]=d.phrases[idx];
+  if(k==="ass"||k==="rev_ass") return assItem(idx,d,k,n);
+  if(k==="fin"||k==="rev_fin") return dictItem(idx,fr,ru,k,n);
+  return speechItem(idx,fr,ru,k,k!=="rep",n);
+}
+function stageInfo(k){ return isRev(k) ? REV_SUBS.find(x=>x.key===k) : STAGES.find(s=>s.key===k); }
+function firstOpen(k){
+  let i=seqFor(k).find(x=>!isSettled(k,x));
+  if(i===undefined && isRev(k) && state.again[k].length){   // отложенные снова карточки возвращаются вслепую
+    [...state.again[k]].forEach(x=>setAgain(k,x,false));
+    i=seqFor(k).find(x=>!isSettled(k,x));
+  }
+  return i;
+}
+function playStart(k,mode){
+  play={k,mode:mode||"play",cur:null,pos:0};
+  document.body.classList.add("playing"); document.body.style.overflow="hidden";
+  $("player").style.display="flex"; renderPlayer();
+}
+function playHide(){
+  stopAudio(); if(plObs){ plObs.disconnect(); plObs=null; }
+  play=null; $("player").style.display="none"; document.body.classList.remove("playing"); document.body.style.overflow="";
+}
+function playClose(){ playHide(); renderAll(); window.scrollTo({top:0}); }
+function plTop(txt,dn,tot){
+  const st=stageInfo(play.k);
+  $("plTitle").textContent=st.tab; $("plCount").textContent=txt;
+  $("plBar").style.width=(tot?dn/tot*100:100)+"%";
+  $("plBarWrap").setAttribute("aria-valuemax",tot); $("plBarWrap").setAttribute("aria-valuenow",dn);
+}
+function plBody(){ return $("plBody"); }
+function renderPlayer(){
+  const k=play.k, host=$("plHost"), bot=$("plBottom");
+  if(plObs){ plObs.disconnect(); plObs=null; }
+  host.innerHTML=""; bot.innerHTML=""; $("player").classList.toggle("browse",play.mode==="browse");
+  const tot=stageCount(k), dn=doneCount(k);
+  if(play.mode==="browse"){
+    const seq=seqFor(k); play.pos=Math.max(0,Math.min(seq.length-1,play.pos));
+    host.appendChild(cardEl(k,seq[play.pos],play.pos+1));
+    plTop((play.pos+1)+" / "+seq.length+" · просмотр",dn,tot);
+    const row=document.createElement("div"); row.className="row";
+    row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>‹ Назад</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Дальше ›</button>';
+    bot.appendChild(row);
+    $("plPrev").onclick=()=>{ stopAudio(); play.pos--; renderPlayer(); plBody().scrollTop=0; };
+    $("plNext").onclick=()=>{ stopAudio(); play.pos++; renderPlayer(); plBody().scrollTop=0; };
+    return;
+  }
+  if(play.cur==null) play.cur=firstOpen(k);
+  if(play.cur===undefined || play.cur===null){ renderPlayerEnd(); return; }
+  const seq=seqFor(k);
+  host.appendChild(cardEl(k,play.cur,seq.indexOf(play.cur)+1));
+  plObs=new MutationObserver(()=>plSync()); plObs.observe(host,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
+  plSync();
+}
+// карточка, ответ на которую уже дан, открывает кнопку «Дальше»
+function plSync(){
+  if(!play || play.mode!=="play" || play.cur==null) return;
+  const k=play.k, bot=$("plBottom"), tot=stageCount(k), dn=doneCount(k), settled=isSettled(k,play.cur);
+  plTop(dn+" / "+tot,dn,tot);
+  const want=settled?"next":"wait";
+  if(bot.dataset.s===want) return;
+  bot.dataset.s=want; bot.innerHTML="";
+  const row=document.createElement("div"); row.className="row";
+  if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше →</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
+  else { row.innerHTML='<div class="pl-wait">Ответь на карточку, чтобы перейти к следующей.</div>'; bot.appendChild(row); }
+}
+function plAdvance(){
+  stopAudio(); const bot=$("plBottom"); bot.dataset.s="";
+  play.cur=firstOpen(play.k); if(play.cur===undefined) play.cur=null;
+  if(play.cur==null){ renderPlayerEnd(); } else renderPlayer();
+  plBody().scrollTop=0;
+}
+function playRerender(){
+  if(!play) return;
+  if(play.mode==="play" && play.cur!=null){ $("plBottom").dataset.s=""; const host=$("plHost"); const seq=seqFor(play.k); host.innerHTML=""; host.appendChild(cardEl(play.k,play.cur,seq.indexOf(play.cur)+1)); plSync(); }
+  else renderPlayer();
+}
+function renderPlayerEnd(){
+  const k=play.k, host=$("plHost"), bot=$("plBottom"); bot.dataset.s=""; host.innerHTML=""; bot.innerHTML="";
+  if(plObs){ plObs.disconnect(); plObs=null; }
+  const tot=stageCount(k); plTop(tot+" / "+tot,tot,tot);
+  const w=document.createElement("section"); w.className="panel win";
+  w.innerHTML='<div class="big">🐈🎉</div><h2 style="margin:.3em 0">Bravo !</h2><p>'+(isRev(k)?"Раздел «"+esc(stageInfo(k).tab.replace(/^\S+\s/,""))+"» пройден.":"Этап «"+esc(stageInfo(k).tab.replace(/^\S+\s/,""))+"» пройден.")+'</p>';
+  host.appendChild(w);
+  const row=document.createElement("div"); row.className="row"; row.style.flexDirection="column";
+  let nextLabel="", nextFn=null;
+  if(isRev(k)){
+    const nx=revSections().find(x=>x.key!==k && doneCount(x.key)<stageCount(x.key));
+    if(nx){ nextLabel="Дальше: "+nx.tab; nextFn=()=>{ state.revKey=nx.key; save(); playHide(); renderAll(); playStart(nx.key,"play"); }; }
+  } else {
+    const i=STAGES.findIndex(s=>s.key===k), to=i+1;
+    if(i>=0 && to<STAGES.length && to<=unl()){ nextLabel="Дальше: "+STAGES[to].tab; nextFn=()=>{ state.view=to; save(); playClose(); }; }
+  }
+  if(nextFn){ const b=document.createElement("button"); b.className="btn violet"; b.style.cssText="width:100%;font-size:1.15rem"; b.textContent=nextLabel; b.onclick=nextFn; row.appendChild(b); }
+  const ex=document.createElement("button"); ex.className="btn ghost"; ex.style.width="100%"; ex.textContent="Выйти к уровню"; ex.onclick=playClose; row.appendChild(ex);
+  bot.appendChild(row);
+}
+$("plClose").onclick=playClose;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && play) playClose(); });
+
+// экран этапа. Здесь теория, прогресс и кнопка «Начать». Листать карточки можно, когда этап пройден
+function startPanel(m,k,title,note){
+  const tot=stageCount(k), dn=doneCount(k), complete=dn>=tot&&tot>0, canBrowse=complete||admin||state.won;
+  const p=document.createElement("section"); p.className="panel stagecard";
+  const fgN=(k==="dis"||k==="ass"||k==="fin")?state.fg[k].length:0;
+  p.innerHTML='<h2 style="margin:0 0 4px">'+esc(title)+'</h2><p class="hint" style="margin:0 0 10px">'+esc(note)+'</p><div class="prog" style="margin:0 0 12px">Пройдено: '+dn+' / '+tot+(fgN?" · отложено "+fgN:"")+'</div>';
+  const row=document.createElement("div"); row.style.cssText="display:grid;gap:8px";
+  if(!complete){ const b=document.createElement("button"); b.className="btn violet"; b.style.cssText="width:100%;font-size:1.15rem"; b.id="plStart"; b.textContent=dn?"▶ Продолжить":"▶ Начать"; b.onclick=()=>playStart(k,"play"); row.appendChild(b); }
+  if(canBrowse){ const b=document.createElement("button"); b.className="btn "+(complete?"violet":"ghost"); b.style.width="100%"; b.id="plBrowse"; b.textContent="👀 Листать карточки"; b.onclick=()=>playStart(k,"browse"); row.appendChild(b); }
+  p.appendChild(row); m.appendChild(p);
+}
+
 function renderMain(){
   const m=$("main"); m.innerHTML="";
   const d=levelData(state.level);
@@ -1339,6 +1491,14 @@ function renderMain(){
     w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><p class="pill" style="display:inline-block">🦐 Crevettes : '+state.shrimps+'</p><div style="margin-top:14px"><button class="btn violet" id="nextLevel">Niveau suivant → Следующий уровень</button></div>';
     m.appendChild(w);
     w.querySelector("#nextLevel").onclick=()=>goLevel(state.level+1);
+    // пройденный уровень можно листать: по карточке на экране, с ответами
+    const br=document.createElement("section"); br.className="panel stagecard";
+    br.innerHTML='<h2 style="margin:0 0 4px">👀 Листать карточки</h2><p class="hint" style="margin:0 0 10px">Уровень пройден, поэтому можно смотреть любые карточки с ответами.</p>';
+    const row=document.createElement("div"); row.style.cssText="display:grid;gap:8px";
+    [...STAGES.filter(x=>x.key!=="rev"), ...revSections().map(x=>({key:x.key,tab:"🔁 Повтор · "+x.tab.replace(/^\S+\s/,"")}))].forEach(x=>{
+      const b=document.createElement("button"); b.className="btn ghost"; b.style.width="100%"; b.dataset.browse=x.key; b.textContent=x.tab; b.onclick=()=>playStart(x.key,"browse"); row.appendChild(b);
+    });
+    br.appendChild(row); m.appendChild(br);
     return;
   }
   if(!d){
@@ -1346,14 +1506,10 @@ function renderMain(){
     w.innerHTML='<div class="big">🐈🏆</div><h2 style="margin:.3em 0">Félicitations ! Tous les niveaux sont terminés !</h2><p>Поздравляю! Все уровни пройдены. Можно пройти любой уровень заново в настройках.</p>';
     m.appendChild(w); return;
   }
-  const k=STAGES[state.view].key, list=document.createElement("div"); list.className="list";
+  const k=STAGES[state.view].key;
   if(k==="rev"){ renderReview(m,d); return; }
+  startPanel(m,k,STAGES[state.view].tab,STAGES[state.view].ru+" Карточки идут по одной, следующую заранее не видно.");
   const tb=theoryBlock(k==="rep"); if(tb) m.appendChild(tb);
-  if(k==="rep") order("rep").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"rep",false,n+1)));
-  if(k==="ass") order("ass").forEach((i,n)=>list.appendChild(assItem(i,d,"ass",n+1)));
-  if(k==="dis") order("dis").forEach((i,n)=>list.appendChild(speechItem(i,d.phrases[i][0],d.phrases[i][1],"dis",true,n+1)));
-  if(k==="fin") order("fin").forEach((i,n)=>list.appendChild(dictItem(i,d.phrases[i][0],d.phrases[i][1],"fin",n+1)));
-  m.appendChild(list);
   const tot=stageCount(k);
   if(doneCount(k)>=tot && state.view<4){
     const to=state.view+1;
@@ -1386,15 +1542,8 @@ function renderReview(m,d){
   const hint=document.createElement("p"); hint.className="hint";
   hint.textContent="Здесь только карточки, которые ты отложила в разделе «"+cur.tab.replace(/^\S+\s/,"")+"» ("+stageCount(cur.key)+").";
   m.appendChild(hint);
-  const key=cur.key, list=document.createElement("div"); list.className="list";
-  const seq=order(cur.src);
-  const inSec=seq.filter(i=>state.fg[cur.src].indexOf(i)>=0);
-  const tail=state.tail[key].filter(i=>inSec.indexOf(i)>=0);
-  [...inSec.filter(i=>tail.indexOf(i)<0), ...tail].forEach((i,n)=>{
-    const [fr,ru]=d.phrases[i];
-    list.appendChild(key==="rev_ass" ? assItem(i,d,key,n+1) : key==="rev_fin" ? dictItem(i,fr,ru,key,n+1) : speechItem(i,fr,ru,key,true,n+1));
-  });
-  m.appendChild(list);
+  const key=cur.key;
+  startPanel(m,key,cur.tab,"Карточки идут по одной. Отложенные снова карточки вернутся в конец раздела.");
   const nextSec=secs.find(x=>doneCount(x.key)<stageCount(x.key));
   if(doneCount(key)>=stageCount(key) && nextSec){
     const nx=document.createElement("div"); nx.style.marginTop="14px";
@@ -1457,6 +1606,7 @@ $("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогрес
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n===state.level) return;
+  if(play) playHide();
   levelsSaved[state.level]=JSON.parse(JSON.stringify(state));
   const sh=state.shrimps, prev=levelsSaved[n];
   state=prev ? {...fresh(),...prev, level:n, shrimps:sh} : {...fresh(), level:n, shrimps:sh};
