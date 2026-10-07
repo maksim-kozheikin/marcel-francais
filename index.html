@@ -91,7 +91,11 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .marks{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
 .theory{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:2px 14px 8px;margin-bottom:12px}
-.theory summary{cursor:pointer;font-weight:600;padding:10px 0;line-height:1.3}
+.theory summary{cursor:pointer;padding:10px 0;line-height:1.3;display:grid;gap:2px}
+.theory .th-lv{font-weight:800;font-size:1.15rem;color:var(--ink)}
+.theory .th-ru{color:var(--soft);font-size:.95rem}
+.theory .th-hint{color:var(--bleu);font-size:.85rem;font-weight:600;margin-top:4px}
+.theory.titleonly{padding:12px 14px}
 .theory-body{font-size:.98rem;line-height:1.5}
 .theory-body p{margin:.5em 0}
 .theory-body ul{margin:.4em 0;padding-left:1.1em}
@@ -197,7 +201,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .pl-bottom{position:sticky;bottom:0;z-index:4;margin:12px -14px 0;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--line);min-height:60px}
 .pl-bottom .row{max-width:680px;margin:0 auto;display:flex;gap:8px}
 .pl-bottom .row .btn{flex:1}
-.pl-wait{width:100%;text-align:center;color:var(--soft);padding:8px 0;font-size:.95rem}
+.pl-bottom:empty{display:none}
 .player.browse .marks{display:none}
 .stagecard{margin-bottom:12px}
 .screen{display:grid;gap:14px;min-width:0}
@@ -205,12 +209,18 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lvtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .lvtop .btn{min-height:44px;padding:8px 12px}
 .lvtop #recapBtn{margin-left:auto}
-.levelline{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:-4px 2px 0}
-.levelline .level-num{font-size:1.25rem;font-weight:800}
 .lvtop .cat{font-size:34px}
-.lv-item{display:grid;gap:2px}
-.lv-actions{display:flex;justify-content:flex-end}
-.lv-mark{font:inherit;font-size:.9rem;font-weight:600;color:var(--bleu);background:none;border:none;padding:6px 8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lv-item{background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
+.lv-item .lv-card{border:none;border-radius:0;background:transparent}
+.lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:2px solid var(--line);background:var(--bg);cursor:pointer;font-size:.92rem;font-weight:600}
+.lv-sw input{position:absolute;opacity:0;width:1px;height:1px}
+.sw-track{flex:none;width:48px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
+.sw-track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.lv-sw input:checked + .sw-track{background:var(--ok)}
+.lv-sw input:checked + .sw-track::after{transform:translateX(20px)}
+.lv-sw input:focus-visible + .sw-track{outline:3px solid var(--rouge);outline-offset:2px}
+.sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap}
 .progwrap{margin:0}
 .progwrap .bar{margin:6px 0 0}
 #stageHost{display:flex;flex-direction:column;gap:0}
@@ -229,9 +239,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 @keyframes ctashine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
 @media (prefers-reduced-motion:reduce){.btn.cta,.btn.cta::after{animation:none}}
 .lv-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:12px 14px;cursor:pointer}
-.lv-card[aria-current="true"]{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
 .lv-card .lvnum{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg);border:2px solid var(--line)}
-.lv-card.done .lvnum{background:var(--ok);color:#fff;border-color:var(--ok)}
+.lv-item.done .lvnum{background:var(--ok);color:#fff;border-color:var(--ok)}
 .lv-card .lvtxt{flex:1;min-width:0;display:grid;gap:2px}
 .lv-card .lvtxt b{font-size:1rem}
 .lv-card .lvtxt small{color:var(--soft);font-size:.88rem}
@@ -317,8 +326,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <span class="cat" id="cat" aria-hidden="true">🐈</span>
     </div>
 
-    <div class="levelline"><span class="level-num" id="levelNum"></span><span class="construction" id="construction"></span></div>
-
+    
     <div id="micNotice"></div>
 
     <div id="theoryHost"></div>
@@ -573,7 +581,8 @@ function theoryHtml(th){
 function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
-  d.innerHTML='<summary>📖 Теория уровня '+state.level+' — '+esc(th.t)+'</summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  const pl=planFor(state.level);
+  d.innerHTML='<summary><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-hint">📖 Теория уровня. Нажми, чтобы развернуть или свернуть</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
   d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
@@ -824,8 +833,6 @@ function setForgot(idx,on,stage){
 
 function renderHeader(){
   const p=planFor(state.level);
-  $("levelNum").textContent="Niveau "+state.level;
-  $("construction").textContent=p.fr+" — "+p.ru;
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const recap=needRecap();
   $("stages").style.display=recap?"none":"";
@@ -1442,31 +1449,34 @@ function markLevelDone(n){
   st.unlocked=4; st.view=0; st.revKey=""; st.recap={ok:true}; st.won=true; st.level=n;
   state.shrimps+=gain; st.shrimps=state.shrimps;
   if(cur) state=st; else levelsSaved[n]=st;
-  save(); renderAll(); toast("Niveau "+n+" отмечен пройденным"+(gain?". +"+gain+" 🦐":""));
+  save(); renderAll(); toast("Niveau "+n+" terminé !"+(gain?" +"+gain+" 🦐":""));
 }
 function unmarkLevelDone(n){
   const cur=n===state.level, st=cur?state:levelsSaved[n], back=levelEarned(st);
   state.shrimps=Math.max(0,state.shrimps-back);
   if(cur){ const sh=state.shrimps; state={...fresh(),level:n,shrimps:sh}; } else delete levelsSaved[n];
-  save(); renderAll(); toast("Niveau "+n+" сброшен"+(back?". −"+back+" 🦐":""));
+  save(); renderAll(); toast("Niveau "+n+" réinitialisé."+(back?" −"+back+" 🦐":""));
 }
 function renderLevels(){
   const host=$("lvHost"); host.innerHTML="";
   for(let n=1;n<=MAXLEVEL;n++){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
-    const item=document.createElement("div"); item.className="lv-item";
-    const b=document.createElement("button"); b.type="button"; b.className="lv-card"+(done?" done":""); b.dataset.level=n; b.setAttribute("aria-current",n===state.level);
-    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"пройден":pct+"%")+'</span>';
+    const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
+    const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.level=n; b.setAttribute("aria-current",n===state.level);
+    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span>';
     b.onclick=()=>openLevel(n);
-    const row=document.createElement("div"); row.className="lv-actions";
-    const m=document.createElement("button"); m.type="button"; m.className="lv-mark"; m.dataset.mark=n;
-    const gain=4-levelEarned(st);
-    m.textContent=done?"↺ Сбросить уровень":"✓ Я уже прошла этот уровень"+(gain?" (+"+gain+" 🦐)":"");
-    m.onclick=()=>{
-      if(done){ if(confirm("Сбросить прогресс Niveau "+n+"? Креветки за него ("+levelEarned(st)+") вернутся обратно.")) unmarkLevelDone(n); }
-      else if(confirm("Отметить Niveau "+n+" пройденным? Все карточки засчитаются"+(gain?", а за уровень ты получишь креветки ("+gain+")":"")+".")) markLevelDone(n);
+    const gain=4-levelEarned(st), back=levelEarned(st);
+    const sw=document.createElement("label"); sw.className="lv-sw";
+    sw.innerHTML='<input type="checkbox" data-mark="'+n+'"'+(done?" checked":"")+'><span class="sw-track" aria-hidden="true"></span><span class="sw-text">J\'ai déjà fini ce niveau</span><span class="sw-gain">'+(done?"✓":(gain?"+"+gain+" 🦐":""))+'</span>';
+    const inp=sw.querySelector("input");
+    inp.onchange=()=>{
+      if(inp.checked){
+        if(confirm("Marquer le niveau "+n+" comme terminé ? Toutes les cartes seront validées"+(gain?" et tu gagneras "+gain+" crevette"+(gain>1?"s":""):"")+".")) markLevelDone(n); else inp.checked=false;
+      } else {
+        if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
+      }
     };
-    row.appendChild(m); item.appendChild(b); item.appendChild(row); host.appendChild(item);
+    item.appendChild(b); item.appendChild(sw); host.appendChild(item);
   }
 }
 
@@ -1546,7 +1556,7 @@ function plSync(){
   bot.dataset.s=want; bot.innerHTML="";
   const row=document.createElement("div"); row.className="row";
   if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше →</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
-  else { row.innerHTML='<div class="pl-wait">Ответь на карточку, чтобы перейти к следующей.</div>'; bot.appendChild(row); }
+  // пока ответа нет, нижняя панель пустая и скрыта
 }
 // в повторе «Je ne sais plus» возвращает на первую вкладку: фраза показывается так же, как в «Écoute & répète», потом возвращается в конец раздела
 function playRelearn(idx){ state.done.rel[idx]=false; play.rel=idx; save(); $("plBottom").dataset.s=""; renderRelearnCard(); }
@@ -1610,7 +1620,11 @@ function renderProgress(){
 const theoryOpen={};
 function renderTheory(){
   const h=$("theoryHost"); h.innerHTML="";
-  if(screen!=="level" || needRecap() || !levelData(state.level)) return;
+  if(screen!=="level" || !levelData(state.level)) return;
+  if(needRecap()){   // во время Rappel теории нет, остаётся только название уровня
+    const pl=planFor(state.level), t=document.createElement("section"); t.className="theory titleonly";
+    t.innerHTML='<div class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</div><div class="th-ru">'+esc(pl.ru)+'</div>'; h.appendChild(t); return;
+  }
   const lv=state.level, open=theoryOpen[lv]===undefined ? !(state.done.rep||[]).some(Boolean) : theoryOpen[lv];
   const th=theoryBlock(open); if(!th) return;
   th.addEventListener("toggle",()=>{ theoryOpen[lv]=th.open; });
