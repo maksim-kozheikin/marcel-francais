@@ -185,20 +185,47 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .toast.show{opacity:1}
 body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60}
 .player{position:fixed;inset:0;z-index:50;background:var(--bg);flex-direction:column}
-.pl-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:var(--paper);border-bottom:2px solid var(--line)}
+.pl-top{padding:calc(10px + env(safe-area-inset-top,0px)) 14px 12px;background:var(--paper);border-bottom:2px solid var(--line)}
+.pl-row{display:flex;align-items:center;gap:10px}
 .pl-x{flex:none;width:44px;height:44px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font-size:1.25rem;cursor:pointer}
-.pl-mid{flex:1;min-width:0}
-.pl-title{display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:.95rem}
-.pl-bar{height:12px;border-radius:99px;background:var(--bg);border:2px solid var(--line);overflow:hidden;margin-top:6px}
+.pl-title{flex:1;min-width:0;display:flex;justify-content:space-between;gap:8px;font-weight:700;font-size:1rem}
+.pl-bar{height:14px;border-radius:99px;background:var(--bg);border:2px solid var(--line);overflow:hidden;margin-top:12px}
 .pl-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bleu),var(--rouge));transition:width .3s}
-.pl-body{flex:1;overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
-.pl-inner{max-width:680px;margin:0 auto}
+.pl-body{flex:1;overflow:auto;padding:14px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+.pl-inner{width:100%;max-width:680px;margin:auto auto 0}
+.pl-inner.top{margin:0 auto}
 .pl-bottom{padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--line);min-height:70px}
 .pl-bottom .row{max-width:680px;margin:0 auto;display:flex;gap:8px}
 .pl-bottom .row .btn{flex:1}
 .pl-wait{width:100%;text-align:center;color:var(--soft);padding:12px 0}
 .player.browse .marks{display:none}
 .stagecard{margin-bottom:12px}
+.aquapanel{padding:10px;margin-bottom:12px}
+.settings-h{font-size:1.1rem;margin:0 0 6px}
+.lvbtn{width:100%;margin:10px 0 4px;min-height:52px;font-size:1.05rem}
+.btn.cta{position:relative;overflow:hidden;font-size:1.3rem;padding:20px 18px;min-height:70px;border-radius:20px;letter-spacing:.02em;color:#fff;
+  background:linear-gradient(115deg,#6A38C2 0,#8B5CF6 25%,#D946EF 50%,#6366F1 75%,#6A38C2 100%);background-size:420px 100%;animation:ctaflow 4s linear infinite;
+  box-shadow:0 8px 20px rgba(106,56,194,.38);text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.btn.cta::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);transform:translateX(-130%);animation:ctashine 3.2s ease-in-out infinite;pointer-events:none}
+.btn.cta:active{transform:scale(.98)}
+.btn.cta:disabled{animation:none;filter:grayscale(.6);opacity:.7}.btn.cta:disabled::after{animation:none}
+@keyframes ctaflow{to{background-position:-420px 0}}
+@keyframes ctashine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+@media (prefers-reduced-motion:reduce){.btn.cta,.btn.cta::after{animation:none}}
+.lv-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:12px 14px;cursor:pointer}
+.lv-card[aria-current="true"]{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
+.lv-card .lvnum{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg);border:2px solid var(--line)}
+.lv-card.done .lvnum{background:var(--ok);color:#fff;border-color:var(--ok)}
+.lv-card .lvtxt{flex:1;min-width:0;display:grid;gap:2px}
+.lv-card .lvtxt b{font-size:1rem}
+.lv-card .lvtxt small{color:var(--soft);font-size:.88rem}
+.lv-card .lvbar{height:8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin-top:4px}
+.lv-card .lvbar span{display:block;height:100%;background:linear-gradient(90deg,var(--bleu),var(--rouge))}
+.lv-card .lvst{flex:none;font-weight:700;color:var(--soft);font-size:.9rem}
+.lv-list{display:grid;gap:10px;margin-top:14px}
+.theory-body .ex .tr{display:block;font-weight:400;color:var(--soft);font-size:.93rem;margin-top:.1em}
+.theory-body .ex .say{display:inline-grid;place-items:center;width:34px;height:34px;margin-left:8px;vertical-align:middle;border:2px solid var(--line);border-radius:50%;background:var(--bg);font-size:1rem;cursor:pointer;padding:0}
+.relearn{background:var(--warnbg);border:2px solid var(--warn);border-radius:14px;padding:10px 12px;color:var(--ink)}
 @media (max-width:480px){.cat{font-size:50px}.fr{font-size:1.12rem}}
 @media (max-width:600px){
   .item.sp .item-top{flex-wrap:wrap;align-items:center}
@@ -227,6 +254,10 @@ body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:
     <div class="pill" id="shrimpTop">🦐 Crevettes : 0</div>
   </header>
 
+  <section class="panel aquapanel" aria-label="Марсель и миска с креветками">
+    <div class="aqua" id="aqua"></div>
+  </section>
+
   <section class="marcel" aria-live="polite">
     <div class="cat" id="cat" aria-hidden="true">🐈</div>
     <div class="bubble"><div class="fr" id="sayFr"></div><div class="ru" id="sayRu"></div></div>
@@ -237,14 +268,20 @@ body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:
       <div class="level-num" id="levelNum"></div>
       <div class="construction" id="construction"></div>
     </div>
-    <div class="levelnav">
-      <button type="button" id="lvPrev" aria-label="Предыдущий уровень">‹</button>
-      <select id="levelPick" aria-label="Выбрать уровень"></select>
-      <button type="button" id="lvNext" aria-label="Следующий уровень">›</button>
-    </div>
+    <button type="button" class="btn ghost lvbtn" id="lvOpen">☰ Все уровни</button>
     <div class="bar" role="progressbar" aria-valuemin="0" id="barWrap"><span id="bar"></span></div>
     <div class="prog" id="prog"></div>
     <button type="button" class="btn ghost" id="recapBtn" style="display:none;margin-top:8px">🔄 Повторить пройденное</button>
+  </section>
+
+  <div id="micNotice"></div>
+
+  <nav class="stages" id="stages" aria-label="Этапы"></nav>
+
+  <main id="main"></main>
+
+  <section class="panel" aria-label="Озвучка">
+    <h2 class="settings-h">🔊 Озвучка</h2>
     <div class="voicebox">
       <div class="lbl">Скорость озвучки</div>
       <div class="seg" id="speedSeg" role="group" aria-label="Скорость озвучки">
@@ -258,15 +295,8 @@ body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:
     </div>
   </section>
 
-  <div id="micNotice"></div>
-
-  <nav class="stages" id="stages" aria-label="Этапы"></nav>
-
-  <main id="main"></main>
-
-  <section class="panel" aria-label="Марсель и миска с креветками">
-    <div class="aqua" id="aqua"></div>
-    <details style="margin-top:10px">
+  <section class="panel" aria-label="Настройки">
+    <details>
       <summary>⚙️ Настройки</summary>
       <div class="actions" style="margin-top:10px">
         <button class="btn ghost" id="restartLevel">Начать уровень заново</button>
@@ -281,14 +311,23 @@ body.playing .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:
 </div>
 <div class="player" id="player" role="dialog" aria-modal="true" aria-label="Карточка" style="display:none">
   <div class="pl-top">
-    <button type="button" class="pl-x" id="plClose" aria-label="Выйти из прохождения">✕</button>
-    <div class="pl-mid">
+    <div class="pl-row">
       <div class="pl-title"><span id="plTitle"></span><span id="plCount"></span></div>
-      <div class="pl-bar" role="progressbar" aria-valuemin="0" id="plBarWrap"><span id="plBar"></span></div>
+      <button type="button" class="pl-x" id="plClose" aria-label="Выйти из прохождения">✕</button>
     </div>
+    <div class="pl-bar" role="progressbar" aria-valuemin="0" id="plBarWrap"><span id="plBar"></span></div>
   </div>
   <div class="pl-body" id="plBody"><div class="pl-inner"><div class="list" id="plHost"></div></div></div>
   <div class="pl-bottom" id="plBottom"></div>
+</div>
+<div class="player levels" id="levels" role="dialog" aria-modal="true" aria-label="Уровни" style="display:none">
+  <div class="pl-top">
+    <div class="pl-row">
+      <div class="pl-title"><span>Уровни</span><span id="lvCount"></span></div>
+      <button type="button" class="pl-x" id="lvClose" aria-label="Закрыть список уровней">✕</button>
+    </div>
+  </div>
+  <div class="pl-body"><div class="pl-inner top"><div id="lvHost"></div></div></div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -499,11 +538,34 @@ const THEORY={
 ["Dernier (последний) и long (длинный) стоят перед словом", "la dernière version, le long message"],
 ["Nouveau (новый) в женском роде это nouvelle", "la nouvelle adresse"]]}
 };
-function theoryHtml(th){ return '<p>'+th.intro+'</p><ul class="rules">'+th.rules.map(r=>'<li><span class="r">'+r[0]+'</span>'+(r[1]?'<span class="ex" lang="fr">'+r[1]+'</span>':'')+'</li>').join("")+'</ul>'; }
+const TR={"a":"а","accueil":"акёй","achat":"аша","acheter":"аште","acheté":"ашете","activer":"активе","actuel":"актюэль","adresse":"адрэс","adresses":"адрэс","aide":"эд","ajouter":"ажуте","allez":"але","allons":"алон","ami":"ами","amie":"ами","amis":"ами","ans":"ан","appartement":"апартеман","as":"а","attendre":"атандр","attendu":"атанду","au":"о","aucun":"окён","autoriser":"оторизе","aux":"о","avez":"аве","avoir":"авуар","avons":"авон","baguettes":"багэт","baisers":"безе","bananes":"банан","banque":"банк","beau":"бо","beaux":"бо","bel":"бэль","belle":"бэль","beurre":"бёр","billets":"бийе","blanc":"блан","blanche":"бланш","bleu":"блё","bon":"бон","bonne":"бон","bonnes":"бон","boules":"буль","bouteilles":"бутэй","bouton":"бутон","bus":"бюс","bœuf":"бёф","cadeau":"кадо","café":"кафе","calme":"кальм","carrés":"каре","carte":"карт","ce":"сё","cent":"сан","centilitres":"сантилитр","central":"сантраль","centrale":"сантраль","centraux":"сантро","cents":"сан","cette":"сэт","chambre":"шамбр","chambres":"шамбр","chargement":"шаржеман","chaud":"шо","chaude":"шод","chaudes":"шод","chauds":"шо","cherche":"шерш","cherchent":"шерш","cherches":"шерш","cherchez":"шерше","cherchons":"шершон","cinq":"сэнк","cinquante":"сэнкант","code":"код","commande":"команд","commandé":"команде","comprend":"компран","comprends":"компран","comprenez":"компрёне","comprennent":"компрэн","comprenons":"компрёнон","compte":"конт","conditions":"кондисьон","confirmée":"конфирме","confirmées":"конфирме","connecter":"конекте","connexion":"конексьон","content":"контан","contente":"контант","courgettes":"куржэт","courir":"курир","cours":"кур","crevettes":"крэвэт","croissant":"круасан","croissants":"круасан","crème":"крэм","d'amis":"дами","d'appartement":"дапартеман","d'ascenseur":"дасансёр","d'eau":"до","d'erreur":"дерёр","dans":"дан","de":"дё","demain":"дёмэн","dernier":"дернье","dernière":"дерньер","des":"де","dessert":"десэр","deux":"дё","disponible":"диспонибль","dix":"дис","dix-huit":"дизюит","dix-neuf":"диснёф","dix-sept":"дисэт","document":"докюман","douze":"дуз","du":"дю","déconnecter":"деконекте","désactiver":"дезактиве","elle":"эль","elles":"эль","en":"ан","enfants":"анфан","enregistrer":"анрежистре","entrer":"антре","es":"э","est":"э","est-ce":"эс","et":"э","euros":"ёро","excusez-moi":"экскюзе-муа","faire":"фэр","fait":"фэ","farine":"фарин","fatigué":"фатиге","fatiguée":"фатиге","fatiguées":"фатиге","favoris":"фавори","fermer":"ферме","fermé":"ферме","final":"финаль","fonctionne":"фонксьон","frais":"фрэ","fraises":"фрэз","fraîche":"фрэш","froid":"фруа","froide":"фруад","fromage":"фромаж","gare":"гар","gentil":"жанти","gentille":"жантий","glace":"глас","grammes":"грам","grand":"гран","grande":"гранд","grandes":"гранд","grands":"гран","gratuit":"гратюи","grises":"гриз","gros":"гро","grosses":"грос","gâteau":"гато","gâteaux":"гато","heureuse":"ёрёз","heureux":"ёрё","huit":"юит","hôtel":"отэль","ici":"иси","il":"иль","ils":"иль","importantes":"эмпортант","j'ai":"же","jambon":"жамбон","je":"жё","jeune":"жён","joli":"жоли","kilo":"кило","kilomètres":"километр","kilos":"кило","kéfir":"кефир","l'achat":"лаша","l'ancien":"лансьэн","l'eau":"ло","l'hôtel":"лотэль","la":"ла","lait":"лэ","le":"лё","les":"ле","leurs":"лёр","libres":"либр","lire":"лир","litres":"литр","livraison":"ливрезон","long":"лон","longues":"лонг","lu":"лю","là":"ла","là-bas":"ла-ба","ma":"ма","magasin":"магазэн","manger":"манже","mangé":"манже","marcher":"марше","marché":"марше","me":"мё","mes":"ме","message":"месаж","millilitres":"милилитр","minutes":"минют","mon":"мон","mot":"мо","musée":"мюзе","mètres":"метр","n'accepte":"наксепт","n'ai":"нэ","n'est":"нэ","n'y":"ни","ne":"нё","neuf":"нёф","nice":"нис","noir":"нуар","notifications":"нотификасьон","notre":"нотр","nous":"ну","nouveau":"нуво","nouveaux":"нуво","nouvel":"нувэль","nouvelle":"нувэль","occupée":"окюпе","ont":"он","onze":"онз","oublié":"убли","ouverte":"уверт","panier":"панье","paramètres":"параметр","parc":"парк","partager":"партаже","pas":"па","passe":"пас","payer":"пейе","payé":"пейе","perdre":"пердр","perdu":"пердю","perdue":"пердю","personnel":"персонэль","petit":"пти","petite":"птит","petites":"птит","petits":"пти","peut":"пё","peuvent":"пёв","peux":"пё","pharmacie":"фармаси","pizza":"пидза","plaît":"плэ","pomme":"пом","pommes":"пом","pouvez":"пуве","pouvons":"пувон","prend":"пран","prendre":"прандр","prends":"пран","prenez":"прёне","prennent":"прэн","prenons":"прёнон","pris":"при","prochain":"прошэн","prochaine":"прошэн","produit":"продюи","profil":"профиль","promo":"промо","qu'il":"киль","quai":"кэ","quarante":"карант","quarante-deux":"карант-дё","quatorze":"каторз","quatre":"катр","quatre-vingt-dix":"катр-вэн-дис","quatre-vingt-dix-neuf":"катр-вэн-диснёф","quatre-vingt-six":"катр-вэн-сис","quatre-vingt-trois":"катр-вэн-труа","quatre-vingt-un":"катр-вэн-ён","quatre-vingts":"катр-вэн","que":"кё","quinze":"кэнз","rechercher":"рёшерше","retour":"рётур","reçu":"рёсю","robe":"роб","rouge":"руж","réservation":"резервасьон","réservations":"резервасьон","résultat":"резюльта","s'il":"силь","sa":"са","sac":"сак","salé":"сале","se":"сё","seize":"сэз","sept":"сэт","six":"сис","soir":"суар","soixante":"суасант","soixante-dix":"суасант-дис","sommes":"сом","son":"сон","sont":"сон","soupe":"суп","souvenez":"сувнэ","souvenons":"сувнон","souviennent":"сувьен","souviens":"сувьэн","souvient":"сувьэн","station":"стасьон","suis":"сюи","supermarché":"сюпермарше","supprimer":"сюприме","sœur":"сёр","table":"табль","tartes":"тарт","tasse":"тас","te":"тё","ton":"тон","touriste":"турист","train":"трэн","trajet":"тражэ","tranches":"транш","tranquille":"транкиль","travail":"травай","travailler":"траваие","travaillé":"траваие","treize":"трэз","trente":"трант","trente-deux":"трант-дё","trente-six":"трант-сис","trois":"труа","troisième":"труазьем","trouve":"трув","trouvent":"трув","trouvons":"трувон","très":"трэ","tu":"тю","téléphone":"телефон","un":"ён","une":"юн","urgente":"юржант","va":"ва","vais":"вэ","valider":"валиде","vas":"ва","venir":"вёнир","verre":"вер","verres":"вер","verser":"версе","version":"версьон","veulent":"вёль","veut":"вё","veux":"вё","vieil":"вьей","vieille":"вьей","vieux":"вьё","ville":"виль","vingt":"вэн","vingt-deux":"вэн-дё","vingt-huit":"вэн-юит","vingt-trois":"вэн-труа","voiture":"вуатюр","voitures":"вуатюр","vont":"вон","voudraient":"вудрэ","voudrais":"вудрэ","voudrait":"вудрэ","voudriez":"вудрие","voudrions":"вудрион","voulez":"вуле","voulez-vous":"вуле-ву","voulons":"вулон","vous":"ву","y":"и","yaourts":"яурт","à":"а","écrire":"экрир","écrit":"экри","étage":"этаж","étudiante":"этюдьянт","êtes":"эт","télécharger":"телешарже"};
+// транскрипция французских слов русскими буквами. Русские пояснения в примерах пропускаются
+function frOnly(t){
+  t=t.replace(/\([^)]*\)/g,"").replace(/\s*—\s*[\u0400-\u04FF][^,.;]*/g,"").replace(/[\u0400-\u04FF]+/g,"").replace(/\s+/g," ").replace(/\s+([,.;?!])/g,"$1").replace(/[\s,;—-]+$/,"").trim();
+  return /[A-Za-zÀ-ÿŒœ]/.test(t)?t:"";
+}
+function frTrans(t){
+  const out=t.replace(/[A-Za-zÀ-ÿŒœ]+(?:['’-][A-Za-zÀ-ÿŒœ]+)*/g,w=>{
+    const k=w.toLowerCase().replace(/’/g,"'"); if(TR[k]!==undefined) return TR[k];
+    const parts=k.split(/(?<=['-])|(?=-)/); return parts.map(x=>{ const c=x.replace(/^-/,""); return TR[c]!==undefined?TR[c]:(TR[x]!==undefined?TR[x]:x); }).join("");
+  });
+  return out.charAt(0).toUpperCase()+out.slice(1);
+}
+function theoryHtml(th){
+  return '<p>'+th.intro+'</p><ul class="rules">'+th.rules.map(r=>{
+    let ex="";
+    if(r[1]){
+      const fr=frOnly(r[1]);
+      ex='<span class="ex" lang="fr">'+r[1]+(fr?'<button type="button" class="say" data-say="'+esc(fr)+'" aria-label="Озвучить пример">🔊</button><span class="tr">'+esc(frTrans(fr))+'</span>':'')+'</span>';
+    }
+    return '<li><span class="r">'+r[0]+'</span>'+ex+'</li>';
+  }).join("")+'</ul>';
+}
 function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
   d.innerHTML='<summary>📖 Теория уровня '+state.level+' — '+esc(th.t)+'</summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
 const MAXLEVEL=13;
@@ -534,7 +596,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[]}, recap:{ok:false}, won:false});
+const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
@@ -700,6 +762,7 @@ function stageCount(k){
   if(k==="rev") return REV_SUBS.reduce((n,x)=>n+state.fg[x.src].length,0);
   if(isRev(k)) return state.fg[revSrc(k)].length;
   if(k==="rec") return recapCards(state.level).length;
+  if(k==="rel") return 1;
   const d=levelData(state.level); return d?d.phrases.length:18;
 }
 function doneCount(k){
@@ -865,7 +928,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isForgot;
     fc.onchange=()=>{
-      if(isRev(k)){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); return; }
+      if(isRev(k)){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; if(play && fc.checked) playRelearn(idx); else reMain(); renderHeader(); window.scrollTo(0,y); return; }
       if(fc.checked){
         setForgot(idx,true,k);
         if(k==="fin"){ if(state.done.fin[idx]) unmarkDone("fin", idx); else { save(); renderHeader(); } }  // в финальном тесте карточка ждёт повтора и не засчитывается
@@ -951,7 +1014,7 @@ function dictItem(idx, fr, ru, k, n){
   fg.innerHTML='<input type="checkbox"> Je ne sais plus';
   const fc=fg.querySelector("input"); fc.checked=isForgot;
   fc.onchange=()=>{
-    if(k==="rev_fin"){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); return; }
+    if(k==="rev_fin"){ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; if(play && fc.checked) playRelearn(idx); else reMain(); renderHeader(); window.scrollTo(0,y); return; }
     if(fc.checked){ setForgot(idx,true,"fin"); if(done){ save(); renderHeader(); } else markDone("fin",idx,true); }
     else { setForgot(idx,false,"fin"); unmarkDone("fin",idx); }
     refresh();
@@ -1258,7 +1321,7 @@ function assItem(idx, d, k, n){
     const fg=document.createElement("label"); fg.className="known forgot-mark";
     fg.innerHTML='<input type="checkbox"> Je ne sais plus';
     const fc=fg.querySelector("input"); fc.checked=isAgain;
-    fc.onchange=()=>{ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; reMain(); renderHeader(); window.scrollTo(0,y); };
+    fc.onchange=()=>{ setAgain(k,idx,fc.checked); if(fc.checked && state.done[k][idx]) unmarkDone(k,idx); const y=window.scrollY; if(play && fc.checked) playRelearn(idx); else reMain(); renderHeader(); window.scrollTo(0,y); };
     const marks=document.createElement("div"); marks.className="marks"; marks.appendChild(fg);
     el.querySelector(".item-top").appendChild(marks);
     if(isAgain) el.querySelector(".fbwrap").innerHTML='<p class="hint">'+(play?"Запомни ответ. Эта карточка вернётся в конец раздела, и ты выберешь ответ ещё раз.":"Запомни ответ и сними отметку «Je ne sais plus», чтобы выбрать его ещё раз. Карточка вернётся в конец списка.")+'</p>';
@@ -1349,11 +1412,42 @@ function renderRecap(m){
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
   const ready=dn>=tot||admin;
-  nx.innerHTML='<button class="btn violet" id="recapGo" style="width:100%;font-size:1.15rem"'+(ready?"":" disabled")+'>'+(ready?"Начать уровень "+N:"Сначала отметь все фразы ("+dn+" / "+tot+")")+'</button>'+
+  nx.innerHTML='<button class="btn cta" id="recapGo" style="width:100%"'+(ready?"":" disabled")+'>'+(ready?"Начать уровень "+N:"Сначала отметь все фразы ("+dn+" / "+tot+")")+'</button>'+
     '<button class="btn ghost" id="recapSkip" style="width:100%;margin-top:8px">Пропустить повторение</button>';
   nx.querySelector("#recapGo").onclick=recapStart; nx.querySelector("#recapSkip").onclick=recapStart;
   m.appendChild(nx);
 }
+
+/* ---------- список уровней в отдельном окне ---------- */
+function levelPct(n){
+  const st=n===state.level?state:levelsSaved[n]; if(!st) return 0;
+  if(st.won) return 100;
+  const t=levelData(n)?levelData(n).phrases.length:18;
+  const sum=["rep","ass","fin","dis"].reduce((a,k)=>a+((st.done&&st.done[k])||[]).filter(Boolean).length,0);
+  return Math.min(99,Math.round(sum/(4*t)*100));
+}
+function renderLevels(){
+  const host=$("lvHost"); host.innerHTML="";
+  const cur=state.level, pc=levelPct(cur);
+  $("lvCount").textContent=levelDone(MAXLEVEL)||cur>MAXLEVEL?"":"";
+  const go=document.createElement("button"); go.type="button"; go.className="btn cta"; go.style.width="100%"; go.id="lvContinue";
+  go.innerHTML="▶ "+(pc>0?"Продолжить":"Начать")+" · Niveau "+cur;
+  go.onclick=closeLevels; host.appendChild(go);
+  const hint=document.createElement("p"); hint.className="hint"; hint.style.margin="12px 2px 0"; hint.textContent="Выбери уровень. Внутри каждого уровня шаги, которые идут по порядку."; host.appendChild(hint);
+  const list=document.createElement("div"); list.className="lv-list";
+  for(let n=1;n<=MAXLEVEL;n++){
+    const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n];
+    const b=document.createElement("button"); b.type="button"; b.className="lv-card"+(done?" done":""); b.dataset.level=n; b.setAttribute("aria-current",n===cur);
+    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"пройден":pct+"%")+'</span>';
+    b.onclick=()=>{ goLevel(n); closeLevels(); };
+    list.appendChild(b);
+  }
+  host.appendChild(list);
+}
+function openLevels(){ renderLevels(); $("levels").style.display="flex"; document.body.classList.add("playing"); document.body.style.overflow="hidden"; $("levels").querySelector(".pl-body").scrollTop=0; }
+function closeLevels(){ $("levels").style.display="none"; if(!play){ document.body.classList.remove("playing"); document.body.style.overflow=""; } }
+$("lvClose").onclick=closeLevels;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && $("levels").style.display!=="none") closeLevels(); });
 
 /* ---------- одна карточка на экране ---------- */
 // на экране только одна карточка, поэтому ответ на другую не подсмотреть. Пройденный этап можно листать
@@ -1369,6 +1463,7 @@ function seqFor(k){
 const isSettled=(k,i)=>!!state.done[k][i] || (isRev(k) && state.again[k].indexOf(i)>=0);
 function cardEl(k,idx,n){
   const d=levelData(state.level), [fr,ru]=d.phrases[idx];
+  if(k==="rel") return speechItem(idx,fr,ru,"rel",false,n);
   if(k==="ass"||k==="rev_ass") return assItem(idx,d,k,n);
   if(k==="fin"||k==="rev_fin") return dictItem(idx,fr,ru,k,n);
   return speechItem(idx,fr,ru,k,k!=="rep",n);
@@ -1389,7 +1484,7 @@ function playStart(k,mode){
 }
 function playHide(){
   stopAudio(); if(plObs){ plObs.disconnect(); plObs=null; }
-  play=null; $("player").style.display="none"; document.body.classList.remove("playing"); document.body.style.overflow="";
+  play=null; $("player").style.display="none"; if($("levels").style.display==="none"){ document.body.classList.remove("playing"); document.body.style.overflow=""; }
 }
 function playClose(){ playHide(); renderAll(); window.scrollTo({top:0}); }
 function plTop(txt,dn,tot){
@@ -1415,6 +1510,7 @@ function renderPlayer(){
     $("plNext").onclick=()=>{ stopAudio(); play.pos++; renderPlayer(); plBody().scrollTop=0; };
     return;
   }
+  if(play.rel!=null){ renderRelearnCard(); return; }
   if(play.cur==null) play.cur=firstOpen(k);
   if(play.cur===undefined || play.cur===null){ renderPlayerEnd(); return; }
   const seq=seqFor(k);
@@ -1425,8 +1521,9 @@ function renderPlayer(){
 // карточка, ответ на которую уже дан, открывает кнопку «Дальше»
 function plSync(){
   if(!play || play.mode!=="play" || play.cur==null) return;
-  const k=play.k, bot=$("plBottom"), tot=stageCount(k), dn=doneCount(k), settled=isSettled(k,play.cur);
+  const k=play.k, bot=$("plBottom"), tot=stageCount(k), dn=doneCount(k), settled=play.rel!=null ? isSettled("rel",play.rel) : isSettled(k,play.cur);
   plTop(dn+" / "+tot,dn,tot);
+  if(play.rel!=null) $("plTitle").textContent=STAGES[0].tab+" · назад на первую вкладку";
   const want=settled?"next":"wait";
   if(bot.dataset.s===want) return;
   bot.dataset.s=want; bot.innerHTML="";
@@ -1434,15 +1531,28 @@ function plSync(){
   if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше →</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
   else { row.innerHTML='<div class="pl-wait">Ответь на карточку, чтобы перейти к следующей.</div>'; bot.appendChild(row); }
 }
+// в повторе «Je ne sais plus» возвращает на первую вкладку: фраза показывается так же, как в «Écoute & répète», потом возвращается в конец раздела
+function playRelearn(idx){ state.done.rel[idx]=false; play.rel=idx; save(); $("plBottom").dataset.s=""; renderRelearnCard(); }
+function renderRelearnCard(){
+  const host=$("plHost"); host.innerHTML="";
+  const ban=document.createElement("div"); ban.className="relearn";
+  ban.innerHTML="↩ Вернулись на первую вкладку «"+esc(STAGES[0].tab)+"». Послушай эту фразу и повтори её вслух. Потом она вернётся в повтор.";
+  host.appendChild(ban);
+  host.appendChild(cardEl("rel",play.rel,seqFor(play.k).indexOf(play.rel)+1));
+  if(plObs) plObs.disconnect();
+  plObs=new MutationObserver(()=>plSync()); plObs.observe(host,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
+  plSync();
+}
 function plAdvance(){
-  stopAudio(); const bot=$("plBottom"); bot.dataset.s="";
+  stopAudio(); const bot=$("plBottom"); bot.dataset.s=""; play.rel=null;
   play.cur=firstOpen(play.k); if(play.cur===undefined) play.cur=null;
   if(play.cur==null){ renderPlayerEnd(); } else renderPlayer();
   plBody().scrollTop=0;
 }
 function playRerender(){
   if(!play) return;
-  if(play.mode==="play" && play.cur!=null){ $("plBottom").dataset.s=""; const host=$("plHost"); const seq=seqFor(play.k); host.innerHTML=""; host.appendChild(cardEl(play.k,play.cur,seq.indexOf(play.cur)+1)); plSync(); }
+  if(play.mode==="play" && play.rel!=null){ $("plBottom").dataset.s=""; renderRelearnCard(); }
+  else if(play.mode==="play" && play.cur!=null){ $("plBottom").dataset.s=""; const host=$("plHost"); const seq=seqFor(play.k); host.innerHTML=""; host.appendChild(cardEl(play.k,play.cur,seq.indexOf(play.cur)+1)); plSync(); }
   else renderPlayer();
 }
 function renderPlayerEnd(){
@@ -1466,7 +1576,7 @@ function renderPlayerEnd(){
   bot.appendChild(row);
 }
 $("plClose").onclick=playClose;
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && play) playClose(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && play && $("levels").style.display==="none") playClose(); });
 
 // экран этапа. Здесь теория, прогресс и кнопка «Начать». Листать карточки можно, когда этап пройден
 function startPanel(m,k,title,note){
@@ -1475,7 +1585,7 @@ function startPanel(m,k,title,note){
   const fgN=(k==="dis"||k==="ass"||k==="fin")?state.fg[k].length:0;
   p.innerHTML='<h2 style="margin:0 0 4px">'+esc(title)+'</h2><p class="hint" style="margin:0 0 10px">'+esc(note)+'</p><div class="prog" style="margin:0 0 12px">Пройдено: '+dn+' / '+tot+(fgN?" · отложено "+fgN:"")+'</div>';
   const row=document.createElement("div"); row.style.cssText="display:grid;gap:8px";
-  if(!complete){ const b=document.createElement("button"); b.className="btn violet"; b.style.cssText="width:100%;font-size:1.15rem"; b.id="plStart"; b.textContent=dn?"▶ Продолжить":"▶ Начать"; b.onclick=()=>playStart(k,"play"); row.appendChild(b); }
+  if(!complete){ const b=document.createElement("button"); b.className="btn cta"; b.style.cssText="width:100%"; b.id="plStart"; b.textContent=dn?"▶ Продолжить":"▶ Начать"; b.onclick=()=>playStart(k,"play"); row.appendChild(b); }
   if(canBrowse){ const b=document.createElement("button"); b.className="btn "+(complete?"violet":"ghost"); b.style.width="100%"; b.id="plBrowse"; b.textContent="👀 Листать карточки"; b.onclick=()=>playStart(k,"browse"); row.appendChild(b); }
   p.appendChild(row); m.appendChild(p);
 }
@@ -1488,7 +1598,7 @@ function renderMain(){
   if(state.won){
     const earnedN=Object.values(state.earned).filter(Boolean).length;
     const w=document.createElement("section"); w.className="panel win";
-    w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><p class="pill" style="display:inline-block">🦐 Crevettes : '+state.shrimps+'</p><div style="margin-top:14px"><button class="btn violet" id="nextLevel">Niveau suivant → Следующий уровень</button></div>';
+    w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><p class="pill" style="display:inline-block">🦐 Crevettes : '+state.shrimps+'</p><div style="margin-top:14px"><button class="btn cta" id="nextLevel">Niveau suivant → Следующий уровень</button></div>';
     m.appendChild(w);
     w.querySelector("#nextLevel").onclick=()=>goLevel(state.level+1);
     // пройденный уровень можно листать: по карточке на экране, с ответами
@@ -1514,7 +1624,7 @@ function renderMain(){
   if(doneCount(k)>=tot && state.view<4){
     const to=state.view+1;
     const nx=document.createElement("div"); nx.style.marginTop="14px";
-    nx.innerHTML='<button class="btn violet" style="width:100%;font-size:1.15rem">Этап пройден! Дальше: '+esc(STAGES[to].tab)+'</button>';
+    nx.innerHTML='<button class="btn cta" style="width:100%">Этап пройден! Дальше: '+esc(STAGES[to].tab)+'</button>';
     nx.querySelector("button").onclick=()=>{state.view=to;save();renderAll();window.scrollTo({top:0,behavior:"smooth"});};
     m.appendChild(nx);
   }
@@ -1613,11 +1723,8 @@ function goLevel(n){
   state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap};
   save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); toast("Уровень "+n);
 }
-const pick=$("levelPick");
-$("levelPick").onchange=()=>goLevel(+pick.value);
-$("lvPrev").onclick=()=>goLevel(state.level-1);
-$("lvNext").onclick=()=>goLevel(state.level+1);
 $("nextLevelBtn").onclick=()=>goLevel(state.level+1);
+$("lvOpen").onclick=()=>openLevels();
 $("recapBtn").onclick=()=>{ state.recap.ok=false; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
@@ -1626,12 +1733,10 @@ function renderAdmin(){
   $("adminBtn").setAttribute("aria-pressed",admin);
   $("adminBox").hidden=!admin;
   $("nextLevelBtn").disabled=state.level>=MAXLEVEL;
-  pick.innerHTML="";
-  for(let n=1;n<=MAXLEVEL;n++){ const o=document.createElement("option"); o.value=n; o.textContent=(levelDone(n)?"✓ ":"")+n+". "+BUILTIN[n].fr; pick.appendChild(o); }
-  pick.value=Math.min(state.level,MAXLEVEL);
-  $("lvPrev").disabled=state.level<=1; $("lvNext").disabled=state.level>=MAXLEVEL;
+  $("lvOpen").textContent="☰ Все уровни";
 }
 renderAll();
+openLevels();
 </script>
 </body>
 </html>
