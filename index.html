@@ -91,10 +91,14 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .marks{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
 .theory{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:2px 14px 8px;margin-bottom:12px}
-.theory summary{cursor:pointer;padding:10px 0;line-height:1.3;display:grid;gap:2px}
+.theory summary{cursor:pointer;padding:10px 0;line-height:1.3;display:flex;align-items:center;gap:12px;list-style:none}
+.theory summary::-webkit-details-marker{display:none}
+.theory .th-main{flex:1;min-width:0;display:grid;gap:2px}
+.theory .th-chev{flex:none;width:38px;height:38px;border-radius:50%;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;color:var(--bleu);font-size:1.1rem;transition:transform .2s}
+.theory[open] .th-chev{transform:rotate(180deg)}
+.theory .th-tag{color:var(--bleu);font-size:.85rem;font-weight:600;margin-top:4px}
 .theory .th-lv{font-weight:800;font-size:1.15rem;color:var(--ink)}
 .theory .th-ru{color:var(--soft);font-size:.95rem}
-.theory .th-hint{color:var(--bleu);font-size:.85rem;font-weight:600;margin-top:4px}
 .theory.titleonly{padding:12px 14px}
 .theory-body{font-size:.98rem;line-height:1.5}
 .theory-body p{margin:.5em 0}
@@ -213,14 +217,23 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-item{background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
 .lv-item .lv-card{border:none;border-radius:0;background:transparent}
-.lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:2px solid var(--line);background:var(--bg);cursor:pointer;font-size:.92rem;font-weight:600}
+.lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:2px solid var(--line);background:var(--bg);cursor:pointer;font-size:.8rem;font-weight:600;color:var(--soft)}
 .lv-sw input{position:absolute;opacity:0;width:1px;height:1px}
 .sw-track{flex:none;width:48px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
 .sw-track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
 .lv-sw input:checked + .sw-track{background:var(--ok)}
 .lv-sw input:checked + .sw-track::after{transform:translateX(20px)}
 .lv-sw input:focus-visible + .sw-track{outline:3px solid var(--rouge);outline-offset:2px}
-.sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap}
+.sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap;font-size:.85rem}
+.sw-ck{color:var(--ok);font-size:1rem}
+.lv-rap{margin:-4px 0 0 22px;border:2px dashed var(--line);border-radius:16px;overflow:hidden;background:var(--paper)}
+.lv-rap.done{border-color:var(--ok)}
+.lv-rapcard{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:10px 12px;cursor:pointer}
+.lv-rapcard .rapic{flex:none;font-size:1.3rem}
+.lv-rapcard .raptxt{flex:1;min-width:0;display:grid;gap:1px}
+.lv-rapcard .raptxt b{font-size:.98rem}
+.lv-rapcard .raptxt small{color:var(--soft);font-size:.86rem}
+.lv-rapcard .lvgo{flex:none;font-size:1.5rem;line-height:1;color:var(--soft)}
 .progwrap{margin:0}
 .progwrap .bar{margin:6px 0 0}
 #stageHost{display:flex;flex-direction:column;gap:0}
@@ -242,8 +255,9 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-card .lvnum{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg);border:2px solid var(--line)}
 .lv-item.done .lvnum{background:var(--ok);color:#fff;border-color:var(--ok)}
 .lv-card .lvtxt{flex:1;min-width:0;display:grid;gap:2px}
-.lv-card .lvtxt b{font-size:1rem}
-.lv-card .lvtxt small{color:var(--soft);font-size:.88rem}
+.lv-card .lvtxt b{font-size:1.12rem;line-height:1.25}
+.lv-card .lvtxt small{color:var(--soft);font-size:.96rem}
+.lv-card .lvgo{flex:none;font-size:1.7rem;line-height:1;color:var(--soft);margin-left:-4px}
 .lv-card .lvbar{height:8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin-top:4px}
 .lv-card .lvbar span{display:block;height:100%;background:linear-gradient(90deg,var(--bleu),var(--rouge))}
 .lv-card .lvst{flex:none;font-weight:700;color:var(--soft);font-size:.9rem}
@@ -582,7 +596,7 @@ function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
   const pl=planFor(state.level);
-  d.innerHTML='<summary><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-hint">📖 Теория уровня. Нажми, чтобы развернуть или свернуть</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Теория</span></span><span class="th-chev" aria-hidden="true">▾</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
   d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
@@ -614,7 +628,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, won:false});
+const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, rapEarned:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
@@ -836,7 +850,7 @@ function renderHeader(){
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const recap=needRecap();
   $("stages").style.display=recap?"none":"";
-  $("recapBtn").style.display=(state.level>=2 && state.recap.ok && !state.won)?"":"none";
+  $("recapBtn").style.display=(state.level>=2 && !recap)?"":"none";
   if(state.view>unl()) state.view=unl();
   const nav=$("stages"); nav.innerHTML="";
   STAGES.forEach((s,i)=>{
@@ -865,7 +879,9 @@ function stageComplete(k){
     const got=award("dis"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
     if(state.unlocked>before) toast("Bravo ! "+pre+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !")); else if(got) toast("Bravo ! +1 🦐");
   }
-  else if(k==="rec"){ toast("Bravo ! Повторение пройдено"); }
+  else if(k==="rec"){
+    if(!state.rapEarned){ state.rapEarned=true; state.shrimps++; toast("Bravo ! Rappel terminé. +1 🦐"); } else toast("Bravo ! Rappel terminé");
+  }
   else if(isRev(k)){
     if(revDone()){
       REV_SUBS.forEach(x=>{ state.again[x.key]=[]; state.tail[x.key]=[]; });
@@ -1391,8 +1407,9 @@ function recapCards(N){
   }
   return out;
 }
-function needRecap(){ return state.level>=2 && !state.recap.ok && !state.won && !!levelData(state.level); }
-function recapStart(){ state.recap.ok=true; state.view=0; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
+let rapForce=false;   // Rappel открыт вручную (кнопка «Rappel» или строка между уровнями)
+function needRecap(){ return state.level>=2 && (rapForce || (!state.recap.ok && !state.won)) && !!levelData(state.level); }
+function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
 function renderRecap(m){
   const N=state.level, cards=recapCards(N), tot=cards.length, dn=doneCount("rec");
   const intro=document.createElement("section"); intro.className="panel recap-intro";
@@ -1417,7 +1434,7 @@ function renderRecap(m){
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
   const ready=dn>=tot||admin;
-  nx.innerHTML='<button class="btn cta" id="recapGo" style="width:100%"'+(ready?"":" disabled")+'>'+(ready?"Начать уровень "+N:"Сначала отметь все фразы ("+dn+" / "+tot+")")+'</button>'+
+  nx.innerHTML='<button class="btn cta" id="recapGo" style="width:100%"'+(ready?"":" disabled")+'>'+(ready?(state.recap.ok?"Вернуться к уровню "+N:"Начать уровень "+N):"Сначала отметь все фразы ("+dn+" / "+tot+")")+'</button>'+
     '<button class="btn ghost" id="recapSkip" style="width:100%;margin-top:8px">Пропустить повторение</button>';
   nx.querySelector("#recapGo").onclick=recapStart; nx.querySelector("#recapSkip").onclick=recapStart;
   m.appendChild(nx);
@@ -1426,7 +1443,7 @@ function renderRecap(m){
 /* ---------- главный экран со списком уровней ---------- */
 let screen="home";   // "home" или "level". Сайт всегда открывается на главном экране
 function showScreen(){ $("homeScreen").style.display=screen==="home"?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; }
-function goHome(){ stopAudio(); play=null; screen="home"; renderAll(); window.scrollTo({top:0}); }
+function goHome(){ stopAudio(); play=null; rapForce=false; screen="home"; renderAll(); window.scrollTo({top:0}); }
 function openLevel(n){ screen="level"; goLevel(n,true); }
 function levelPct(n){
   const st=n===state.level?state:levelsSaved[n]; if(!st) return 0;
@@ -1452,31 +1469,58 @@ function markLevelDone(n){
   save(); renderAll(); toast("Niveau "+n+" terminé !"+(gain?" +"+gain+" 🦐":""));
 }
 function unmarkLevelDone(n){
-  const cur=n===state.level, st=cur?state:levelsSaved[n], back=levelEarned(st);
+  const cur=n===state.level, st=cur?state:levelsSaved[n], back=levelEarned(st)+(st&&st.rapEarned?1:0);
   state.shrimps=Math.max(0,state.shrimps-back);
   if(cur){ const sh=state.shrimps; state={...fresh(),level:n,shrimps:sh}; } else delete levelsSaved[n];
   save(); renderAll(); toast("Niveau "+n+" réinitialisé."+(back?" −"+back+" 🦐":""));
 }
+// отметить Rappel перед уровнем m как «знаю»: +1 креветка, а повторное снятие забирает её
+function markRappel(m,on){
+  const cur=m===state.level;
+  let st=cur?state:(levelsSaved[m]?JSON.parse(JSON.stringify(levelsSaved[m])):{...fresh(),level:m});
+  st={...fresh(),...st}; st.done={...fresh().done,...st.done}; st.recap={ok:false,...st.recap};
+  if(on){
+    if(!st.rapEarned){ st.rapEarned=true; state.shrimps++; }
+    st.done.rec=[]; recapCards(m).forEach(c=>{ st.done.rec[c.key]=true; }); st.recap.ok=true;
+  } else {
+    if(st.rapEarned){ st.rapEarned=false; state.shrimps=Math.max(0,state.shrimps-1); }
+    st.done.rec=[]; st.recap.ok=false;
+  }
+  st.level=m; st.shrimps=state.shrimps;
+  if(cur) state=st; else levelsSaved[m]=st;
+  save(); renderAll(); toast(on?"Rappel terminé ! +1 🦐":"Rappel réinitialisé. −1 🦐");
+}
 function renderLevels(){
   const host=$("lvHost"); host.innerHTML="";
+  const sw=(id,label,gainTxt,checked,onChange)=>{
+    const l=document.createElement("label"); l.className="lv-sw";
+    l.innerHTML='<input type="checkbox" data-'+id+'"'+(checked?" checked":"")+'><span class="sw-track" aria-hidden="true"></span><span class="sw-text">'+label+'</span><span class="sw-gain">'+gainTxt+(checked?' <span class="sw-ck">✓</span>':"")+'</span>';
+    const inp=l.querySelector("input"); inp.onchange=()=>onChange(inp); return l;
+  };
   for(let n=1;n<=MAXLEVEL;n++){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
     const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
     const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.level=n; b.setAttribute("aria-current",n===state.level);
-    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span>';
+    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span><span class="lvgo" aria-hidden="true">›</span>';
     b.onclick=()=>openLevel(n);
-    const gain=4-levelEarned(st), back=levelEarned(st);
-    const sw=document.createElement("label"); sw.className="lv-sw";
-    sw.innerHTML='<input type="checkbox" data-mark="'+n+'"'+(done?" checked":"")+'><span class="sw-track" aria-hidden="true"></span><span class="sw-text">J\'ai déjà fini ce niveau</span><span class="sw-gain">'+(done?"✓":(gain?"+"+gain+" 🦐":""))+'</span>';
-    const inp=sw.querySelector("input");
-    inp.onchange=()=>{
-      if(inp.checked){
-        if(confirm("Marquer le niveau "+n+" comme terminé ? Toutes les cartes seront validées"+(gain?" et tu gagneras "+gain+" crevette"+(gain>1?"s":""):"")+".")) markLevelDone(n); else inp.checked=false;
-      } else {
-        if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
-      }
-    };
-    item.appendChild(b); item.appendChild(sw); host.appendChild(item);
+    const gain=4-levelEarned(st), back=levelEarned(st)+(st&&st.rapEarned?1:0);
+    item.appendChild(b);
+    item.appendChild(sw('mark="'+n,"J'ai déjà fait ce niveau",(done?levelEarned(st):gain)?"+"+(done?levelEarned(st):gain)+" 🦐":"",done,inp=>{
+      if(inp.checked) markLevelDone(n);
+      else if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
+    }));
+    host.appendChild(item);
+    if(n<MAXLEVEL){
+      // между уровнями идёт Rappel: повторение всех пройденных уровней, за него +1 креветка
+      const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
+      const rap=document.createElement("div"); rap.className="lv-rap"+(rdone?" done":"");
+      const rb=document.createElement("button"); rb.type="button"; rb.className="lv-rapcard"; rb.dataset.rappel=m;
+      rb.innerHTML='<span class="rapic" aria-hidden="true">🔄</span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">›</span>';
+      rb.onclick=()=>{ goLevel(m,true); rapForce=true; renderAll(); window.scrollTo({top:0}); };
+      rap.appendChild(rb);
+      rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
+      host.appendChild(rap);
+    }
   }
 }
 
@@ -1729,7 +1773,7 @@ $("restartLevel").onclick=()=>{ if(confirm("Начать текущий уров
 $("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n,quiet){
-  n=Math.max(1,Math.min(MAXLEVEL,n));
+  n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
   if(n!==state.level){
     stopAudio();
     levelsSaved[state.level]=JSON.parse(JSON.stringify(state));
@@ -1741,7 +1785,7 @@ function goLevel(n,quiet){
 }
 $("nextLevelBtn").onclick=()=>goLevel(state.level+1);
 $("lvBack").onclick=goHome;
-$("recapBtn").onclick=()=>{ state.recap.ok=false; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+$("recapBtn").onclick=()=>{ rapForce=true; renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
 function renderAdmin(){
