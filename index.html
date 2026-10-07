@@ -41,14 +41,17 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font-family:"Fredoka","Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:17px;line-height:1.45}
 .wrap{max-width:780px;margin:0 auto;padding:18px 14px 60px;display:grid;gap:16px}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-h1{margin:0;font-size:clamp(.88rem,3.9vw,1.15rem);font-weight:700;letter-spacing:-.01em;min-width:0;white-space:nowrap}
-h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;margin-right:.35em;border-radius:4px;
-  background:linear-gradient(90deg,#2346A8 0 33%,#fff 33% 66%,#E2453C 66%);box-shadow:0 0 0 2px var(--line)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .logo{width:38px;height:38px;flex:none}
+.brand-text{display:grid;line-height:1.05}
+.brand-text b{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+.brand-text small{font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
 .pill{font-size:.88rem;font-weight:600;background:var(--paper);border:1px solid var(--line);padding:4px 12px;border-radius:999px;white-space:nowrap;flex:none}
 
 .marcel{display:flex;gap:12px;align-items:flex-end}
 .cat{font-size:62px;line-height:1;flex:none;transform-origin:bottom center}
-.cat.happy{animation:hop .6s ease}
+.pill.happy{animation:pop .5s ease}
+@keyframes pop{30%{transform:scale(1.12)}100%{transform:scale(1)}}
 @keyframes hop{30%{transform:translateY(-14px) rotate(-6deg)}60%{transform:translateY(0) rotate(4deg)}}
 .bubble{background:var(--paper);border:2px solid var(--ink);border-radius:20px 20px 20px 6px;padding:12px 16px;flex:1}
 .bubble .fr{font-weight:600;font-size:1.15rem}
@@ -84,7 +87,7 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .btn.red{background:var(--rouge)}
 .btn.violet{background:var(--violet)}
 .btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
-.btn.link{background:none;color:var(--bleu);padding:8px 6px;min-height:40px;border:none}
+.btn.link{background:none;color:var(--bleu);padding:8px 0;min-height:40px;border:none;font-size:1.05rem}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.listening{animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--rouge) 30%,transparent)}}
@@ -210,17 +213,13 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .pl-inner.top{margin:0 auto}
 .pl-bottom{margin:12px 0 0}
 .pl-bottom .row{display:flex;gap:8px}
-.pl-bottom .row .btn{flex:1}
+.pl-bottom .row .btn{flex:1;min-height:64px;font-size:1.3rem;border-radius:18px}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .pl-bottom:empty{display:none}
 .player.browse .marks{display:none}
 .stagecard{margin-bottom:12px}
 .screen{display:grid;gap:14px;min-width:0}
 .home-h{font-size:1.15rem;margin:4px 2px 0}
-.lvtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.lvtop .btn{min-height:44px;padding:8px 12px}
-.lvtop #recapBtn{margin-left:auto}
-.lvtop .cat{font-size:34px}
 .lv-item{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
 .lv-item .lv-card{border:none;border-radius:0;background:transparent}
@@ -237,7 +236,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-rap{background:var(--bg);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-rap.done{border-color:var(--ok)}
 .lv-rapcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:12px 14px;cursor:pointer}
-.lv-rapcard .rapsp{flex:none;width:44px}
 .lv-rapcard .raptxt{flex:1;min-width:0;display:grid;gap:1px}
 .lv-rapcard .raptxt b{font-size:1rem;line-height:1.25}
 .lv-rapcard .raptxt small{color:var(--soft);font-size:.9rem}
@@ -296,7 +294,16 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 <body>
 <div class="wrap">
   <header class="toprow">
-    <h1><span class="flag" aria-hidden="true"></span>Français avec Marcel</h1>
+    <div class="brand" id="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2346A8"/><stop offset="1" stop-color="#6A38C2"/></linearGradient></defs>
+        <path d="M8 3h24a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H21l-8 6v-6H8a6 6 0 0 1-6-6V9a6 6 0 0 1 6-6z" fill="url(#lg)"/>
+        <path d="M11.5 25V13.5l8.5 9.5 8.5-9.5V25" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="32" cy="8" r="3.6" fill="#E2453C"/>
+      </svg>
+      <span class="brand-text"><b>Marcel</b><small>français</small></span>
+    </div>
+    <button type="button" class="btn link" id="lvBack" style="display:none"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
     <div class="pill" id="shrimpTop">🦐 Crevettes : 0</div>
   </header>
 
@@ -337,10 +344,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   </div>
 
   <div id="levelScreen" class="screen" style="display:none">
-    <div class="lvtop">
-      <button type="button" class="btn link" id="lvBack"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
-      <span class="cat" id="cat" aria-hidden="true">🐈</span>
-    </div>
 
     
     <div id="micNotice"></div>
@@ -645,7 +648,7 @@ function planFor(n){ return BUILTIN[n] || PLAN[n] || {fr:"Конструкция
 
 const $=id=>document.getElementById(id);
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2000);}
-function happy(){const c=$("cat");c.classList.remove("happy");void c.offsetWidth;c.classList.add("happy");}
+function happy(){const c=$("shrimpTop");c.classList.remove("happy");void c.offsetWidth;c.classList.add("happy");}
 function splitPair(t){ const a=t.split(/(?<=[.?!])\s+/); return a.length===2?a:[t]; }
 function linesHtml(t){ return splitPair(t).map(esc).join(" <br>"); }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -882,7 +885,7 @@ function stageComplete(k){
     if(state.unlocked>before) toast("Bravo ! "+pre+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !")); else if(got) toast("Bravo ! +1 🦐");
   }
   else if(k==="rec"){
-    if(!state.rapEarned){ state.rapEarned=true; state.shrimps++; toast("Bravo ! Rappel terminé. +1 🦐"); } else toast("Bravo ! Rappel terminé");
+    if(!state.rapEarned){ state.rapEarned=true; state.shrimps++; toast("Bravo ! Rappel : +1 🦐"); } else toast("Bravo !");
   }
   else if(isRev(k)){
     if(revDone()){
@@ -1445,7 +1448,11 @@ function renderRecap(m){
 
 /* ---------- главный экран со списком уровней ---------- */
 let screen="home";   // "home" или "level". Сайт всегда открывается на главном экране
-function showScreen(){ $("homeScreen").style.display=screen==="home"?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; }
+function showScreen(){
+  const home=screen==="home";
+  $("homeScreen").style.display=home?"":"none"; $("levelScreen").style.display=home?"none":"";
+  $("brand").style.display=home?"":"none"; $("lvBack").style.display=home?"none":"";
+}
 // единая точка перехода: сохранить, перерисовать, прокрутить вверх
 function navTo(){ save(); renderAll(); window.scrollTo({top:0}); }
 function goHome(){ stopAudio(); play=null; rapForce=false; screen="home"; navTo(); }
@@ -1471,13 +1478,13 @@ function markLevelDone(n){
   st.unlocked=4; st.view=0; st.revKey=""; st.recap={ok:true}; st.won=true; st.level=n;
   state.shrimps+=gain; st.shrimps=state.shrimps;
   if(cur) state=st; else levelsSaved[n]=st;
-  save(); renderAll(); toast("Niveau "+n+" terminé !"+(gain?" +"+gain+" 🦐":""));
+  save(); renderAll(); toast("Niveau "+n+(gain?" : +"+gain+" 🦐":""));
 }
 function unmarkLevelDone(n){
   const cur=n===state.level, st=cur?state:levelsSaved[n], back=levelEarned(st)+(st&&st.rapEarned?1:0);
   state.shrimps=Math.max(0,state.shrimps-back);
   if(cur){ const sh=state.shrimps; state={...fresh(),level:n,shrimps:sh}; } else delete levelsSaved[n];
-  save(); renderAll(); toast("Niveau "+n+" réinitialisé."+(back?" −"+back+" 🦐":""));
+  save(); renderAll(); toast("Niveau "+n+" réinitialisé"+(back?" : −"+back+" 🦐":""));
 }
 // отметить Rappel перед уровнем m как «знаю»: +1 креветка, а повторное снятие забирает её
 function markRappel(m,on){
@@ -1493,7 +1500,7 @@ function markRappel(m,on){
   }
   st.level=m; st.shrimps=state.shrimps;
   if(cur) state=st; else levelsSaved[m]=st;
-  save(); renderAll(); toast(on?"Rappel terminé ! +1 🦐":"Rappel réinitialisé. −1 🦐");
+  save(); renderAll(); toast(on?"Rappel : +1 🦐":"Rappel réinitialisé : −1 🦐");
 }
 function renderLevels(){
   const host=$("lvHost"); host.innerHTML="";
@@ -1506,11 +1513,11 @@ function renderLevels(){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
     const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
     const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.level=n; b.setAttribute("aria-current",n===state.level);
-    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?100:pct)+"%"+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
     b.onclick=()=>goLevel(n);
     const gain=4-levelEarned(st), back=levelEarned(st)+(st&&st.rapEarned?1:0);
     item.appendChild(b);
-    item.appendChild(sw('mark="'+n,"J'ai déjà fait ce niveau",(done?levelEarned(st):gain)?"+"+(done?levelEarned(st):gain)+" 🦐":"",done,inp=>{
+    item.appendChild(sw('mark="'+n,"Je connais déjà",(done?levelEarned(st):gain)?"+"+(done?levelEarned(st):gain)+" 🦐":"",done,inp=>{
       if(inp.checked) markLevelDone(n);
       else if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
     }));
@@ -1520,7 +1527,7 @@ function renderLevels(){
       const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
       const rap=document.createElement("div"); rap.className="lv-rap"+(rdone?" done":"");
       const rb=document.createElement("button"); rb.type="button"; rb.className="lv-rapcard"; rb.dataset.rappel=m;
-      rb.innerHTML='<span class="rapsp" aria-hidden="true"></span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+      rb.innerHTML='<span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
       rb.onclick=()=>openRappel(m);
       rap.appendChild(rb);
       rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
@@ -1601,7 +1608,7 @@ function plSync(){
   const k=play.k, bot=$("plBottom"), settled=play.rel!=null ? isSettled("rel",play.rel) : isSettled(k,play.cur);
   let go=$("plGo");
   if(!go){   // кнопка есть всегда, поэтому ничего не прыгает. Пока ответа нет, она неактивна
-    bot.innerHTML='<div class="row"><button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше '+CHEV()+'</button></div>';
+    bot.innerHTML='<div class="row"><button class="btn violet" id="plGo" style="width:100%">Дальше '+CHEV()+'</button></div>';
     go=$("plGo"); go.onclick=plAdvance;
   }
   go.disabled=!settled;
