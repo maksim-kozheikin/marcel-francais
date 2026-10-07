@@ -94,8 +94,13 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .theory summary{cursor:pointer;padding:10px 0;line-height:1.3;display:flex;align-items:center;gap:12px;list-style:none}
 .theory summary::-webkit-details-marker{display:none}
 .theory .th-main{flex:1;min-width:0;display:grid;gap:2px}
-.theory .th-chev{flex:none;width:38px;height:38px;border-radius:50%;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;color:var(--bleu);font-size:1.1rem;transition:transform .2s}
-.theory[open] .th-chev{transform:rotate(180deg)}
+.chev{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:-1px}
+.chev.l{transform:scaleX(-1)}
+.chev.d{transform:rotate(90deg)}
+.btn .chev{margin:0 3px}
+.theory .th-chev{flex:none;width:30px;height:30px;border-radius:50%;background:var(--bg);border:2px solid var(--line);display:grid;place-items:center;color:var(--bleu);font-size:1.1rem;transition:transform .2s}
+.theory .th-chev .chev{transition:transform .2s}
+.theory[open] .th-chev .chev{transform:rotate(-90deg)}
 .theory .th-tag{color:var(--bleu);font-size:.85rem;font-weight:600;margin-top:4px}
 .theory .th-lv{font-weight:800;font-size:1.15rem;color:var(--ink)}
 .theory .th-ru{color:var(--soft);font-size:.95rem}
@@ -226,14 +231,14 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-sw input:focus-visible + .sw-track{outline:3px solid var(--rouge);outline-offset:2px}
 .sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap;font-size:.85rem}
 .sw-ck{color:var(--ok);font-size:1rem}
-.lv-rap{margin:-4px 0 0 22px;border:2px dashed var(--line);border-radius:16px;overflow:hidden;background:var(--paper)}
+.lv-rap{background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-rap.done{border-color:var(--ok)}
-.lv-rapcard{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:10px 12px;cursor:pointer}
-.lv-rapcard .rapic{flex:none;font-size:1.3rem}
+.lv-rapcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:12px 14px;cursor:pointer}
+.lv-rapcard .rapic{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.25rem;background:var(--bg);border:2px solid var(--line)}
+.lv-rap.done .rapic{border-color:var(--ok)}
 .lv-rapcard .raptxt{flex:1;min-width:0;display:grid;gap:1px}
-.lv-rapcard .raptxt b{font-size:.98rem}
-.lv-rapcard .raptxt small{color:var(--soft);font-size:.86rem}
-.lv-rapcard .lvgo{flex:none;font-size:1.5rem;line-height:1;color:var(--soft)}
+.lv-rapcard .raptxt b{font-size:1.12rem;line-height:1.25}
+.lv-rapcard .raptxt small{color:var(--soft);font-size:.96rem}
 .progwrap{margin:0}
 .progwrap .bar{margin:6px 0 0}
 #stageHost{display:flex;flex-direction:column;gap:0}
@@ -257,7 +262,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-card .lvtxt{flex:1;min-width:0;display:grid;gap:2px}
 .lv-card .lvtxt b{font-size:1.12rem;line-height:1.25}
 .lv-card .lvtxt small{color:var(--soft);font-size:.96rem}
-.lv-card .lvgo{flex:none;font-size:1.7rem;line-height:1;color:var(--soft);margin-left:-4px}
+.lvgo{flex:none;display:grid;place-items:center;color:var(--soft)}
 .lv-card .lvbar{height:8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin-top:4px}
 .lv-card .lvbar span{display:block;height:100%;background:linear-gradient(90deg,var(--bleu),var(--rouge))}
 .lv-card .lvst{flex:none;font-weight:700;color:var(--soft);font-size:.9rem}
@@ -326,16 +331,13 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
         <button class="btn ghost" id="resetAll">Сбросить весь прогресс</button>
         <button class="btn ghost" id="adminBtn" aria-pressed="false">🔑 Админ</button>
       </div>
-      <div class="actions" id="adminBox" hidden style="margin-top:10px">
-        <button class="btn violet" id="nextLevelBtn">⏭ Сразу на следующий уровень</button>
-      </div>
     </details>
     </section>
   </div>
 
   <div id="levelScreen" class="screen" style="display:none">
     <div class="lvtop">
-      <button type="button" class="btn ghost" id="lvBack">‹ Все уровни</button>
+      <button type="button" class="btn ghost" id="lvBack"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
       <button type="button" class="btn ghost" id="recapBtn" style="display:none" title="Повторить пройденные уровни">🔄 Rappel</button>
       <span class="cat" id="cat" aria-hidden="true">🐈</span>
     </div>
@@ -366,6 +368,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 /* ---------- DATA ---------- */
 const BUILTIN = {"1": {fr: "Je veux + nombre + nom", ru: "Я хочу + количество + предмет", phrases: [["Je veux une belle pomme.", "Я хочу одно красивое яблоко."], ["Je ne veux pas de belle pomme.", "Я не хочу красивое яблоко."], ["Tu veux une belle pomme ?", "Ты хочешь красивое яблоко?"], ["Je veux douze grosses crevettes.", "Я хочу двенадцать крупных креветок."], ["Je ne veux pas douze grosses crevettes.", "Я не хочу двенадцать крупных креветок."], ["Tu veux douze grosses crevettes ?", "Ты хочешь двенадцать крупных креветок?"], ["Je veux quatre-vingt-six beaux baisers.", "Я хочу восемьдесят шесть красивых поцелуев."], ["Je ne veux pas quatre-vingt-six beaux baisers.", "Я не хочу восемьдесят шесть красивых поцелуев."], ["Tu veux quatre-vingt-six beaux baisers ?", "Ты хочешь восемьдесят шесть красивых поцелуев?"], ["Il veut quarante-deux petites courgettes.", "Он хочет сорок два маленьких кабачка."], ["Il ne veut pas quarante-deux petites courgettes.", "Он не хочет сорок два маленьких кабачка."], ["Il veut quarante-deux petites courgettes ?", "Он хочет сорок два маленьких кабачка?"], ["Nous voulons soixante et onze bonnes baguettes.", "Мы хотим семьдесят один хороший багет."], ["Nous ne voulons pas soixante et onze bonnes baguettes.", "Мы не хотим семьдесят один хороший багет."], ["Nous voulons soixante et onze bonnes baguettes ?", "Мы хотим семьдесят один хороший багет?"], ["Elles veulent quatre-vingt-trois bouteilles de lait frais.", "Они хотят восемьдесят три бутылки свежего молока."], ["Elles ne veulent pas quatre-vingt-trois bouteilles de lait frais.", "Они не хотят восемьдесят три бутылки свежего молока."], ["Elles veulent quatre-vingt-trois bouteilles de lait frais ?", "Они хотят восемьдесят три бутылки свежего молока?"]]}, "2": {fr: "J'ai…", ru: "У меня есть…", phrases: [["J'ai vingt-trois voitures rouges.", "У меня есть двадцать три красные машины."], ["Je n'ai pas vingt-trois voitures rouges.", "У меня нет двадцати трёх красных машин."], ["Tu as vingt-trois voitures rouges ?", "У тебя есть двадцать три красные машины?"], ["J'ai quatre-vingt-trois réservations confirmées.", "У меня есть восемьдесят три подтверждённые брони."], ["Je n'ai pas quatre-vingt-trois réservations confirmées.", "У меня нет восьмидесяти трёх подтверждённых броней."], ["Tu as quatre-vingt-trois réservations confirmées ?", "У тебя есть восемьдесят три подтверждённые брони?"], ["J'ai cent cinquante grammes de bœuf frais.", "У меня есть сто пятьдесят грамм свежей говядины."], ["Je n'ai pas cent cinquante grammes de bœuf frais.", "У меня нет ста пятидесяти грамм свежей говядины."], ["Tu as cent cinquante grammes de bœuf frais ?", "У тебя есть сто пятьдесят грамм свежей говядины?"], ["Il a soixante et onze euros dans son petit sac.", "У него есть семьдесят один евро в маленькой сумке."], ["Il n'a pas soixante et onze euros dans son petit sac.", "У него нет семидесяти одного евро в маленькой сумке."], ["Il a soixante et onze euros dans son petit sac ?", "У него есть семьдесят один евро в маленькой сумке?"], ["Nous avons deux cent cinquante grammes de beurre salé.", "У нас есть двести пятьдесят грамм солёного масла."], ["Nous n'avons pas deux cent cinquante grammes de beurre salé.", "У нас нет двухсот пятидесяти грамм солёного масла."], ["Nous avons deux cent cinquante grammes de beurre salé ?", "У нас есть двести пятьдесят грамм солёного масла?"], ["Elle a deux grandes sœurs.", "У неё есть две старшие сестры."], ["Elle n'a pas deux grandes sœurs.", "У неё нет двух старших сестёр."], ["Elle a deux grandes sœurs ?", "У неё есть две старшие сестры?"]]}, "3": {fr: "Je prends…", ru: "Я беру…", phrases: [["Je prends un café chaud.", "Я беру горячий кофе."], ["Je ne prends pas de café chaud.", "Я не беру горячий кофе."], ["Tu prends un café chaud ?", "Ты берёшь горячий кофе?"], ["Je prends deux croissants chauds.", "Я беру два горячих круассана."], ["Je ne prends pas deux croissants chauds.", "Я не беру два горячих круассана."], ["Tu prends deux croissants chauds ?", "Ты берёшь два горячих круассана?"], ["Je prends le dernier bus.", "Я еду на последнем автобусе."], ["Je ne prends pas le dernier bus.", "Я не еду на последнем автобусе."], ["Tu prends le dernier bus ?", "Ты едешь на последнем автобусе?"], ["Il prend deux grands verres d'eau froide.", "Он берёт два больших стакана холодной воды."], ["Il ne prend pas deux grands verres d'eau froide.", "Он не берёт два больших стакана холодной воды."], ["Il prend deux grands verres d'eau froide ?", "Он берёт два больших стакана холодной воды?"], ["Nous prenons cent trente grammes de fromage frais.", "Мы берём сто тридцать грамм свежего сыра."], ["Nous ne prenons pas cent trente grammes de fromage frais.", "Мы не берём сто тридцать грамм свежего сыра."], ["Nous prenons cent trente grammes de fromage frais ?", "Мы берём сто тридцать грамм свежего сыра?"], ["Elles prennent trois kilos de belles fraises.", "Они берут три килограмма красивой клубники."], ["Elles ne prennent pas trois kilos de belles fraises.", "Они не берут три килограмма красивой клубники."], ["Elles prennent trois kilos de belles fraises ?", "Они берут три килограмма красивой клубники?"]]}, "4": {fr: "Je voudrais…", ru: "Я бы хотела…", phrases: [["Je voudrais un café noir.", "Я бы хотела чёрный кофе."], ["Je ne voudrais pas de café noir.", "Я бы не хотела чёрный кофе."], ["Vous voudriez un café noir ?", "Вы бы хотели чёрный кофе?"], ["Je voudrais de l'eau froide.", "Я бы хотела холодной воды."], ["Je ne voudrais pas d'eau froide.", "Я бы не хотела холодной воды."], ["Vous voudriez de l'eau froide ?", "Вы бы хотели холодной воды?"], ["Je voudrais deux billets pour le prochain train.", "Я бы хотела два билета на ближайший поезд."], ["Je ne voudrais pas deux billets pour le prochain train.", "Я бы не хотела два билета на ближайший поезд."], ["Vous voudriez deux billets pour le prochain train ?", "Вы бы хотели два билета на ближайший поезд?"], ["Il voudrait cent cinquante grammes de jambon blanc.", "Он бы хотел сто пятьдесят грамм варёной ветчины."], ["Il ne voudrait pas cent cinquante grammes de jambon blanc.", "Он бы не хотел сто пятьдесят грамм варёной ветчины."], ["Il voudrait cent cinquante grammes de jambon blanc ?", "Он бы хотел сто пятьдесят грамм варёной ветчины?"], ["Nous voudrions deux grosses boules de glace.", "Мы бы хотели два больших шарика мороженого."], ["Nous ne voudrions pas deux grosses boules de glace.", "Мы бы не хотели два больших шарика мороженого."], ["Nous voudrions deux grosses boules de glace ?", "Мы бы хотели два больших шарика мороженого?"], ["Elles voudraient une chambre tranquille.", "Они бы хотели тихий номер."], ["Elles ne voudraient pas de chambre tranquille.", "Они бы не хотели тихий номер."], ["Elles voudraient une chambre tranquille ?", "Они бы хотели тихий номер?"]]}, "5": {fr: "Je cherche…", ru: "Я ищу…", phrases: [["Je cherche la gare centrale.", "Я ищу центральный вокзал."], ["Je ne cherche pas la gare centrale.", "Я не ищу центральный вокзал."], ["Vous cherchez la gare centrale ?", "Вы ищете центральный вокзал?"], ["Je cherche un petit hôtel.", "Я ищу маленькую гостиницу."], ["Je ne cherche pas de petit hôtel.", "Я не ищу маленькую гостиницу."], ["Vous cherchez un petit hôtel ?", "Вы ищете маленькую гостиницу?"], ["Je cherche une pharmacie ouverte.", "Я ищу работающую аптеку."], ["Je ne cherche pas de pharmacie ouverte.", "Я не ищу работающую аптеку."], ["Vous cherchez une pharmacie ouverte ?", "Вы ищете работающую аптеку?"], ["Il cherche un bon restaurant à deux cents mètres.", "Он ищет хороший ресторан в двухстах метрах."], ["Il ne cherche pas de bon restaurant à deux cents mètres.", "Он не ищет хороший ресторан в двухстах метрах."], ["Il cherche un bon restaurant à deux cents mètres ?", "Он ищет хороший ресторан в двухстах метрах?"], ["Nous cherchons un café calme à trois cents mètres.", "Мы ищем тихое кафе в трёхстах метрах."], ["Nous ne cherchons pas de café calme à trois cents mètres.", "Мы не ищем тихое кафе в трёхстах метрах."], ["Nous cherchons un café calme à trois cents mètres ?", "Мы ищем тихое кафе в трёхстах метрах?"], ["Elles cherchent un bel appartement de cinquante mètres carrés.", "Они ищут красивую квартиру в пятьдесят квадратных метров."], ["Elles ne cherchent pas de bel appartement de cinquante mètres carrés.", "Они не ищут красивую квартиру в пятьдесят квадратных метров."], ["Elles cherchent un bel appartement de cinquante mètres carrés ?", "Они ищут красивую квартиру в пятьдесят квадратных метров?"]]}, "6": {fr: "Je peux… / Je ne peux pas…", ru: "Я могу… / Я не могу…", phrases: [["Je peux payer la petite facture.", "Я могу оплатить небольшой счёт."], ["Je ne peux pas payer la petite facture.", "Я не могу оплатить небольшой счёт."], ["Tu peux payer la petite facture ?", "Ты можешь оплатить небольшой счёт?"], ["Je peux te verser cent millilitres de kéfir froid.", "Я могу налить тебе сто миллилитров холодного кефира."], ["Je ne peux pas te verser cent millilitres de kéfir froid.", "Я не могу налить тебе сто миллилитров холодного кефира."], ["Tu peux me verser cent millilitres de kéfir froid ?", "Ты можешь налить мне сто миллилитров холодного кефира?"], ["Je peux manger du fromage frais.", "Я могу есть свежий сыр."], ["Je ne peux pas manger de fromage frais.", "Я не могу есть свежий сыр."], ["Tu peux manger du fromage frais ?", "Ты можешь есть свежий сыр?"], ["Il peut avoir un café chaud.", "Он может получить горячий кофе."], ["Il ne peut pas avoir de café chaud.", "Он не может получить горячий кофе."], ["Il peut avoir un café chaud ?", "Он может получить горячий кофе?"], ["Nous pouvons avoir deux tartes chaudes.", "Мы можем получить два горячих пирога."], ["Nous ne pouvons pas avoir deux tartes chaudes.", "Мы не можем получить два горячих пирога."], ["Nous pouvons avoir deux tartes chaudes ?", "Мы можем получить два горячих пирога?"], ["Elles peuvent attendre vingt longues minutes.", "Они могут ждать двадцать долгих минут."], ["Elles ne peuvent pas attendre vingt longues minutes.", "Они не могут ждать двадцать долгих минут."], ["Elles peuvent attendre vingt longues minutes ?", "Они могут ждать двадцать долгих минут?"]]}, "7": {fr: "Je vais + infinitif", ru: "Я собираюсь… (futur proche)", phrases: [["Je vais manger une bonne soupe.", "Я собираюсь съесть вкусный суп."], ["Je ne vais pas manger de bonne soupe.", "Я не собираюсь есть вкусный суп."], ["Tu vas manger une bonne soupe ?", "Ты собираешься съесть вкусный суп?"], ["Je vais payer l'addition complète.", "Я собираюсь оплатить полный счёт."], ["Je ne vais pas payer l'addition complète.", "Я не собираюсь оплачивать полный счёт."], ["Tu vas payer l'addition complète ?", "Ты собираешься оплатить полный счёт?"], ["Je vais acheter deux nouveaux billets.", "Я собираюсь купить два новых билета."], ["Je ne vais pas acheter deux nouveaux billets.", "Я не собираюсь покупать два новых билета."], ["Tu vas acheter deux nouveaux billets ?", "Ты собираешься купить два новых билета?"], ["Il va visiter le vieux musée.", "Он собирается посетить старый музей."], ["Il ne va pas visiter le vieux musée.", "Он не собирается посещать старый музей."], ["Il va visiter le vieux musée ?", "Он собирается посетить старый музей?"], ["Nous allons acheter dix grandes bouteilles d'eau.", "Мы собираемся купить десять больших бутылок воды."], ["Nous n'allons pas acheter dix grandes bouteilles d'eau.", "Мы не собираемся покупать десять больших бутылок воды."], ["Nous allons acheter dix grandes bouteilles d'eau ?", "Мы собираемся купить десять больших бутылок воды?"], ["Elles vont dépenser soixante-dix euros pour un joli cadeau.", "Они собираются потратить семьдесят евро на красивый подарок."], ["Elles ne vont pas dépenser soixante-dix euros pour un joli cadeau.", "Они не собираются тратить семьдесят евро на красивый подарок."], ["Elles vont dépenser soixante-dix euros pour un joli cadeau ?", "Они собираются потратить семьдесят евро на красивый подарок?"]]}, "8": {fr: "J'ai + participe passé", ru: "Я (сделала)… (passé composé)", phrases: [["J'ai mangé un gros gâteau.", "Я съела большой торт."], ["Je n'ai pas mangé de gros gâteau.", "Я не съела большой торт."], ["Tu as mangé un gros gâteau ?", "Ты съела большой торт?"], ["J'ai acheté deux billets bon marché.", "Я купила два дешёвых билета."], ["Je n'ai pas acheté deux billets bon marché.", "Я не купила два дешёвых билета."], ["Tu as acheté deux billets bon marché ?", "Ты купила два дешёвых билета?"], ["J'ai dépensé quatre-vingt-dix euros pour une belle robe.", "Я потратила девяносто евро на красивое платье."], ["Je n'ai pas dépensé quatre-vingt-dix euros pour une belle robe.", "Я не потратила девяносто евро на красивое платье."], ["Tu as dépensé quatre-vingt-dix euros pour une belle robe ?", "Ты потратила девяносто евро на красивое платье?"], ["Il a marché cinq longs kilomètres.", "Он прошёл пять долгих километров."], ["Il n'a pas marché cinq longs kilomètres.", "Он не прошёл пять долгих километров."], ["Il a marché cinq longs kilomètres ?", "Он прошёл пять долгих километров?"], ["Nous avons commandé une grande pizza.", "Мы заказали большую пиццу."], ["Nous n'avons pas commandé de grande pizza.", "Мы не заказали большую пиццу."], ["Nous avons commandé une grande pizza ?", "Мы заказали большую пиццу?"], ["Elle a oublié son nouveau téléphone.", "Она забыла свой новый телефон."], ["Elle n'a pas oublié son nouveau téléphone.", "Она не забыла свой новый телефон."], ["Elle a oublié son nouveau téléphone ?", "Она забыла свой новый телефон?"]]}, "9": {fr: "Je suis…", ru: "Я (есть)… / Я нахожусь…", phrases: [["Je suis très fatiguée.", "Я очень устала."], ["Je ne suis pas très fatiguée.", "Я не очень устала."], ["Tu es très fatiguée ?", "Ты очень устала?"], ["Je suis contente de ma nouvelle chambre.", "Я довольна своим новым номером."], ["Je ne suis pas contente de ma nouvelle chambre.", "Я не довольна своим новым номером."], ["Tu es contente de ta nouvelle chambre ?", "Ты довольна своим новым номером?"], ["Je suis libre ce soir.", "Я свободна сегодня вечером."], ["Je ne suis pas libre ce soir.", "Я не свободна сегодня вечером."], ["Tu es libre ce soir ?", "Ты свободна сегодня вечером?"], ["Il est très gentil.", "Он очень добрый."], ["Il n'est pas très gentil.", "Он не очень добрый."], ["Il est très gentil ?", "Он очень добрый?"], ["Nous sommes très heureux.", "Мы очень счастливы."], ["Nous ne sommes pas très heureux.", "Мы не очень счастливы."], ["Nous sommes très heureux ?", "Мы очень счастливы?"], ["Elles sont dans un bel hôtel.", "Они в красивой гостинице."], ["Elles ne sont pas dans un bel hôtel.", "Они не в красивой гостинице."], ["Elles sont dans un bel hôtel ?", "Они в красивой гостинице?"]]}, "10": {fr: "Il y a…", ru: "Есть / Здесь есть…", phrases: [["Il y a un bon café.", "Здесь есть хорошее кафе."], ["Il n'y a pas de bon café.", "Здесь нет хорошего кафе."], ["Il y a un bon café ?", "Здесь есть хорошее кафе?"], ["Il y a une petite banque.", "Здесь есть маленький банк."], ["Il n'y a pas de petite banque.", "Здесь нет маленького банка."], ["Il y a une petite banque ?", "Здесь есть маленький банк?"], ["Il y a trois grandes chambres.", "Есть три больших комнаты."], ["Il n'y a pas trois grandes chambres.", "Нет трёх больших комнат."], ["Il y a trois grandes chambres ?", "Есть три больших комнаты?"], ["Il est ici avec un vieil ami.", "Он здесь со старым другом."], ["Il n'est pas ici avec un vieil ami.", "Он не здесь со старым другом."], ["Il est ici avec un vieil ami ?", "Он здесь со старым другом?"], ["Elle est là avec une jeune amie.", "Она здесь с молодой подругой."], ["Elle n'est pas là avec une jeune amie.", "Она не здесь с молодой подругой."], ["Elle est là avec une jeune amie ?", "Она здесь с молодой подругой?"], ["Ils sont là-bas avec leurs petits enfants.", "Они там со своими маленькими детьми."], ["Ils ne sont pas là-bas avec leurs petits enfants.", "Они не там со своими маленькими детьми."], ["Ils sont là-bas avec leurs petits enfants ?", "Они там со своими маленькими детьми?"]]}, "11": {fr: "Dans l'appli — achats", ru: "В приложении — покупки", phrases: [["Ajouter le nouveau produit au panier.", "Добавить новый товар в корзину."], ["Ne pas ajouter le nouveau produit au panier.", "Не добавлять новый товар в корзину."], ["Voulez-vous ajouter le nouveau produit au panier ?", "Хотите добавить новый товар в корзину?"], ["Payer mon dernier achat.", "Оплатить мою последнюю покупку."], ["Ne pas payer mon dernier achat.", "Не оплачивать мою последнюю покупку."], ["Voulez-vous payer votre dernier achat ?", "Хотите оплатить свою последнюю покупку?"], ["Passer une commande urgente.", "Оформить срочный заказ."], ["Ne pas passer de commande urgente.", "Не оформлять срочный заказ."], ["Voulez-vous passer une commande urgente ?", "Хотите оформить срочный заказ?"], ["Elle a reçu sa nouvelle commande.", "Она получила свой новый заказ."], ["Elle n'a pas reçu sa nouvelle commande.", "Она не получила свой новый заказ."], ["Elle a reçu sa nouvelle commande ?", "Она получила свой новый заказ?"], ["Nous avons payé notre petit achat.", "Мы оплатили свою небольшую покупку."], ["Nous n'avons pas payé notre petit achat.", "Мы не оплатили свою небольшую покупку."], ["Nous avons payé notre petit achat ?", "Мы оплатили свою небольшую покупку?"], ["Ils veulent ajouter le produit rouge au panier.", "Они хотят добавить красный товар в корзину."], ["Ils ne veulent pas ajouter le produit rouge au panier.", "Они не хотят добавлять красный товар в корзину."], ["Ils veulent ajouter le produit rouge au panier ?", "Они хотят добавить красный товар в корзину?"]]}, "12": {fr: "Dans l'appli — compte", ru: "В приложении — аккаунт и настройки", phrases: [["Se connecter à mon compte personnel.", "Войти в мой личный аккаунт."], ["Ne pas se connecter à mon compte personnel.", "Не входить в мой личный аккаунт."], ["Voulez-vous vous connecter à votre compte personnel ?", "Хотите войти в свой личный аккаунт?"], ["Créer un nouveau compte.", "Создать новый аккаунт."], ["Ne pas créer de nouveau compte.", "Не создавать новый аккаунт."], ["Voulez-vous créer un nouveau compte ?", "Хотите создать новый аккаунт?"], ["Changer le mot de passe actuel.", "Сменить текущий пароль."], ["Ne pas changer le mot de passe actuel.", "Не менять текущий пароль."], ["Voulez-vous changer le mot de passe actuel ?", "Хотите сменить текущий пароль?"], ["Il a un compte gratuit.", "У него есть бесплатный аккаунт."], ["Il n'a pas de compte gratuit.", "У него нет бесплатного аккаунта."], ["Il a un compte gratuit ?", "У него есть бесплатный аккаунт?"], ["Nous nous souvenons du long mot de passe.", "Мы помним длинный пароль."], ["Nous ne nous souvenons pas du long mot de passe.", "Мы не помним длинный пароль."], ["Nous nous souvenons du long mot de passe ?", "Мы помним длинный пароль?"], ["Elles veulent des notifications importantes.", "Они хотят важные уведомления."], ["Elles ne veulent pas de notifications importantes.", "Они не хотят важные уведомления."], ["Elles veulent des notifications importantes ?", "Они хотят важные уведомления?"]]}, "13": {fr: "Dans l'appli — boutons et messages", ru: "В приложении — кнопки и сообщения", phrases: [["Valider la nouvelle adresse.", "Подтвердить новый адрес."], ["Ne pas valider la nouvelle adresse.", "Не подтверждать новый адрес."], ["Voulez-vous valider la nouvelle adresse ?", "Хотите подтвердить новый адрес?"], ["Enregistrer le document final.", "Сохранить итоговый документ."], ["Ne pas enregistrer le document final.", "Не сохранять итоговый документ."], ["Voulez-vous enregistrer le document final ?", "Хотите сохранить итоговый документ?"], ["Supprimer l'ancien message.", "Удалить старое сообщение."], ["Ne pas supprimer l'ancien message.", "Не удалять старое сообщение."], ["Voulez-vous supprimer l'ancien message ?", "Хотите удалить старое сообщение?"], ["Il comprend le long message.", "Он понимает длинное сообщение."], ["Il ne comprend pas le long message.", "Он не понимает длинное сообщение."], ["Il comprend le long message ?", "Он понимает длинное сообщение?"], ["Nous trouvons le bon bouton.", "Мы находим нужную кнопку."], ["Nous ne trouvons pas le bon bouton.", "Мы не находим нужную кнопку."], ["Nous trouvons le bon bouton ?", "Мы находим нужную кнопку?"], ["Elles mettent à jour la dernière version.", "Они обновляют последнюю версию."], ["Elles ne mettent pas à jour la dernière version.", "Они не обновляют последнюю версию."], ["Elles mettent à jour la dernière version ?", "Они обновляют последнюю версию?"]]}};
 /* ---------- теория в начале каждого уровня (каждое правило с новой строки) ---------- */
+const CHEV=d=>'<svg class="chev '+(d||"r")+'" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>';   // одна стрелка на весь интерфейс
 const THEORY={
 1:{t:"Je veux + число + предмет",intro:"<b>Je veux</b> значит «я хочу». Каждая фраза идёт тремя карточками подряд: утверждение, отрицание и вопрос.",rules:[
 ["Глагол vouloir (хотеть) меняется по лицам","je veux, tu veux, il veut"],
@@ -596,7 +599,7 @@ function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
   const pl=planFor(state.level);
-  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Теория</span></span><span class="th-chev" aria-hidden="true">▾</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Теория</span></span><span class="th-chev" aria-hidden="true">'+CHEV("d")+'</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
   d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
@@ -858,7 +861,7 @@ function renderHeader(){
     const complete = s.key==="rev" ? state.unlocked>=4 && revDone() : doneCount(s.key)>=stageCount(s.key);
     b.innerHTML=(i>unl()?"🔒 ":"")+esc(s.tab)+(s.key==="rev"&&state.forgot.length?" ("+state.forgot.length+")":"")+(complete?' <span class="ck">✓</span>':"");
     b.disabled=i>unl(); b.setAttribute("aria-pressed",i===state.view);
-    b.onclick=()=>{state.view=i;save();renderAll();};
+    b.onclick=()=>{ state.view=i; navTo(); };
     nav.appendChild(b);
   });
   renderProgress();
@@ -1409,7 +1412,7 @@ function recapCards(N){
 }
 let rapForce=false;   // Rappel открыт вручную (кнопка «Rappel» или строка между уровнями)
 function needRecap(){ return state.level>=2 && (rapForce || (!state.recap.ok && !state.won)) && !!levelData(state.level); }
-function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }
+function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; navTo(); }
 function renderRecap(m){
   const N=state.level, cards=recapCards(N), tot=cards.length, dn=doneCount("rec");
   const intro=document.createElement("section"); intro.className="panel recap-intro";
@@ -1434,17 +1437,20 @@ function renderRecap(m){
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
   const ready=dn>=tot||admin;
-  nx.innerHTML='<button class="btn cta" id="recapGo" style="width:100%"'+(ready?"":" disabled")+'>'+(ready?(state.recap.ok?"Вернуться к уровню "+N:"Начать уровень "+N):"Сначала отметь все фразы ("+dn+" / "+tot+")")+'</button>'+
-    '<button class="btn ghost" id="recapSkip" style="width:100%;margin-top:8px">Пропустить повторение</button>';
-  nx.querySelector("#recapGo").onclick=recapStart; nx.querySelector("#recapSkip").onclick=recapStart;
+  nx.innerHTML=ready
+    ? '<button class="btn cta" id="recapGo" style="width:100%">'+(state.recap.ok?"Вернуться к уровню "+N:"Начать уровень "+N)+'</button>'
+    : '<button class="btn ghost" id="recapGo" style="width:100%">Пропустить Rappel ('+dn+' из '+tot+')</button>';
+  nx.querySelector("#recapGo").onclick=recapStart;
   m.appendChild(nx);
 }
 
 /* ---------- главный экран со списком уровней ---------- */
 let screen="home";   // "home" или "level". Сайт всегда открывается на главном экране
 function showScreen(){ $("homeScreen").style.display=screen==="home"?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; }
-function goHome(){ stopAudio(); play=null; rapForce=false; screen="home"; renderAll(); window.scrollTo({top:0}); }
-function openLevel(n){ screen="level"; goLevel(n,true); }
+// единая точка перехода: сохранить, перерисовать, прокрутить вверх
+function navTo(){ save(); renderAll(); window.scrollTo({top:0}); }
+function goHome(){ stopAudio(); play=null; rapForce=false; screen="home"; navTo(); }
+function openRappel(m){ goLevel(m); rapForce=true; navTo(); }
 function levelPct(n){
   const st=n===state.level?state:levelsSaved[n]; if(!st) return 0;
   if(st.won) return 100;
@@ -1501,8 +1507,8 @@ function renderLevels(){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
     const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
     const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.level=n; b.setAttribute("aria-current",n===state.level);
-    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span><span class="lvgo" aria-hidden="true">›</span>';
-    b.onclick=()=>openLevel(n);
+    b.innerHTML='<span class="lvnum">'+(done?"✓":n)+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small><span class="lvbar"><span style="width:'+pct+'%"></span></span></span><span class="lvst">'+(done?"terminé":pct+"%")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+    b.onclick=()=>goLevel(n);
     const gain=4-levelEarned(st), back=levelEarned(st)+(st&&st.rapEarned?1:0);
     item.appendChild(b);
     item.appendChild(sw('mark="'+n,"J'ai déjà fait ce niveau",(done?levelEarned(st):gain)?"+"+(done?levelEarned(st):gain)+" 🦐":"",done,inp=>{
@@ -1515,8 +1521,8 @@ function renderLevels(){
       const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
       const rap=document.createElement("div"); rap.className="lv-rap"+(rdone?" done":"");
       const rb=document.createElement("button"); rb.type="button"; rb.className="lv-rapcard"; rb.dataset.rappel=m;
-      rb.innerHTML='<span class="rapic" aria-hidden="true">🔄</span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">›</span>';
-      rb.onclick=()=>{ goLevel(m,true); rapForce=true; renderAll(); window.scrollTo({top:0}); };
+      rb.innerHTML='<span class="rapic" aria-hidden="true">🔄</span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+      rb.onclick=()=>openRappel(m);
       rap.appendChild(rb);
       rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
       host.appendChild(rap);
@@ -1575,11 +1581,10 @@ function renderPlayer(){
     const seq=seqFor(k); play.pos=Math.max(0,Math.min(seq.length-1,play.pos));
     host.appendChild(cardEl(k,seq[play.pos],play.pos+1));
     const row=document.createElement("div"); row.className="row";
-    row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>‹ Назад</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Дальше ›</button>';
+    row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>'+CHEV("l")+' Назад</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Дальше '+CHEV()+'</button>';
     bot.appendChild(row);
     $("plPrev").onclick=()=>{ stopAudio(); play.pos--; renderPlayer(); };
     $("plNext").onclick=()=>{ stopAudio(); play.pos++; renderPlayer(); };
-    const nx=nextStep(k); if(nx){ const r2=document.createElement("div"); r2.className="row"; r2.style.marginTop="8px"; r2.innerHTML='<button class="btn ghost" id="plStep">'+esc(nx.label)+'</button>'; bot.appendChild(r2); $("plStep").onclick=nx.go; }
     renderProgress(); return;
   }
   if(play.rel!=null){ renderRelearnCard(); return; }
@@ -1599,7 +1604,7 @@ function plSync(){
   if(bot.dataset.s===want) return;
   bot.dataset.s=want; bot.innerHTML="";
   const row=document.createElement("div"); row.className="row";
-  if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше →</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
+  if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше '+CHEV()+'</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
   // пока ответа нет, нижняя панель пустая и скрыта
 }
 // в повторе «Je ne sais plus» возвращает на первую вкладку: фраза показывается так же, как в «Écoute & répète», потом возвращается в конец раздела
@@ -1629,10 +1634,10 @@ function playRerender(){
 function nextStep(k){
   if(isRev(k)){
     const nx=revSections().find(x=>x.key!==k && doneCount(x.key)<stageCount(x.key));
-    return nx?{label:"Дальше: "+nx.tab, go:()=>{ state.revKey=nx.key; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }}:null;
+    return nx?{label:"Дальше: "+nx.tab, go:()=>{ state.revKey=nx.key; navTo(); }}:null;
   }
   const i=STAGES.findIndex(s=>s.key===k), to=i+1;
-  if(i>=0 && to<STAGES.length && to<=unl()) return {label:"Дальше: "+STAGES[to].tab, go:()=>{ state.view=to; save(); renderAll(); window.scrollTo({top:0,behavior:"smooth"}); }};
+  if(i>=0 && to<STAGES.length && to<=unl()) return {label:"Дальше: "+STAGES[to].tab, go:()=>{ state.view=to; navTo(); }};
   return null;
 }
 function renderPlayerEnd(){
@@ -1645,7 +1650,6 @@ function renderPlayerEnd(){
   const row=document.createElement("div"); row.className="row"; row.style.flexDirection="column";
   const nx=nextStep(k);
   if(nx){ const b=document.createElement("button"); b.className="btn cta"; b.style.width="100%"; b.id="plNextStep"; b.textContent=nx.label; b.onclick=nx.go; row.appendChild(b); }
-  const ex=document.createElement("button"); ex.className="btn ghost"; ex.style.width="100%"; ex.textContent="‹ Все уровни"; ex.onclick=goHome; row.appendChild(ex);
   bot.appendChild(row);
 }
 
@@ -1689,7 +1693,7 @@ function renderMain(){
   if(state.won){
     const earnedN=Object.values(state.earned).filter(Boolean).length;
     const w=document.createElement("section"); w.className="panel win";
-    w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><div style="margin-top:14px"><button class="btn cta" id="nextLevel">Niveau suivant → Следующий уровень</button></div><p class="hint" style="margin:12px 0 0">Карточки пройденных этапов можно листать ниже.</p>';
+    w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><div style="margin-top:14px"><button class="btn cta" id="nextLevel">Niveau suivant · Следующий уровень "+CHEV()+"</button></div><p class="hint" style="margin:12px 0 0">Карточки пройденных этапов можно листать ниже.</p>';
     m.appendChild(w);
     w.querySelector("#nextLevel").onclick=()=>goLevel(state.level+1);
   }
@@ -1772,7 +1776,7 @@ function renderAll(){
 $("restartLevel").onclick=()=>{ if(confirm("Начать текущий уровень заново?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
 $("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
-function goLevel(n,quiet){
+function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
   if(n!==state.level){
     stopAudio();
@@ -1781,18 +1785,15 @@ function goLevel(n,quiet){
     state=prev ? {...fresh(),...prev, level:n, shrimps:sh} : {...fresh(), level:n, shrimps:sh};
     state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap};
   }
-  screen="level"; save(); renderAll(); window.scrollTo({top:0});
+  screen="level"; navTo();
 }
-$("nextLevelBtn").onclick=()=>goLevel(state.level+1);
 $("lvBack").onclick=goHome;
-$("recapBtn").onclick=()=>{ rapForce=true; renderAll(); window.scrollTo({top:0,behavior:"smooth"}); };
+$("recapBtn").onclick=()=>openRappel(state.level);
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
 function renderAdmin(){
   $("adminBtn").textContent=admin?"🔑 Админ включён (выключить)":"🔑 Админ";
   $("adminBtn").setAttribute("aria-pressed",admin);
-  $("adminBox").hidden=!admin;
-  $("nextLevelBtn").disabled=state.level>=MAXLEVEL;
   $("restartLevel").textContent="Начать заново Niveau "+state.level;
 }
 renderAll();
