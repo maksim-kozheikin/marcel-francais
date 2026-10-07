@@ -44,7 +44,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 h1{margin:0;font-size:clamp(.88rem,3.9vw,1.15rem);font-weight:700;letter-spacing:-.01em;min-width:0;white-space:nowrap}
 h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;margin-right:.35em;border-radius:4px;
   background:linear-gradient(90deg,#2346A8 0 33%,#fff 33% 66%,#E2453C 66%);box-shadow:0 0 0 2px var(--line)}
-.pill{font-size:.88rem;font-weight:600;background:var(--paper);border:2px solid var(--line);padding:4px 12px;border-radius:999px;white-space:nowrap;flex:none}
+.pill{font-size:.88rem;font-weight:600;background:var(--paper);border:1px solid var(--line);padding:4px 12px;border-radius:999px;white-space:nowrap;flex:none}
 
 .marcel{display:flex;gap:12px;align-items:flex-end}
 .cat{font-size:62px;line-height:1;flex:none;transform-origin:bottom center}
@@ -54,22 +54,22 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .bubble .fr{font-weight:600;font-size:1.15rem}
 .bubble .ru{color:var(--soft)}
 
-.panel{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:16px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:16px}
 .level-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 .level-num{font-size:1.3rem;font-weight:700}
 .construction{color:var(--soft)}
-.bar{height:16px;border-radius:999px;background:var(--bg);border:2px solid var(--line);overflow:hidden;margin:10px 0 6px}
+.bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:0}
 .bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bleu),var(--rouge));transition:width .4s}
-.prog{font-weight:600}
+.prog{font-weight:600;font-size:.9rem;color:var(--soft);white-space:nowrap}
 
-.stages{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:6px;overflow-x:auto;padding:8px 2px;background:var(--bg)}
-.stage{flex:none;font:inherit;font-size:.95rem;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer}
-.stage[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.stage:disabled{opacity:.5;cursor:not-allowed}
+.stages{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:18px;overflow-x:auto;padding:6px 2px 0;background:var(--bg);border-bottom:1px solid var(--line)}
+.stage{flex:none;font:inherit;font-size:.95rem;font-weight:600;border:none;border-bottom:3px solid transparent;background:none;color:var(--soft);padding:8px 0 9px;cursor:pointer;margin-bottom:-1px}
+.stage[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--violet)}
+.stage:disabled{opacity:.45;cursor:not-allowed}
 .stage .ck{color:var(--ok)}
 
 .list{display:grid;gap:10px}
-.item{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;gap:8px}
+.item{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;gap:8px}
 .item.done{border-color:var(--ok);background:var(--okbg)}
 .item.wrong{border-color:var(--bad)}
 .item-top{display:flex;gap:10px;align-items:flex-start}
@@ -83,14 +83,15 @@ h1 .flag{display:inline-block;width:.55em;height:1.1em;vertical-align:-.15em;mar
 .btn{font:inherit;font-weight:600;font-size:1rem;border:none;border-radius:14px;padding:10px 14px;cursor:pointer;color:#fff;background:var(--bleu);min-height:46px}
 .btn.red{background:var(--rouge)}
 .btn.violet{background:var(--violet)}
-.btn.ghost{background:var(--bg);color:var(--ink);border:2px solid var(--line)}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.btn.link{background:none;color:var(--bleu);padding:8px 6px;min-height:40px;border:none}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.listening{animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--rouge) 30%,transparent)}}
 .btn:focus-visible,.stage:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:9px 11px;flex:1;min-width:0}
 .marks{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
-.theory{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:2px 14px 8px;margin-bottom:12px}
+.theory{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:2px 14px 8px;margin-bottom:12px}
 .theory summary{cursor:pointer;padding:10px 0;line-height:1.3;display:flex;align-items:center;gap:12px;list-style:none}
 .theory summary::-webkit-details-marker{display:none}
 .theory .th-main{flex:1;min-width:0;display:grid;gap:2px}
@@ -119,7 +120,7 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .item.forgot{border-color:var(--warn);background:var(--warnbg)}
 .item.forgot .num{background:var(--warn);color:#fff;border-color:var(--warn)}
 .item.forgot .forgot-mark{border-color:var(--warn);background:var(--paper)}
-.substages{display:flex;gap:6px;overflow-x:auto;padding:2px}
+.substages{display:flex;gap:18px;overflow-x:auto;padding:2px;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
 .recap-intro{margin-bottom:10px}
 .story{margin-top:14px}
@@ -207,9 +208,10 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .pl-body{flex:1;overflow:auto;padding:14px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
 .pl-inner{width:100%;max-width:680px;margin:auto auto 0}
 .pl-inner.top{margin:0 auto}
-.pl-bottom{position:sticky;bottom:0;z-index:4;margin:12px -14px 0;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--line);min-height:60px}
-.pl-bottom .row{max-width:680px;margin:0 auto;display:flex;gap:8px}
+.pl-bottom{margin:12px 0 0}
+.pl-bottom .row{display:flex;gap:8px}
 .pl-bottom .row .btn{flex:1}
+.btn:disabled{opacity:.4;cursor:not-allowed}
 .pl-bottom:empty{display:none}
 .player.browse .marks{display:none}
 .stagecard{margin-bottom:12px}
@@ -219,10 +221,11 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lvtop .btn{min-height:44px;padding:8px 12px}
 .lvtop #recapBtn{margin-left:auto}
 .lvtop .cat{font-size:34px}
-.lv-item{background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.lv-item{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
 .lv-item .lv-card{border:none;border-radius:0;background:transparent}
-.lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:2px solid var(--line);background:var(--bg);cursor:pointer;font-size:.8rem;font-weight:600;color:var(--soft)}
+.lv-rap .lv-sw{background:transparent}
+.lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:.8rem;font-weight:600;color:var(--soft)}
 .lv-sw input{position:absolute;opacity:0;width:1px;height:1px}
 .sw-track{flex:none;width:48px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
 .sw-track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
@@ -231,16 +234,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-sw input:focus-visible + .sw-track{outline:3px solid var(--rouge);outline-offset:2px}
 .sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap;font-size:.85rem}
 .sw-ck{color:var(--ok);font-size:1rem}
-.lv-rap{background:var(--paper);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.lv-rap{background:var(--bg);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-rap.done{border-color:var(--ok)}
 .lv-rapcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:12px 14px;cursor:pointer}
-.lv-rapcard .rapic{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:1.25rem;background:var(--bg);border:2px solid var(--line)}
-.lv-rap.done .rapic{border-color:var(--ok)}
+.lv-rapcard .rapsp{flex:none;width:44px}
 .lv-rapcard .raptxt{flex:1;min-width:0;display:grid;gap:1px}
-.lv-rapcard .raptxt b{font-size:1.12rem;line-height:1.25}
-.lv-rapcard .raptxt small{color:var(--soft);font-size:.96rem}
-.progwrap{margin:0}
-.progwrap .bar{margin:6px 0 0}
+.lv-rapcard .raptxt b{font-size:1rem;line-height:1.25}
+.lv-rapcard .raptxt small{color:var(--soft);font-size:.9rem}
+.progwrap{display:flex;align-items:center;gap:12px;margin:0 2px}
+.progwrap .bar{flex:1}
 #stageHost{display:flex;flex-direction:column;gap:0}
 #plHost{margin-top:auto}
 #plBottom{margin-top:12px}
@@ -304,7 +306,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
     </section>
 
     <section aria-label="Уровни">
-      <h2 class="home-h">Уровни</h2>
       <div class="lv-list" id="lvHost"></div>
     </section>
 
@@ -337,8 +338,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 
   <div id="levelScreen" class="screen" style="display:none">
     <div class="lvtop">
-      <button type="button" class="btn ghost" id="lvBack"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
-      <button type="button" class="btn ghost" id="recapBtn" style="display:none" title="Повторить пройденные уровни">🔄 Rappel</button>
+      <button type="button" class="btn link" id="lvBack"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
       <span class="cat" id="cat" aria-hidden="true">🐈</span>
     </div>
 
@@ -352,8 +352,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
     <main id="main"></main>
 
     <section class="progwrap" id="progWrap">
-      <div class="prog" id="prog"></div>
       <div class="bar" role="progressbar" aria-valuemin="0" id="barWrap"><span id="bar"></span></div>
+      <div class="prog" id="prog"></div>
     </section>
 
     <div id="stageHost">
@@ -599,7 +599,7 @@ function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
   const pl=planFor(state.level);
-  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Теория</span></span><span class="th-chev" aria-hidden="true">'+CHEV("d")+'</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Théorie</span></span><span class="th-chev" aria-hidden="true">'+CHEV("d")+'</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
   d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
@@ -853,7 +853,6 @@ function renderHeader(){
   $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
   const recap=needRecap();
   $("stages").style.display=recap?"none":"";
-  $("recapBtn").style.display=(state.level>=2 && !recap)?"":"none";
   if(state.view>unl()) state.view=unl();
   const nav=$("stages"); nav.innerHTML="";
   STAGES.forEach((s,i)=>{
@@ -1411,7 +1410,7 @@ function recapCards(N){
   return out;
 }
 let rapForce=false;   // Rappel открыт вручную (кнопка «Rappel» или строка между уровнями)
-function needRecap(){ return state.level>=2 && (rapForce || (!state.recap.ok && !state.won)) && !!levelData(state.level); }
+function needRecap(){ return state.level>=2 && rapForce && !!levelData(state.level); }   // Rappel открывается только по желанию, из списка уровней
 function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; navTo(); }
 function renderRecap(m){
   const N=state.level, cards=recapCards(N), tot=cards.length, dn=doneCount("rec");
@@ -1438,8 +1437,8 @@ function renderRecap(m){
   const nx=document.createElement("div"); nx.style.marginTop="14px";
   const ready=dn>=tot||admin;
   nx.innerHTML=ready
-    ? '<button class="btn cta" id="recapGo" style="width:100%">'+(state.recap.ok?"Вернуться к уровню "+N:"Начать уровень "+N)+'</button>'
-    : '<button class="btn ghost" id="recapGo" style="width:100%">Пропустить Rappel ('+dn+' из '+tot+')</button>';
+    ? '<button class="btn cta" id="recapGo" style="width:100%">К уровню '+N+'</button>'
+    : '<button class="btn ghost" id="recapGo" style="width:100%">К уровню '+N+' без Rappel</button>';
   nx.querySelector("#recapGo").onclick=recapStart;
   m.appendChild(nx);
 }
@@ -1521,7 +1520,7 @@ function renderLevels(){
       const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
       const rap=document.createElement("div"); rap.className="lv-rap"+(rdone?" done":"");
       const rb=document.createElement("button"); rb.type="button"; rb.className="lv-rapcard"; rb.dataset.rappel=m;
-      rb.innerHTML='<span class="rapic" aria-hidden="true">🔄</span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+      rb.innerHTML='<span class="rapsp" aria-hidden="true"></span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
       rb.onclick=()=>openRappel(m);
       rap.appendChild(rb);
       rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
@@ -1576,7 +1575,7 @@ function renderStage(){
 function renderPlayer(){
   const k=play.k, host=$("plHost"), bot=$("plBottom");
   if(plObs){ plObs.disconnect(); plObs=null; }
-  host.innerHTML=""; bot.innerHTML=""; bot.dataset.s=""; $("stageHost").classList.toggle("browse",play.mode==="browse");
+  host.innerHTML=""; bot.innerHTML=""; $("stageHost").classList.toggle("browse",play.mode==="browse");
   if(play.mode==="browse"){
     const seq=seqFor(k); play.pos=Math.max(0,Math.min(seq.length-1,play.pos));
     host.appendChild(cardEl(k,seq[play.pos],play.pos+1));
@@ -1600,15 +1599,15 @@ function plSync(){
   renderProgress();
   if(!play || play.mode!=="play" || play.cur==null) return;
   const k=play.k, bot=$("plBottom"), settled=play.rel!=null ? isSettled("rel",play.rel) : isSettled(k,play.cur);
-  const want=settled?"next":"wait";
-  if(bot.dataset.s===want) return;
-  bot.dataset.s=want; bot.innerHTML="";
-  const row=document.createElement("div"); row.className="row";
-  if(settled){ row.innerHTML='<button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше '+CHEV()+'</button>'; bot.appendChild(row); $("plGo").onclick=plAdvance; }
-  // пока ответа нет, нижняя панель пустая и скрыта
+  let go=$("plGo");
+  if(!go){   // кнопка есть всегда, поэтому ничего не прыгает. Пока ответа нет, она неактивна
+    bot.innerHTML='<div class="row"><button class="btn violet" id="plGo" style="width:100%;font-size:1.15rem">Дальше '+CHEV()+'</button></div>';
+    go=$("plGo"); go.onclick=plAdvance;
+  }
+  go.disabled=!settled;
 }
 // в повторе «Je ne sais plus» возвращает на первую вкладку: фраза показывается так же, как в «Écoute & répète», потом возвращается в конец раздела
-function playRelearn(idx){ state.done.rel[idx]=false; play.rel=idx; save(); $("plBottom").dataset.s=""; renderRelearnCard(); }
+function playRelearn(idx){ state.done.rel[idx]=false; play.rel=idx; save(); renderRelearnCard(); }
 function renderRelearnCard(){
   const host=$("plHost"); host.innerHTML="";
   const ban=document.createElement("div"); ban.className="relearn";
@@ -1620,14 +1619,14 @@ function renderRelearnCard(){
   plSync();
 }
 function plAdvance(){
-  stopAudio(); const bot=$("plBottom"); bot.dataset.s=""; play.rel=null;
+  stopAudio(); const bot=$("plBottom"); play.rel=null;
   play.cur=firstOpen(play.k); if(play.cur===undefined) play.cur=null;
   if(play.cur==null){ renderPlayerEnd(); } else renderPlayer();
 }
 function playRerender(){
   if(!play) return;
-  if(play.mode==="play" && play.rel!=null){ $("plBottom").dataset.s=""; renderRelearnCard(); }
-  else if(play.mode==="play" && play.cur!=null){ $("plBottom").dataset.s=""; const host=$("plHost"); const seq=seqFor(play.k); host.innerHTML=""; host.appendChild(cardEl(play.k,play.cur,seq.indexOf(play.cur)+1)); plSync(); }
+  if(play.mode==="play" && play.rel!=null){ renderRelearnCard(); }
+  else if(play.mode==="play" && play.cur!=null){ const host=$("plHost"); const seq=seqFor(play.k); host.innerHTML=""; host.appendChild(cardEl(play.k,play.cur,seq.indexOf(play.cur)+1)); plSync(); }
   else renderPlayer();
 }
 // что предложить после этапа: следующий этап или следующий раздел повтора
@@ -1641,7 +1640,7 @@ function nextStep(k){
   return null;
 }
 function renderPlayerEnd(){
-  const k=play.k, host=$("plHost"), bot=$("plBottom"); bot.dataset.s=""; host.innerHTML=""; bot.innerHTML="";
+  const k=play.k, host=$("plHost"), bot=$("plBottom"); host.innerHTML=""; bot.innerHTML="";
   if(plObs){ plObs.disconnect(); plObs=null; }
   renderProgress();
   const w=document.createElement("section"); w.className="panel win";
@@ -1657,12 +1656,12 @@ function renderPlayerEnd(){
 function renderProgress(){
   const bar=$("bar"), wrap=$("barWrap");
   const set=(txt,n,t)=>{ $("prog").textContent=txt; bar.style.width=(t?n/t*100:100)+"%"; wrap.setAttribute("aria-valuemax",t); wrap.setAttribute("aria-valuenow",n); };
-  if(needRecap()){ const t=stageCount("rec"), n=doneCount("rec"); set("🔄 Rappel: "+n+" из "+t,n,t); return; }
+  if(needRecap()){ const t=stageCount("rec"), n=doneCount("rec"); set("Rappel : "+n+" sur "+t,n,t); return; }
   const k=levelData(state.level)?curStageKey():null;
-  if(!k){ set("Повторять нечего",1,1); return; }
+  if(!k){ set("Rien à revoir",1,1); return; }
   const tot=stageCount(k), dn=doneCount(k), src=isRev(k)?"":k;
-  if(play && play.k===k && play.mode==="browse"){ const len=seqFor(k).length; set((play.pos+1)+" из "+len+" · просмотр",play.pos+1,len); return; }
-  set(dn+" из "+tot+((src==="dis"||src==="ass"||src==="fin")&&state.fg[src].length?" · отложено "+state.fg[src].length:""),dn,tot);
+  if(play && play.k===k && play.mode==="browse"){ const len=seqFor(k).length; set((play.pos+1)+" sur "+len+" · aperçu",play.pos+1,len); return; }
+  set(dn+" sur "+tot+((src==="dis"||src==="ass"||src==="fin")&&state.fg[src].length?" · "+state.fg[src].length+" à revoir":""),dn,tot);
 }
 // теория уровня вверху, её можно свернуть и развернуть
 const theoryOpen={};
@@ -1673,7 +1672,7 @@ function renderTheory(){
     const pl=planFor(state.level), t=document.createElement("section"); t.className="theory titleonly";
     t.innerHTML='<div class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</div><div class="th-ru">'+esc(pl.ru)+'</div>'; h.appendChild(t); return;
   }
-  const lv=state.level, open=theoryOpen[lv]===undefined ? !(state.done.rep||[]).some(Boolean) : theoryOpen[lv];
+  const lv=state.level, open=!!theoryOpen[lv];
   const th=theoryBlock(open); if(!th) return;
   th.addEventListener("toggle",()=>{ theoryOpen[lv]=th.open; });
   h.appendChild(th);
@@ -1788,7 +1787,6 @@ function goLevel(n){
   screen="level"; navTo();
 }
 $("lvBack").onclick=goHome;
-$("recapBtn").onclick=()=>openRappel(state.level);
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
 function renderAdmin(){
