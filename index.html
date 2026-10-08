@@ -42,7 +42,6 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .wrap{max-width:780px;margin:0 auto;padding:18px 14px 60px;display:grid;gap:16px}
 header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand .logo{width:38px;height:38px;flex:none}
 .brand-text{display:grid;line-height:1.05}
 .brand-text b{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
 .brand-text small{font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
@@ -65,8 +64,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--bleu),var(--rouge));transition:width .4s}
 .prog{font-weight:600;font-size:.9rem;color:var(--soft);white-space:nowrap}
 
-.stages{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:18px;overflow-x:auto;padding:6px 2px 0;background:var(--bg);border-bottom:1px solid var(--line)}
-.stage{flex:none;font:inherit;font-size:.95rem;font-weight:600;border:none;border-bottom:3px solid transparent;background:none;color:var(--soft);padding:8px 0 9px;cursor:pointer;margin-bottom:-1px}
+.stages{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:6px 2px 0;background:var(--bg);border-bottom:1px solid var(--line)}
+.stages::-webkit-scrollbar,.substages::-webkit-scrollbar{display:none}
+.stage{flex:none;font:inherit;font-size:.95rem;font-weight:600;border:none;border-bottom:3px solid transparent;background:none;color:var(--soft);padding:8px 0 9px;cursor:pointer}
 .stage[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--violet)}
 .stage:disabled{opacity:.45;cursor:not-allowed}
 .stage .ck{color:var(--ok)}
@@ -123,7 +123,7 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .item.forgot{border-color:var(--warn);background:var(--warnbg)}
 .item.forgot .num{background:var(--warn);color:#fff;border-color:var(--warn)}
 .item.forgot .forgot-mark{border-color:var(--warn);background:var(--paper)}
-.substages{display:flex;gap:18px;overflow-x:auto;padding:2px;border-bottom:1px solid var(--line)}
+.substages{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:2px 2px 0;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
 .recap-intro{margin-bottom:10px}
 .story{margin-top:14px}
@@ -163,16 +163,15 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .levelnav button:disabled{opacity:.4;cursor:not-allowed}
 .levelnav select{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:46px;padding:0 8px}
 .levelnav button:focus-visible,.levelnav select:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
-.voicebox{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:10px;min-width:0}
-.voicebox .lbl{font-size:.9rem;color:var(--soft)}
-.seg{display:flex;gap:6px}
-.seg button{flex:1 1 0;min-width:0;font:inherit;font-size:.88rem;line-height:1.15;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;min-height:46px;padding:4px 6px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.seg button:focus-visible,.voicerow select:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
-.voicerow{display:flex;gap:6px}
-.voicerow select{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;min-height:46px;padding:0 8px}
-.voicerow .btn{flex:none;min-height:46px}
-.voicerow .vn{flex:none;align-self:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-content:center;font-size:.8rem;font-weight:600}
+.setsum{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer;color:var(--soft);font-size:.95rem}
+.setsum::-webkit-details-marker{display:none}
+details[open]>.setsum .chev{transform:rotate(-90deg)}
+.speedrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px}
+.speedrow .lbl{font-size:.9rem;color:var(--soft)}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+.seg button{font:inherit;font-size:.85rem;font-weight:600;border:none;background:none;color:var(--soft);padding:6px 12px;border-radius:999px;cursor:pointer;min-height:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg button:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 .gap{display:inline-block;width:5.5em;height:1.05em;border-bottom:3px solid var(--bleu);vertical-align:-.12em;margin:0 .2em}
 .gapword{color:var(--ok);font-weight:700;border-bottom:3px solid var(--ok)}
 .dictrow{display:flex;gap:8px;flex:1 1 100%}
@@ -183,7 +182,7 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .listen-row .btn{flex:1 1 0;min-width:0}
 .notice{background:var(--badbg);border-radius:14px;padding:10px 14px}
 
-.aqua{position:relative;border-radius:24px 24px 18px 18px;overflow:hidden;border:3px solid var(--ink);background:var(--bg)}
+.aqua{position:relative;border-radius:24px 24px 18px 18px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
 .aqua svg{display:block;width:100%;height:auto}
 .aqua-empty{position:absolute;right:10px;top:12px;width:44%;text-align:center;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:14px 14px 4px 14px;font-weight:500;font-size:.85rem;line-height:1.25;z-index:3;padding:6px 10px}
 .paw{animation:pat 5s ease-in-out infinite}
@@ -221,7 +220,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .screen{display:grid;gap:14px;min-width:0}
 .home-h{font-size:1.15rem;margin:4px 2px 0}
 .lv-item{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
-.lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 2px var(--violet) inset}
+.lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
 .lv-item .lv-card{border:none;border-radius:0;background:transparent}
 .lv-rap .lv-sw{background:transparent}
 .lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:.8rem;font-weight:600;color:var(--soft)}
@@ -244,7 +243,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 #stageHost{display:flex;flex-direction:column;gap:0}
 #plHost{margin-top:auto}
 #plBottom{margin-top:12px}
-.aquapanel{padding:10px;margin-bottom:12px}
+.aquapanel{margin:0}
 .settings-h{font-size:1.1rem;margin:0 0 6px}
 .lvbtn{width:100%;margin:10px 0 4px;min-height:52px;font-size:1.05rem}
 .btn.cta{position:relative;overflow:hidden;font-size:1.3rem;padding:20px 18px;min-height:70px;border-radius:20px;letter-spacing:.02em;color:#fff;
@@ -267,7 +266,10 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-card .lvbar span{display:block;height:100%;background:linear-gradient(90deg,var(--bleu),var(--rouge))}
 .lv-card .lvst{flex:none;font-weight:700;color:var(--soft);font-size:.9rem}
 .lv-list{display:grid;gap:10px;margin-top:14px}
-.theory-body .ex .tr{display:block;font-weight:400;color:var(--soft);font-size:.93rem;margin-top:.1em}
+.more-h{margin:1.2em 0 .3em;font-size:1rem}
+.morelist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.morelist li{display:grid;gap:1px}
+.morelist .mru{color:var(--soft);font-size:.92rem}
 .theory-body .ex .say{display:inline-grid;place-items:center;width:34px;height:34px;margin-left:8px;vertical-align:middle;border:2px solid var(--line);border-radius:50%;background:var(--bg);font-size:1rem;cursor:pointer;padding:0}
 .relearn{background:var(--warnbg);border:2px solid var(--warn);border-radius:14px;padding:10px 12px;color:var(--ink)}
 @media (max-width:480px){.cat{font-size:50px}.fr{font-size:1.12rem}}
@@ -295,12 +297,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 <div class="wrap">
   <header class="toprow">
     <div class="brand" id="brand">
-      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
-        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2346A8"/><stop offset="1" stop-color="#6A38C2"/></linearGradient></defs>
-        <path d="M8 3h24a6 6 0 0 1 6 6v16a6 6 0 0 1-6 6H21l-8 6v-6H8a6 6 0 0 1-6-6V9a6 6 0 0 1 6-6z" fill="url(#lg)"/>
-        <path d="M11.5 25V13.5l8.5 9.5 8.5-9.5V25" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="32" cy="8" r="3.6" fill="#E2453C"/>
-      </svg>
       <span class="brand-text"><b>Marcel</b><small>français</small></span>
     </div>
     <button type="button" class="btn link" id="lvBack" style="display:none"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
@@ -308,7 +304,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   </header>
 
   <div id="homeScreen" class="screen">
-    <section class="panel aquapanel" aria-label="Марсель и миска с креветками">
+    <section class="aquapanel" aria-label="Марсель и миска с креветками">
       <div class="aqua" id="aqua"></div>
     </section>
 
@@ -316,24 +312,18 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="lv-list" id="lvHost"></div>
     </section>
 
-    <section class="panel" aria-label="Озвучка">
-      <h2 class="settings-h">🔊 Озвучка</h2>
-    <div class="voicebox">
-      <div class="lbl">Скорость озвучки</div>
-      <div class="seg" id="speedSeg" role="group" aria-label="Скорость озвучки">
-        <button type="button" data-rate="0.5">🐢 Очень медленно</button>
-        <button type="button" data-rate="0.75">🐌 Медленно</button>
-        <button type="button" data-rate="1">🐇 Нормально</button>
+    <section class="speedrow" aria-label="Скорость озвучки">
+      <span class="lbl">Скорость озвучки</span>
+      <div class="seg" id="speedSeg" role="group">
+        <button type="button" data-rate="0.5">0.5×</button>
+        <button type="button" data-rate="0.75">0.75×</button>
+        <button type="button" data-rate="1">1×</button>
       </div>
-      <div class="lbl" id="voiceLbl">Голоса озвучки</div>
-      <div class="voicerow" id="voiceRow"><span class="vn">1</span><select id="voicePick" aria-label="Голос 1"></select><button type="button" class="btn ghost" id="voiceTest" aria-label="Проверить голос 1">🔊</button></div>
-      <div class="voicerow" id="voiceRow2"><span class="vn">2</span><select id="voicePick2" aria-label="Голос 2"></select><button type="button" class="btn ghost" id="voiceTest2" aria-label="Проверить голос 2">🔊</button></div>
-    </div>
     </section>
 
     <section class="panel" aria-label="Настройки">
     <details>
-      <summary>⚙️ Настройки</summary>
+      <summary class="setsum"><span>⚙️ Настройки</span><svg class="chev d" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></summary>
       <div class="actions" style="margin-top:10px">
         <button class="btn ghost" id="restartLevel">Начать уровень заново</button>
         <button class="btn ghost" id="resetAll">Сбросить весь прогресс</button>
@@ -575,34 +565,31 @@ const THEORY={
 ["Dernier (последний) и long (длинный) стоят перед словом", "la dernière version, le long message"],
 ["Nouveau (новый) в женском роде это nouvelle", "la nouvelle adresse"]]}
 };
-const TR={"a":"а","accueil":"акёй","achat":"аша","acheter":"аште","acheté":"ашете","activer":"активе","actuel":"актюэль","adresse":"адрэс","adresses":"адрэс","aide":"эд","ajouter":"ажуте","allez":"але","allons":"алон","ami":"ами","amie":"ами","amis":"ами","ans":"ан","appartement":"апартеман","as":"а","attendre":"атандр","attendu":"атанду","au":"о","aucun":"окён","autoriser":"оторизе","aux":"о","avez":"аве","avoir":"авуар","avons":"авон","baguettes":"багэт","baisers":"безе","bananes":"банан","banque":"банк","beau":"бо","beaux":"бо","bel":"бэль","belle":"бэль","beurre":"бёр","billets":"бийе","blanc":"блан","blanche":"бланш","bleu":"блё","bon":"бон","bonne":"бон","bonnes":"бон","boules":"буль","bouteilles":"бутэй","bouton":"бутон","bus":"бюс","bœuf":"бёф","cadeau":"кадо","café":"кафе","calme":"кальм","carrés":"каре","carte":"карт","ce":"сё","cent":"сан","centilitres":"сантилитр","central":"сантраль","centrale":"сантраль","centraux":"сантро","cents":"сан","cette":"сэт","chambre":"шамбр","chambres":"шамбр","chargement":"шаржеман","chaud":"шо","chaude":"шод","chaudes":"шод","chauds":"шо","cherche":"шерш","cherchent":"шерш","cherches":"шерш","cherchez":"шерше","cherchons":"шершон","cinq":"сэнк","cinquante":"сэнкант","code":"код","commande":"команд","commandé":"команде","comprend":"компран","comprends":"компран","comprenez":"компрёне","comprennent":"компрэн","comprenons":"компрёнон","compte":"конт","conditions":"кондисьон","confirmée":"конфирме","confirmées":"конфирме","connecter":"конекте","connexion":"конексьон","content":"контан","contente":"контант","courgettes":"куржэт","courir":"курир","cours":"кур","crevettes":"крэвэт","croissant":"круасан","croissants":"круасан","crème":"крэм","d'amis":"дами","d'appartement":"дапартеман","d'ascenseur":"дасансёр","d'eau":"до","d'erreur":"дерёр","dans":"дан","de":"дё","demain":"дёмэн","dernier":"дернье","dernière":"дерньер","des":"де","dessert":"десэр","deux":"дё","disponible":"диспонибль","dix":"дис","dix-huit":"дизюит","dix-neuf":"диснёф","dix-sept":"дисэт","document":"докюман","douze":"дуз","du":"дю","déconnecter":"деконекте","désactiver":"дезактиве","elle":"эль","elles":"эль","en":"ан","enfants":"анфан","enregistrer":"анрежистре","entrer":"антре","es":"э","est":"э","est-ce":"эс","et":"э","euros":"ёро","excusez-moi":"экскюзе-муа","faire":"фэр","fait":"фэ","farine":"фарин","fatigué":"фатиге","fatiguée":"фатиге","fatiguées":"фатиге","favoris":"фавори","fermer":"ферме","fermé":"ферме","final":"финаль","fonctionne":"фонксьон","frais":"фрэ","fraises":"фрэз","fraîche":"фрэш","froid":"фруа","froide":"фруад","fromage":"фромаж","gare":"гар","gentil":"жанти","gentille":"жантий","glace":"глас","grammes":"грам","grand":"гран","grande":"гранд","grandes":"гранд","grands":"гран","gratuit":"гратюи","grises":"гриз","gros":"гро","grosses":"грос","gâteau":"гато","gâteaux":"гато","heureuse":"ёрёз","heureux":"ёрё","huit":"юит","hôtel":"отэль","ici":"иси","il":"иль","ils":"иль","importantes":"эмпортант","j'ai":"же","jambon":"жамбон","je":"жё","jeune":"жён","joli":"жоли","kilo":"кило","kilomètres":"километр","kilos":"кило","kéfir":"кефир","l'achat":"лаша","l'ancien":"лансьэн","l'eau":"ло","l'hôtel":"лотэль","la":"ла","lait":"лэ","le":"лё","les":"ле","leurs":"лёр","libres":"либр","lire":"лир","litres":"литр","livraison":"ливрезон","long":"лон","longues":"лонг","lu":"лю","là":"ла","là-bas":"ла-ба","ma":"ма","magasin":"магазэн","manger":"манже","mangé":"манже","marcher":"марше","marché":"марше","me":"мё","mes":"ме","message":"месаж","millilitres":"милилитр","minutes":"минют","mon":"мон","mot":"мо","musée":"мюзе","mètres":"метр","n'accepte":"наксепт","n'ai":"нэ","n'est":"нэ","n'y":"ни","ne":"нё","neuf":"нёф","nice":"нис","noir":"нуар","notifications":"нотификасьон","notre":"нотр","nous":"ну","nouveau":"нуво","nouveaux":"нуво","nouvel":"нувэль","nouvelle":"нувэль","occupée":"окюпе","ont":"он","onze":"онз","oublié":"убли","ouverte":"уверт","panier":"панье","paramètres":"параметр","parc":"парк","partager":"партаже","pas":"па","passe":"пас","payer":"пейе","payé":"пейе","perdre":"пердр","perdu":"пердю","perdue":"пердю","personnel":"персонэль","petit":"пти","petite":"птит","petites":"птит","petits":"пти","peut":"пё","peuvent":"пёв","peux":"пё","pharmacie":"фармаси","pizza":"пидза","plaît":"плэ","pomme":"пом","pommes":"пом","pouvez":"пуве","pouvons":"пувон","prend":"пран","prendre":"прандр","prends":"пран","prenez":"прёне","prennent":"прэн","prenons":"прёнон","pris":"при","prochain":"прошэн","prochaine":"прошэн","produit":"продюи","profil":"профиль","promo":"промо","qu'il":"киль","quai":"кэ","quarante":"карант","quarante-deux":"карант-дё","quatorze":"каторз","quatre":"катр","quatre-vingt-dix":"катр-вэн-дис","quatre-vingt-dix-neuf":"катр-вэн-диснёф","quatre-vingt-six":"катр-вэн-сис","quatre-vingt-trois":"катр-вэн-труа","quatre-vingt-un":"катр-вэн-ён","quatre-vingts":"катр-вэн","que":"кё","quinze":"кэнз","rechercher":"рёшерше","retour":"рётур","reçu":"рёсю","robe":"роб","rouge":"руж","réservation":"резервасьон","réservations":"резервасьон","résultat":"резюльта","s'il":"силь","sa":"са","sac":"сак","salé":"сале","se":"сё","seize":"сэз","sept":"сэт","six":"сис","soir":"суар","soixante":"суасант","soixante-dix":"суасант-дис","sommes":"сом","son":"сон","sont":"сон","soupe":"суп","souvenez":"сувнэ","souvenons":"сувнон","souviennent":"сувьен","souviens":"сувьэн","souvient":"сувьэн","station":"стасьон","suis":"сюи","supermarché":"сюпермарше","supprimer":"сюприме","sœur":"сёр","table":"табль","tartes":"тарт","tasse":"тас","te":"тё","ton":"тон","touriste":"турист","train":"трэн","trajet":"тражэ","tranches":"транш","tranquille":"транкиль","travail":"травай","travailler":"траваие","travaillé":"траваие","treize":"трэз","trente":"трант","trente-deux":"трант-дё","trente-six":"трант-сис","trois":"труа","troisième":"труазьем","trouve":"трув","trouvent":"трув","trouvons":"трувон","très":"трэ","tu":"тю","téléphone":"телефон","un":"ён","une":"юн","urgente":"юржант","va":"ва","vais":"вэ","valider":"валиде","vas":"ва","venir":"вёнир","verre":"вер","verres":"вер","verser":"версе","version":"версьон","veulent":"вёль","veut":"вё","veux":"вё","vieil":"вьей","vieille":"вьей","vieux":"вьё","ville":"виль","vingt":"вэн","vingt-deux":"вэн-дё","vingt-huit":"вэн-юит","vingt-trois":"вэн-труа","voiture":"вуатюр","voitures":"вуатюр","vont":"вон","voudraient":"вудрэ","voudrais":"вудрэ","voudrait":"вудрэ","voudriez":"вудрие","voudrions":"вудрион","voulez":"вуле","voulez-vous":"вуле-ву","voulons":"вулон","vous":"ву","y":"и","yaourts":"яурт","à":"а","écrire":"экрир","écrit":"экри","étage":"этаж","étudiante":"этюдьянт","êtes":"эт","télécharger":"телешарже"};
-// транскрипция французских слов русскими буквами. Русские пояснения в примерах пропускаются
+// французская часть примера для озвучки. Русские пояснения пропускаются
 function frOnly(t){
   t=t.replace(/\([^)]*\)/g,"").replace(/\s*—\s*[\u0400-\u04FF][^,.;]*/g,"").replace(/[\u0400-\u04FF]+/g,"").replace(/\s+/g," ").replace(/\s+([,.;?!])/g,"$1").replace(/[\s,;—-]+$/,"").trim();
   return /[A-Za-zÀ-ÿŒœ]/.test(t)?t:"";
 }
-function frTrans(t){
-  const out=t.replace(/[A-Za-zÀ-ÿŒœ]+(?:['’-][A-Za-zÀ-ÿŒœ]+)*/g,w=>{
-    const k=w.toLowerCase().replace(/’/g,"'"); if(TR[k]!==undefined) return TR[k];
-    const parts=k.split(/(?<=['-])|(?=-)/); return parts.map(x=>{ const c=x.replace(/^-/,""); return TR[c]!==undefined?TR[c]:(TR[x]!==undefined?TR[x]:x); }).join("");
-  });
-  return out.charAt(0).toUpperCase()+out.slice(1);
+const MORE={"1":[["Je veux trois pommes rouges.","Я хочу три красных яблока."],["Tu veux vingt bonbons ?","Ты хочешь двадцать конфет?"],["Il veut cinq grands croissants.","Он хочет пять больших круассанов."],["Nous voulons dix belles roses.","Мы хотим десять красивых роз."],["Elle veut trente-cinq petites fraises.","Она хочет тридцать пять маленьких клубник."],["Vous voulez quatre-vingt-dix euros ?","Вы хотите девяносто евро?"],["Ils veulent soixante-quinze bons gâteaux.","Они хотят семьдесят пять вкусных тортов."],["Je ne veux pas vingt-deux petits verres.","Я не хочу двадцать два маленьких стакана."],["Elles veulent cent grammes de fromage frais.","Они хотят сто грамм свежего сыра."]],"2":[["J'ai quarante euros dans mon sac.","У меня сорок евро в сумке."],["Tu as deux grands frères ?","У тебя есть два старших брата?"],["Il a trente-trois ans.","Ему тридцать три года."],["Nous avons cinq chambres libres.","У нас есть пять свободных комнат."],["Elle a une petite voiture rouge.","У неё есть маленькая красная машина."],["Vous avez trois cents grammes de bœuf frais ?","У вас есть триста грамм свежей говядины?"],["Ils ont deux beaux chiens.","У них есть два красивых пса."],["Je n'ai pas de monnaie.","У меня нет мелочи."],["Elles n'ont pas quatre-vingts euros.","У них нет восьмидесяти евро."]],"3":[["Je prends une grande tasse de thé chaud.","Я беру большую чашку горячего чая."],["Tu prends le train de huit heures ?","Ты едешь на поезде в восемь часов?"],["Il prend un sandwich et deux pommes.","Он берёт бутерброд и два яблока."],["Nous prenons deux cents grammes de jambon blanc.","Мы берём двести грамм варёной ветчины."],["Elle prend la nouvelle robe bleue.","Она берёт новое синее платье."],["Vous prenez le premier bus ?","Вы едете на первом автобусе?"],["Ils prennent quatre tranches de pain frais.","Они берут четыре ломтика свежего хлеба."],["Je ne prends pas de lait froid.","Я не беру холодное молоко."],["Elles prennent un taxi.","Они едут на такси."]],"4":[["Je voudrais une bière froide, s'il vous plaît.","Я бы хотела холодное пиво, пожалуйста."],["Vous voudriez un grand verre d'eau ?","Вы бы хотели большой стакан воды?"],["Il voudrait deux petits pains au chocolat.","Он бы хотел две булочки с шоколадом."],["Nous voudrions une table près de la fenêtre.","Мы бы хотели столик у окна."],["Elle voudrait une chambre calme.","Она бы хотела тихий номер."],["Ils voudraient trois billets pour demain.","Они бы хотели три билета на завтра."],["Je voudrais cent grammes de fromage frais.","Я бы хотела сто грамм свежего сыра."],["Je ne voudrais pas de café trop chaud.","Я бы не хотела слишком горячий кофе."],["Elles voudraient une grande pizza.","Они бы хотели большую пиццу."]],"5":[["Je cherche une banque ouverte.","Я ищу работающий банк."],["Vous cherchez un hôtel calme ?","Вы ищете тихую гостиницу?"],["Il cherche son nouveau téléphone.","Он ищет свой новый телефон."],["Nous cherchons un bon restaurant.","Мы ищем хороший ресторан."],["Elle cherche la sortie.","Она ищет выход."],["Ils cherchent un petit supermarché.","Они ищут небольшой супермаркет."],["Je cherche une chambre à cinquante euros.","Я ищу номер за пятьдесят евро."],["Je ne cherche pas le grand musée.","Я не ищу большой музей."],["Elles cherchent une pharmacie à trois cents mètres.","Они ищут аптеку в трёхстах метрах."]],"6":[["Je peux payer par carte.","Я могу заплатить картой."],["Tu peux venir demain ?","Ты можешь прийти завтра?"],["Il peut attendre dix minutes.","Он может подождать десять минут."],["Nous pouvons marcher deux kilomètres.","Мы можем пройти два километра."],["Elle peut vous verser un verre d'eau froide.","Она может налить вам стакан холодной воды."],["Vous pouvez me verser cent millilitres de lait chaud ?","Вы можете налить мне сто миллилитров горячего молока?"],["Ils peuvent venir ce soir.","Они могут прийти сегодня вечером."],["Je ne peux pas manger de viande.","Я не могу есть мясо."],["Elles ne peuvent pas attendre longtemps.","Они не могут долго ждать."]],"7":[["Je vais prendre un café chaud.","Я собираюсь взять горячий кофе."],["Tu vas acheter un nouveau sac ?","Ты собираешься купить новую сумку?"],["Il va manger une grosse pizza.","Он собирается съесть большую пиццу."],["Nous allons visiter le grand musée.","Мы собираемся посетить большой музей."],["Elle va commander deux cafés.","Она собирается заказать два кофе."],["Vous allez payer l'addition ?","Вы собираетесь оплатить счёт?"],["Ils vont marcher cinq kilomètres.","Они собираются пройти пять километров."],["Je ne vais pas dépenser cent euros.","Я не собираюсь тратить сто евро."],["Elles vont arriver demain matin.","Они собираются приехать завтра утром."]],"8":[["J'ai commandé un grand café.","Я заказала большой кофе."],["Tu as acheté un nouveau téléphone ?","Ты купила новый телефон?"],["Il a perdu son petit sac noir.","Он потерял свою маленькую чёрную сумку."],["Nous avons attendu vingt minutes.","Мы ждали двадцать минут."],["Elle a mangé une bonne soupe.","Она съела вкусный суп."],["Vous avez payé quarante euros ?","Вы заплатили сорок евро?"],["Ils ont visité le vieux musée.","Они посетили старый музей."],["Je n'ai pas oublié mon passeport.","Я не забыла паспорт."],["Elles n'ont pas trouvé la gare.","Они не нашли вокзал."]],"9":[["Je suis contente.","Я довольна."],["Tu es très gentille.","Ты очень добрая."],["Il est fatigué ce soir.","Он устал сегодня вечером."],["Nous sommes à l'hôtel.","Мы в гостинице."],["Elle est en retard.","Она опаздывает."],["Vous êtes touristes ?","Вы туристы?"],["Ils sont très heureux.","Они очень счастливы."],["Je ne suis pas libre demain.","Я не свободна завтра."],["Elles sont dans un petit hôtel calme.","Они в маленькой тихой гостинице."]],"10":[["Il y a une grande table dans la chambre.","В комнате есть большой стол."],["Il y a deux pharmacies près d'ici.","Рядом есть две аптеки."],["Il n'y a pas de bus ce soir.","Сегодня вечером нет автобуса."],["Il y a un bon restaurant ici ?","Здесь есть хороший ресторан?"],["Il y a trente personnes dans la salle.","В зале тридцать человек."],["Il y a un petit parc derrière l'hôtel.","За гостиницей есть небольшой парк."],["Il n'y a pas de place libre.","Нет свободного места."],["Il y a beaucoup de monde.","Много народу."],["Il y a un vieux pont près de la gare.","Возле вокзала есть старый мост."]],"11":[["Ajouter au panier.","Добавить в корзину."],["Voir mon panier.","Посмотреть мою корзину."],["Supprimer le produit du panier.","Удалить товар из корзины."],["Appliquer le code promo.","Применить промокод."],["Choisir la livraison.","Выбрать доставку."],["Payer par carte.","Оплатить картой."],["Suivre ma commande.","Следить за заказом."],["Retourner l'article.","Вернуть товар."],["Votre commande est confirmée.","Ваш заказ подтверждён."]],"12":[["Mon profil.","Мой профиль."],["Modifier mon adresse e-mail.","Изменить мой адрес электронной почты."],["J'ai oublié mon mot de passe.","Я забыла пароль."],["Se déconnecter.","Выйти из аккаунта."],["Activer les notifications.","Включить уведомления."],["Désactiver la localisation.","Отключить геолокацию."],["Choisir la langue.","Выбрать язык."],["Mes paramètres.","Мои настройки."],["Supprimer mon compte.","Удалить мой аккаунт."]],"13":[["Annuler.","Отменить."],["Continuer.","Продолжить."],["Réessayer.","Повторить попытку."],["Une erreur est survenue.","Произошла ошибка."],["Chargement en cours.","Идёт загрузка."],["Aucun résultat.","Ничего не найдено."],["Connexion perdue.","Соединение потеряно."],["Mise à jour disponible.","Доступно обновление."],["Merci de patienter.","Пожалуйста, подождите."]]};   // дополнительные примеры к теории каждого уровня
+function moreHtml(lv){
+  const m=MORE[lv]; if(!m) return "";
+  return '<h4 class="more-h">Ещё примеры</h4><ul class="morelist">'+m.map(x=>'<li><span class="ex" lang="fr">'+esc(x[0])+'<button type="button" class="say" data-say="'+esc(x[0])+'" aria-label="Озвучить пример">🔊</button></span><span class="mru">'+esc(x[1])+'</span></li>').join("")+'</ul>';
 }
-function theoryHtml(th){
+function theoryHtml(th,lv){
   return '<p>'+th.intro+'</p><ul class="rules">'+th.rules.map(r=>{
     let ex="";
     if(r[1]){
       const fr=frOnly(r[1]);
-      ex='<span class="ex" lang="fr">'+r[1]+(fr?'<button type="button" class="say" data-say="'+esc(fr)+'" aria-label="Озвучить пример">🔊</button><span class="tr">'+esc(frTrans(fr))+'</span>':'')+'</span>';
+      ex='<span class="ex" lang="fr">'+r[1]+(fr?'<button type="button" class="say" data-say="'+esc(fr)+'" aria-label="Озвучить пример">🔊</button>':'')+'</span>';
     }
     return '<li><span class="r">'+r[0]+'</span>'+ex+'</li>';
-  }).join("")+'</ul>';
+  }).join("")+'</ul>'+moreHtml(lv);
 }
 function theoryBlock(open){
   const th=THEORY[state.level]; if(!th) return null;
   const d=document.createElement("details"); d.className="theory"; if(open) d.open=true;
   const pl=planFor(state.level);
-  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Théorie</span></span><span class="th-chev" aria-hidden="true">'+CHEV("d")+'</span></summary><div class="theory-body">'+theoryHtml(th)+'</div>';
+  d.innerHTML='<summary><span class="th-main"><span class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</span><span class="th-ru">'+esc(pl.ru)+'</span><span class="th-tag">📖 Théorie</span></span><span class="th-chev" aria-hidden="true">'+CHEV("d")+'</span></summary><div class="theory-body">'+theoryHtml(th,state.level)+'</div>';
   d.querySelectorAll("[data-say]").forEach(b=>{ b.onclick=e=>{ e.preventDefault(); speak(b.dataset.say,1); }; });
   return d;
 }
@@ -724,22 +711,15 @@ async function marcelTip(el, target, said, ru){
 /* ---------- SPEECH ---------- */
 // два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
-let speechRate=0.75, voiceURIs={1:"",2:""}, frVoices12={1:null,2:null};
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; voiceURIs={1:v.v1||v.voice||"",2:v.v2||""}; } }catch(e){}
-function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate, v1:voiceURIs[1], v2:voiceURIs[2]})); }catch(e){} }
+let speechRate=0.75, frVoices12={1:null,2:null};
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
-function pickVoice(){
+function pickVoice(){   // два разных французских голоса выбираются сами
   const list=frVoices(), isFR=x=>x.lang.replace("_","-")==="fr-FR";
-  const v1=list.find(x=>x.voiceURI===voiceURIs[1]) || list.find(isFR) || list[0] || null;
-  const v2=list.find(x=>x.voiceURI===voiceURIs[2] && x!==v1) || list.find(x=>x!==v1 && isFR(x)) || list.find(x=>x!==v1) || v1;
+  const v1=list.find(isFR) || list[0] || null;
+  const v2=list.find(x=>x!==v1 && isFR(x)) || list.find(x=>x!==v1) || v1;
   frVoices12={1:v1,2:v2};
-  [[1,"voicePick"],[2,"voicePick2"]].forEach(([n,id])=>{
-    const sel=$(id); if(!sel) return; sel.innerHTML="";
-    list.forEach(v=>{ const o=document.createElement("option"); o.value=v.voiceURI; o.textContent=v.name+" ("+v.lang+")"; sel.appendChild(o); });
-    if(frVoices12[n]) sel.value=frVoices12[n].voiceURI;
-  });
-  $("voiceRow").hidden=!list.length; $("voiceRow2").hidden=!list.length; $("voiceLbl").hidden=!list.length;
-  $("voiceLbl").textContent=list.length>1?"Голоса озвучки (две кнопки «Голос 1» и «Голос 2»)":"Голос озвучки (на этом устройстве один, поэтому «Голос 2» говорит тем же голосом, но ниже)";
 }
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
 function speak(text,n){
@@ -757,12 +737,8 @@ function listenRow(text){
   return row;
 }
 document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
-[[1,"voicePick","voiceTest"],[2,"voicePick2","voiceTest2"]].forEach(([n,id,tid])=>{
-  $(id).onchange=()=>{ voiceURIs[n]=$(id).value; saveVoice(); pickVoice(); speak("Bonjour, je suis Marcel.",n); };
-  $(tid).onclick=()=>speak("Bonjour, je suis Marcel. Je veux deux pommes.",n);
-});
 renderSpeed();
-if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; } else { $("voiceRow").hidden=true; $("voiceRow2").hidden=true; $("voiceLbl").hidden=true; }
+if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
 function listen(btn, onText, onLive){
