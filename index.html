@@ -166,6 +166,16 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .setsum{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer;color:var(--soft);font-size:.95rem}
 .setsum::-webkit-details-marker{display:none}
 details[open]>.setsum .chev{transform:rotate(-90deg)}
+.feed{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:grid;gap:10px}
+.feed-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.feed-stats div{display:grid;gap:2px}
+.feed-stats div+div{border-left:1px solid var(--line)}
+.feed-stats b{font-size:1.6rem;font-weight:800;line-height:1.1}
+.feed-stats span{font-size:.72rem;color:var(--soft);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.feed-timer{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px;font-size:.92rem;color:var(--soft)}
+.feed-timer b{font-variant-numeric:tabular-nums;font-size:1.2rem;color:var(--ink)}
+.feed-note{font-size:.82rem;color:var(--soft)}
+.feed.empty .feed-note{color:var(--rouge);font-weight:600}
 .speedrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px}
 .speedrow .lbl{font-size:.9rem;color:var(--soft)}
 .seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
@@ -306,6 +316,16 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   <div id="homeScreen" class="screen">
     <section class="aquapanel" aria-label="Марсель и миска с креветками">
       <div class="aqua" id="aqua"></div>
+    </section>
+
+    <section class="feed" id="feed" aria-label="Кормление Марселя">
+      <div class="feed-stats">
+        <div><b id="fReceived">0</b><span>Reçues</span></div>
+        <div><b id="fEaten">0</b><span>Mangées</span></div>
+        <div><b id="fLeft">0</b><span>Restantes</span></div>
+      </div>
+      <div class="feed-timer"><span>Prochain repas dans</span><b id="fTimer">--:--:--</b></div>
+      <div class="feed-note" id="fNote"></div>
     </section>
 
     <section aria-label="Уровни">
@@ -623,13 +643,15 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 const KEY="marcel-course-v3";
 const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, rapEarned:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
+const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день
+let feed={eaten:0,next:0};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
-  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{};
+  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0};
   // версия 9: в каждом уровне 18 карточек (было 21) и перед уровнем идёт повторение пройденного. Прогресс прежних версий начинается заново, креветки остаются
   if(s.state && s.state.v===9){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; }
 } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved, feed})); }catch(e){} }
 function levelData(n){ return BUILTIN[n] || generated[n] || null; }
 function planFor(n){ return BUILTIN[n] || PLAN[n] || {fr:"Конструкция "+n, ru:"", theme:"повседневные ситуации"}; }
 
@@ -829,7 +851,7 @@ function setForgot(idx,on,stage){
 
 function renderHeader(){
   const p=planFor(state.level);
-  $("shrimpTop").textContent="🦐 Crevettes : "+state.shrimps;
+  $("shrimpTop").textContent="🦐 Crevettes : "+shrimpsLeft();
   const recap=needRecap();
   $("stages").style.display=recap?"none":"";
   if(state.view>unl()) state.view=unl();
@@ -1743,20 +1765,44 @@ function sceneSVG(n){
     '<ellipse cx="108" cy="196" rx="108" ry="8" fill="#000" opacity=".12"/><ellipse cx="305" cy="196" rx="64" ry="7" fill="#000" opacity=".12"/>'+
     CAT_SVG+bowlBack+shr+bowlFront+PAW_SVG+more+'</svg>';
 }
+// сколько креветок в миске: получено минус съедено
+function clampFeed(){ if(feed.eaten>state.shrimps) feed.eaten=state.shrimps; if(feed.eaten<0) feed.eaten=0; }
+const shrimpsLeft=()=>{ clampFeed(); return state.shrimps-feed.eaten; };
+function two(n){ return (n<10?"0":"")+n; }
+function renderFeed(){
+  const left=shrimpsLeft();
+  $("fReceived").textContent=state.shrimps; $("fEaten").textContent=feed.eaten; $("fLeft").textContent=left;
+  const ms=Math.max(0,feed.next-Date.now()), t=Math.floor(ms/1000);
+  $("fTimer").textContent=two(Math.floor(t/3600))+":"+two(Math.floor(t%3600/60))+":"+two(t%60);
+  $("fNote").textContent=left?"3 crevettes par jour : une toutes les 8 heures.":"Le bol est vide. Gagne des crevettes !";
+  $("feed").classList.toggle("empty",!left);
+}
+// время еды: съедается одна креветка, если в миске что-то есть. Пропущенные за время отсутствия приёмы пищи догоняются
+function feedTick(){
+  const now=Date.now();
+  if(!feed.next){ feed.next=now+MEAL_MS; save(); }
+  if(now>=feed.next){
+    const missed=Math.floor((now-feed.next)/MEAL_MS)+1, ate=Math.min(missed,shrimpsLeft());
+    feed.eaten+=ate; feed.next+=missed*MEAL_MS; save();
+    if(ate){ toast(ate>1?"Marcel a mangé "+ate+" crevettes 😋":"Marcel a mangé une crevette 😋"); renderHeader(); renderAqua(); }
+  }
+  renderFeed();
+}
 let aquaShown=-1;
 function renderAqua(){
-  if(aquaShown===state.shrimps) return;
-  aquaShown=state.shrimps;
-  const a=$("aqua"); a.innerHTML=sceneSVG(state.shrimps);
-  if(!state.shrimps){ const e=document.createElement("div"); e.className="aqua-empty"; e.textContent="Миска пуста. Заработай первую креветку!"; a.appendChild(e); }
+  const left=shrimpsLeft();
+  if(aquaShown===left) return;
+  aquaShown=left;
+  const a=$("aqua"); a.innerHTML=sceneSVG(left);
+  if(!left){ const e=document.createElement("div"); e.className="aqua-empty"; e.textContent="Миска пуста. Заработай первую креветку!"; a.appendChild(e); }
 }
 function renderAll(){
-  showScreen(); renderHeader(); renderNotice(); renderMain(); renderTheory(); renderStage(); renderAqua(); renderAdmin();
+  showScreen(); renderHeader(); renderNotice(); renderMain(); renderTheory(); renderStage(); renderAqua(); renderFeed(); renderAdmin();
   if(screen==="home") renderLevels();
 }
 
 $("restartLevel").onclick=()=>{ if(confirm("Начать текущий уровень заново?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
-$("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; save(); renderAll(); } };
+$("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
@@ -1778,6 +1824,8 @@ function renderAdmin(){
   $("restartLevel").textContent="Начать заново Niveau "+state.level;
 }
 renderAll();
+feedTick(); setInterval(feedTick,1000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) feedTick(); });
 </script>
 </body>
 </html>
