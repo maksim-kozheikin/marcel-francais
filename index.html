@@ -126,14 +126,13 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .substages{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:2px 2px 0;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
 .recap-intro{margin-bottom:10px}
-.story-head{margin:14px 2px 0;font-size:1.15rem}
 .story-card .lvtag{font-size:.85rem;font-weight:700;color:var(--soft);margin-bottom:2px}
 .story-card .texts{min-width:0}
-.story-card details.tr{margin-top:4px}
-.story-card details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;gap:6px;list-style:none;padding:6px 0 2px}
+.story-card details.tr{margin:20px 0 14px}
+.story-card details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
 .story-card details.tr summary::-webkit-details-marker{display:none}
 .story-card details.tr[open] summary .chev{transform:rotate(-90deg)}
-.story-card details.tr p{margin:.4em 0 0;color:var(--soft)}
+.story-card details.tr p{margin:12px 2px 0;color:var(--soft)}
 .hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
@@ -1441,14 +1440,14 @@ function renderRecap(m){
   });
   m.appendChild(list);
   // рассказ: те же карточки, что и фразы, нумерация продолжается, справа «Je sais». Перевод стоит над кнопками голоса
-  const head=document.createElement("h2"); head.className="story-head"; head.textContent="Прочитать рассказ";
+  const head=document.createElement("h3"); head.className="recap-lv"; head.textContent="Прочитать рассказ";
   m.appendChild(head);
   const st=document.createElement("div"); st.className="list";
   for(let q=1;q<N;q++){
     const t=STORY[q]; if(!t) continue;
     const isDone=!!(state.done.story||[])[q];
     const card=document.createElement("article"); card.className="item sp story-card"+(isDone?" done":"");
-    card.innerHTML='<div class="item-top"><div class="num">'+(isDone?"✓":cards.length+q)+'</div><div class="texts"><div class="lvtag">Niveau '+q+' · '+esc(BUILTIN[q].fr)+'</div><div class="fr" lang="fr">'+esc(t.fr)+'</div></div><div class="marks"><label class="known"><input type="checkbox"> Je sais</label></div></div><div class="actions"></div>';
+    card.innerHTML='<div class="item-top"><div class="num">'+(isDone?"✓":cards.length+q)+'</div><div class="texts"><div class="fr" lang="fr">'+esc(t.fr)+'</div></div><div class="marks"><label class="known"><input type="checkbox"> Je sais</label></div></div><div class="actions"></div>';
     const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>';
     card.querySelector(".texts").appendChild(det);
     card.querySelector(".actions").appendChild(listenRow(t.fr));
