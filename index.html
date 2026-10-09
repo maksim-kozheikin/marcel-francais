@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
-try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==="chaude"||_v.pal==="bordeaux")) document.documentElement.setAttribute("data-pal",_v.pal); }catch(e){}
+try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==="chaude"||_v.pal==="rose"||_v.pal==="bordeaux")) document.documentElement.setAttribute("data-pal",_v.pal==="bordeaux"?"rose":_v.pal); }catch(e){}
 </script>
 <style>
 :root{
@@ -58,14 +58,14 @@ try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==
   --g1:#B5532F; --g2:#D9794A; --g3:#E8A04E; --g4:#C4572F; --gsh:rgba(181,83,47,.38);
   --bowl:#C8643C; --bowl-d:#8E3F22; --bowl-l:#FBEFE2; --bowl-in:#5A2E1E;
 }
-:root[data-pal="bordeaux"]{
-  --bg:#F8F0E8; --paper:#FFFCF8; --ink:#3A1620; --soft:#7A5C63;
-  --bleu:#7B1E3A; --rouge:#C8453B; --line:#E6D3C8;
-  --water1:#E8C9C0; --water2:#A8576C; --sand:#E6CFB5;
-  --ok:#2E7D5B; --okbg:#E0F0E6; --bad:#B3261E; --badbg:#FBE0DC;
-  --warn:#B26A00; --warnbg:#FBEBC8; --violet:#9B2D4F;
-  --g1:#7B1E3A; --g2:#B03256; --g3:#D6667A; --g4:#9B2D4F; --gsh:rgba(123,30,58,.38);
-  --bowl:#8E2E43; --bowl-d:#5E1B2C; --bowl-l:#F6E9E2; --bowl-in:#3A1019;
+:root[data-pal="rose"]{
+  --bg:#FDEFF3; --paper:#FFFBFC; --ink:#4A1B33; --soft:#8A6475;
+  --bleu:#C2255C; --rouge:#E5484D; --line:#F3D3DE;
+  --water1:#F7C9D8; --water2:#D9729A; --sand:#F1D5C4;
+  --ok:#2E8B6A; --okbg:#E0F3EA; --bad:#C92A2A; --badbg:#FDE0E0;
+  --warn:#B26A00; --warnbg:#FBEBC8; --violet:#A61E6B;
+  --g1:#C2255C; --g2:#E64980; --g3:#F783AC; --g4:#D6336C; --gsh:rgba(194,37,92,.35);
+  --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#5C1033;
 }
 @media (prefers-color-scheme:dark){
   :root[data-pal="chaude"]:not([data-theme="light"]){
@@ -77,14 +77,14 @@ try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==
     --g1:#B5532F; --g2:#D9794A; --g3:#E8A04E; --g4:#C4572F;
     --bowl:#C8643C; --bowl-d:#8E3F22; --bowl-l:#FBEFE2; --bowl-in:#3A1E14;
   }
-  :root[data-pal="bordeaux"]:not([data-theme="light"]){
-    --bg:#1F1015; --paper:#2B1820; --ink:#F8EDE6; --soft:#C9A9B1;
-    --bleu:#E58AA5; --rouge:#FF8B7A; --line:#4A2A35;
-    --water1:#6A2E43; --water2:#3A1522; --sand:#6E5236;
+  :root[data-pal="rose"]:not([data-theme="light"]){
+    --bg:#24101A; --paper:#321B27; --ink:#FCE9F0; --soft:#D3A9BC;
+    --bleu:#F783AC; --rouge:#FF8787; --line:#55283B;
+    --water1:#7A2E4D; --water2:#431528; --sand:#7A5646;
     --ok:#6FD3A0; --okbg:#1D3A2C; --bad:#FF9A8D; --badbg:#4A2224;
-    --warn:#F0B24A; --warnbg:#4A3A1E; --violet:#D0577C;
-    --g1:#7B1E3A; --g2:#B03256; --g3:#D6667A; --g4:#9B2D4F;
-    --bowl:#8E2E43; --bowl-d:#5E1B2C; --bowl-l:#F6E9E2; --bowl-in:#240C13;
+    --warn:#F0B24A; --warnbg:#4A3A1E; --violet:#E64980;
+    --g1:#C2255C; --g2:#E64980; --g3:#F783AC; --g4:#D6336C;
+    --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#3A0E22;
   }
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -184,7 +184,10 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .story-card .lvtag{font-size:.85rem;font-weight:700;color:var(--soft);margin-bottom:2px}
 .story-card .texts{min-width:0}
 .story-card details.tr{margin:20px 0 14px}
-.dlg-card details.tr{margin:10px 0 2px}
+.dlg-card details.tr{margin:18px 0 8px}
+.dlg-card .fbwrap:not(:empty){margin-top:22px}
+.dlg-card .actions{gap:14px}
+.dlg-card .hint{margin:6px 0 0}
 details.tr{margin:0;border:1px solid var(--line);border-radius:14px;background:var(--bg);overflow:hidden}
 details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px}
 details.tr summary::-webkit-details-marker{display:none}
@@ -295,6 +298,11 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 @keyframes breath{from{transform:scaleY(1)}to{transform:scaleY(1.035)}}
 .win{text-align:center;padding:24px 16px}
 .win .big{font-size:3rem}
+.win.compact{text-align:left;display:grid;gap:12px;padding:14px 16px}
+.win.compact .wtop{display:flex;align-items:center;gap:12px}
+.win.compact .wico{font-size:2rem;line-height:1}
+.win.compact b{display:block;font-size:1.1rem}
+.win.compact small{color:var(--soft);font-size:.9rem}
 details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);
   padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
@@ -434,8 +442,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
     <section class="speedrow" aria-label="Vitesse de la voix">
       <span class="lbl">Vitesse de la voix</span>
       <div class="seg" id="speedSeg" role="group">
+        <button type="button" data-rate="0.25">0.25×</button>
         <button type="button" data-rate="0.5">0.5×</button>
-        <button type="button" data-rate="0.75">0.75×</button>
         <button type="button" data-rate="1">1×</button>
       </div>
     </section>
@@ -445,7 +453,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="seg" id="palSeg" role="group">
         <button type="button" data-pal="bleu"><i class="dot" style="background:#2346A8"></i>Bleu</button>
         <button type="button" data-pal="chaude"><i class="dot" style="background:#B5532F"></i>Chaude</button>
-        <button type="button" data-pal="bordeaux"><i class="dot" style="background:#7B1E3A"></i>Bordeaux</button>
+        <button type="button" data-pal="rose"><i class="dot" style="background:#C2255C"></i>Rose</button>
       </div>
     </section>
 
@@ -755,7 +763,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 const KEY="marcel-course-v3";
 const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[],story:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
-const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день
+const MEAL_MS=6*3600*1000;   // Марсель съедает одну креветку каждые 6 часов, то есть четыре в день
 let feed={eaten:0,next:0}, streak=[], dlg={};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0}; if(s.dlg && typeof s.dlg==='object') dlg=s.dlg; if(Array.isArray(s.streak)) streak=s.streak.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x));
@@ -871,8 +879,8 @@ async function marcelTip(el, target, said, ru){
 /* ---------- SPEECH ---------- */
 // два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
-let speechRate=0.75, frVoices12={1:null,2:null}, palette="bleu";
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; if(v.fx===false) fxOn=false; if(v.pal==="chaude"||v.pal==="bordeaux") palette=v.pal; } }catch(e){}
+let speechRate=0.5, frVoices12={1:null,2:null}, palette="bleu";
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.25,0.5,1].includes(v.rate)) speechRate=v.rate; else if(v.rate===0.75) speechRate=0.5; if(v.fx===false) fxOn=false; if(v.pal==="chaude"||v.pal==="rose") palette=v.pal; else if(v.pal==="bordeaux") palette="rose"; } }catch(e){}
 function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate,fx:fxOn,pal:palette})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
 function pickVoice(){   // два разных французских голоса выбираются сами
@@ -881,7 +889,7 @@ function pickVoice(){   // два разных французских голос
   const v2=list.find(x=>x!==v1 && isFR(x)) || list.find(x=>x!==v1) || v1;
   frVoices12={1:v1,2:v2};
 }
-const PAL_COLOR={bleu:"#2346A8",chaude:"#2E6B4E",bordeaux:"#7B1E3A"};
+const PAL_COLOR={bleu:"#2346A8",chaude:"#2E6B4E",rose:"#C2255C"};
 function applyPalette(){
   const r=document.documentElement; if(palette==="bleu") r.removeAttribute("data-pal"); else r.setAttribute("data-pal",palette);
   const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",PAL_COLOR[palette]);
@@ -890,8 +898,8 @@ function applyPalette(){
 document.querySelectorAll("#palSeg button").forEach(b=>{ b.onclick=()=>{ palette=b.dataset.pal; saveVoice(); applyPalette(); }; });
 applyPalette();
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
-const SPEED_STEPS=[1,0.75,0.5];
-const rateLabel=r=>(r>=1?"Normal":r>=0.75?"Lent":"Très lent")+" : "+(r===1?"1,0":String(r).replace(".",","))+"×";
+const SPEED_STEPS=[1,0.5,0.25];
+const rateLabel=r=>(r>=1?"Normal":r>=0.5?"Lent":"Très lent")+" : "+(r===1?"1,0":String(r).replace(".",","))+"×";
 function speak(text,n,slow){
   n=n||1;
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
@@ -1937,7 +1945,8 @@ function renderMain(){
   if(state.won){
     const earnedN=Object.values(state.earned).filter(Boolean).length;
     const w=document.createElement("section"); w.className="panel win";
-    w.innerHTML='<div class="big">🐈🎉🦐</div><h2 style="margin:.3em 0">Bravo ! Niveau terminé !</h2><p>Браво! Уровень завершён!<br><b>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' sur ce niveau !</b> За уровень ты получила '+earnedN+' '+ruShrimp(earnedN)+'.</p><div style="margin-top:14px"><button class="btn cta" id="nextLevel">Niveau suivant · Следующий уровень "+CHEV()+"</button></div><p class="hint" style="margin:12px 0 0">Карточки пройденных этапов можно листать ниже.</p>';
+    w.className="panel win compact";
+    w.innerHTML='<div class="wtop"><span class="wico">🎉</span><div><b>Bravo ! Niveau terminé !</b><small>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' · +'+earnedN+' 🦐</small></div></div><button class="btn violet" id="nextLevel" style="width:100%">Niveau suivant '+CHEV()+'</button>';
     m.appendChild(w);
     w.querySelector("#nextLevel").onclick=()=>goLevel(state.level+1);
   }
@@ -2014,7 +2023,7 @@ function renderFeed(){
   $("fReceived").textContent=state.shrimps; $("fEaten").textContent=feed.eaten; $("fLeft").textContent=left;
   const ms=Math.max(0,feed.next-Date.now()), t=Math.floor(ms/1000);
   $("fTimer").textContent=two(Math.floor(t/3600))+":"+two(Math.floor(t%3600/60))+":"+two(t%60);
-  $("fNote").textContent=left?"3 crevettes par jour : une toutes les 8 heures.":"Le bol est vide. Gagne des crevettes !";
+  $("fNote").textContent=left?"4 crevettes par jour : une toutes les 6 heures.":"Le bol est vide. Gagne des crevettes !";
   $("feed").classList.toggle("empty",!left);
 }
 // время еды: съедается одна креветка, если в миске что-то есть. Пропущенные за время отсутствия приёмы пищи догоняются
@@ -2231,12 +2240,13 @@ function renderDialogue(){
   const head=document.createElement("div"); head.className="dlg-head"; head.innerHTML='<b>'+esc(D.fr)+'</b><small>'+esc(D.ru)+'</small>';
   host.appendChild(head);
   if(dp.pos>=dp.seq.length){
-    const end=document.createElement("div"); end.className="panel win dlg-end";
-    const e=dlg[dp.i], at=DLG_ORDER.indexOf(dp.i), nxi=at>=0&&at+1<DLG_ORDER.length?DLG_ORDER[at+1]:-1, nx=nxi>=0;
-    end.innerHTML='<div class="big">🐈🎉</div><h2>Bravo !</h2><p>Диалог «'+esc(D.fr)+'» пройден. Ты ответила на все реплики вслух.</p>';
-    const r=document.createElement("button"); r.className="btn ghost"; r.textContent="Повторить диалог"; r.onclick=()=>openDialogueAgain(); end.appendChild(r);
-    if(nx){ const n=document.createElement("button"); n.className="btn violet"; n.innerHTML=esc(DIALOGS[nxi].fr)+" "+CHEV(); n.onclick=()=>{ dp.i=nxi; openDialogueAgain(); }; end.appendChild(n); }
-    const h=document.createElement("button"); h.className="btn link"; h.textContent="К диалогам"; h.onclick=backHome; end.appendChild(h);
+    const end=document.createElement("div"); end.className="panel win compact dlg-end";
+    const lv=DLG_AFTER[dp.i], hasNext=lv<MAXLEVEL;
+    end.innerHTML='<div class="wtop"><span class="wico">🎉</span><div><b>Bravo !</b><small>Диалог «'+esc(D.fr)+'» пройден</small></div></div>';
+    const n=document.createElement("button"); n.className="btn violet"; n.style.width="100%"; n.id="dlgNextLevel";
+    if(hasNext){ n.innerHTML="Niveau "+(lv+1)+" · "+esc(BUILTIN[lv+1].fr)+" "+CHEV(); n.onclick=()=>{ dp=null; goLevel(lv+1); }; }
+    else { n.innerHTML="Tous les niveaux "+CHEV(); n.onclick=backHome; }
+    end.appendChild(n);
     host.appendChild(end); return;
   }
   const li=dp.seq[dp.pos], L=D.lines[li], total=D.lines.length;
