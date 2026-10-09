@@ -65,7 +65,7 @@ try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==
   --ok:#2E8B6A; --okbg:#E0F3EA; --bad:#C92A2A; --badbg:#FDE0E0;
   --warn:#B26A00; --warnbg:#FBEBC8; --violet:#A61E6B;
   --g1:#C2255C; --g2:#E64980; --g3:#F783AC; --g4:#D6336C; --gsh:rgba(194,37,92,.35);
-  --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#5C1033;
+  --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#5C1033; --mic:#0E8F86;
 }
 @media (prefers-color-scheme:dark){
   :root[data-pal="chaude"]:not([data-theme="light"]){
@@ -84,7 +84,7 @@ try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==
     --ok:#6FD3A0; --okbg:#1D3A2C; --bad:#FF9A8D; --badbg:#4A2224;
     --warn:#F0B24A; --warnbg:#4A3A1E; --violet:#E64980;
     --g1:#C2255C; --g2:#E64980; --g3:#F783AC; --g4:#D6336C;
-    --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#3A0E22;
+    --bowl:#E64980; --bowl-d:#A61E4D; --bowl-l:#FFF0F5; --bowl-in:#3A0E22; --mic:#17A398;
   }
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -137,7 +137,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ru.big{font-size:1.2rem;color:var(--ink);font-weight:600}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{font:inherit;font-weight:600;font-size:1rem;border:none;border-radius:14px;padding:10px 14px;cursor:pointer;color:#fff;background:var(--bleu);min-height:46px}
-.btn.red{background:var(--rouge)}
+.btn.red{background:var(--mic,var(--rouge))}
 .btn.violet{background:var(--violet)}
 .btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .btn.link{background:none;color:var(--bleu);padding:8px 0;min-height:40px;border:none;font-size:1.05rem}
@@ -275,6 +275,7 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .dlg-head b{font-size:1.25rem}
 .dlg-head small{color:var(--soft);font-size:.95rem}
 .dlg-card{display:grid;gap:12px}
+.dlg-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px}
 .dlg-card .who{font-size:.85rem;font-weight:600;color:var(--bleu)}
 .dlg-card .ru.big{font-size:1.2rem}
 .dlg-card .actions{display:grid;gap:10px}
@@ -353,6 +354,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 #stageHost{display:flex;flex-direction:column;gap:0}
 #plHost{margin-top:auto}
 #plBottom{margin-top:12px}
+#winHost:empty{display:none}
 .aquapanel{margin:0}
 .settings-h{font-size:1.1rem;margin:0 0 6px}
 .lvbtn{width:100%;margin:10px 0 4px;min-height:52px;font-size:1.05rem}
@@ -439,15 +441,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="lv-list" id="lvHost"></div>
     </section>
 
-    <section class="speedrow" aria-label="Vitesse de la voix">
-      <span class="lbl">Vitesse de la voix</span>
-      <div class="seg" id="speedSeg" role="group">
-        <button type="button" data-rate="0.25">0.25×</button>
-        <button type="button" data-rate="0.5">0.5×</button>
-        <button type="button" data-rate="1">1×</button>
-      </div>
-    </section>
-
     <section class="speedrow" aria-label="Цветовая тема">
       <span class="lbl">Thème</span>
       <div class="seg" id="palSeg" role="group">
@@ -474,6 +467,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   <div id="dlgScreen" class="screen" style="display:none"></div>
 
   <div id="levelScreen" class="screen" style="display:none">
+    <div id="winHost"></div>
 
     
     <div id="micNotice"></div>
@@ -879,9 +873,9 @@ async function marcelTip(el, target, said, ru){
 /* ---------- SPEECH ---------- */
 // два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
-let speechRate=0.5, frVoices12={1:null,2:null}, palette="bleu";
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.25,0.5,1].includes(v.rate)) speechRate=v.rate; else if(v.rate===0.75) speechRate=0.5; if(v.fx===false) fxOn=false; if(v.pal==="chaude"||v.pal==="rose") palette=v.pal; else if(v.pal==="bordeaux") palette="rose"; } }catch(e){}
-function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate,fx:fxOn,pal:palette})); }catch(e){} }
+let speechRate=1, frVoices12={1:null,2:null}, palette="bleu";
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if(v.fx===false) fxOn=false; if(v.pal==="chaude"||v.pal==="rose") palette=v.pal; else if(v.pal==="bordeaux") palette="rose"; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({fx:fxOn,pal:palette})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
 function pickVoice(){   // два разных французских голоса выбираются сами
   const list=frVoices(), isFR=x=>x.lang.replace("_","-")==="fr-FR";
@@ -897,7 +891,6 @@ function applyPalette(){
 }
 document.querySelectorAll("#palSeg button").forEach(b=>{ b.onclick=()=>{ palette=b.dataset.pal; saveVoice(); applyPalette(); }; });
 applyPalette();
-function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
 const SPEED_STEPS=[1,0.5,0.25];
 const rateLabel=r=>(r>=1?"Normal":r>=0.5?"Lent":"Très lent")+" : "+(r===1?"1,0":String(r).replace(".",","))+"×";
 function speak(text,n,slow){
@@ -920,8 +913,6 @@ function listenRow(text){
     row.appendChild(b); });
   return row;
 }
-document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
-renderSpeed();
 if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
@@ -1932,7 +1923,7 @@ function renderTheory(){
 }
 
 function renderMain(){
-  const m=$("main"); m.innerHTML="";
+  const m=$("main"); m.innerHTML=""; $("winHost").innerHTML="";
   const d=levelData(state.level), pw=$("progWrap");
   if(needRecap()){ m.before(pw); renderRecap(m); return; }
   m.after(pw);
@@ -1946,9 +1937,8 @@ function renderMain(){
     const earnedN=Object.values(state.earned).filter(Boolean).length;
     const w=document.createElement("section"); w.className="panel win";
     w.className="panel win compact";
-    w.innerHTML='<div class="wtop"><span class="wico">🎉</span><div><b>Bravo ! Niveau terminé !</b><small>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' · +'+earnedN+' 🦐</small></div></div><button class="btn violet" id="nextLevel" style="width:100%">Niveau suivant '+CHEV()+'</button>';
-    m.appendChild(w);
-    w.querySelector("#nextLevel").onclick=()=>goLevel(state.level+1);
+    w.innerHTML='<div class="wtop"><span class="wico">🎉</span><div><b>Bravo ! Niveau terminé !</b><small>Tu as gagné '+earnedN+' crevette'+(earnedN>1?'s':'')+' · +'+earnedN+' 🦐</small></div></div>';
+    $("winHost").appendChild(w);
   }
   if(state.view===4) renderReview(m);
 }
@@ -2197,7 +2187,7 @@ const DIALOGS=[
   ["o","Parfait ! À ce soir !","Отлично! До вечера!"],
   ["m","À ce soir !","До вечера!"]]}
 ].map(d=>({...d, lines:d.lines.map(([w,fr,ru])=>({me:w==="m",fr,ru}))}));
-let dp=null;   // {i, seq, pos, round, miss, res, fb, tr, say}
+let dp=null;   // {i, seq, pos, round, miss, res, fb, tr, say, results}
 function dlgDone(i){ return !!(dlg[i] && dlg[i].done); }
 // диалог стоит после Rappel нужного уровня: тема, повтор, диалог
 const DLG_AFTER=[4,6,8,5,9,7,1,2,3,10,11,12,13];   // для каждого диалога по порядку в DIALOGS номер уровня, после которого он идёт
@@ -2211,7 +2201,7 @@ function dlgRow(i){
 }
 function openDialogue(i){
   stopAudio(); play=null;
-  dp={i, seq:DIALOGS[i].lines.map((_,j)=>j), pos:0, round:0, miss:[], res:null, fb:"", tr:false, say:true};
+  dp={i, seq:DIALOGS[i].lines.map((_,j)=>j), pos:0, round:0, miss:[], res:null, fb:"", tr:false, say:true, results:{}};
   screen="dialogue"; pushScreen(); navTo();
 }
 function dlgSettled(){ if(!dp) return false; const L=DIALOGS[dp.i].lines[dp.seq[dp.pos]]; return !L.me || dp.res!==null; }
@@ -2219,12 +2209,18 @@ function dlgNext(){
   if(!dp || !dlgSettled()) return;
   stopAudio(); const li=dp.seq[dp.pos];
   if(dp.res==="miss" && !dp.miss.includes(li)) dp.miss.push(li);
+  dp.results[li]=dp.res;
   dp.pos++; dp.res=null; dp.fb=""; dp.tr=false; dp.say=true;
   if(dp.pos>=dp.seq.length){
-    if(dp.miss.length){ dp.seq=dp.miss.slice(); dp.miss=[]; dp.pos=0; dp.round++; }
+    if(dp.miss.length){ dp.seq=dp.miss.slice(); dp.miss=[]; dp.pos=0; dp.round++; dp.results={}; }
     else dlgFinish();
   }
   cardAnim="l"; renderDialogue(); cardAnim=null; window.scrollTo({top:0});
+}
+function dlgPrev(){
+  if(!dp || dp.pos<=0) return;
+  stopAudio(); dp.pos--; dp.res=dp.results[dp.seq[dp.pos]]||null; dp.fb=""; dp.tr=false; dp.say=false;
+  cardAnim="r"; renderDialogue(); cardAnim=null; window.scrollTo({top:0});
 }
 function dlgFinish(){
   const e=dlg[dp.i]||(dlg[dp.i]={done:false,earned:false}); e.done=true;
@@ -2255,8 +2251,8 @@ function renderDialogue(){
   pw.innerHTML='<div class="bar"><span style="width:'+bar+'%"></span></div><div class="prog">'+(dp.round===0?(dp.pos+1)+" sur "+total:"à revoir · "+(dp.pos+1)+" sur "+dp.seq.length)+'</div>';
   host.appendChild(pw);
   const el=document.createElement("article"); el.className="item sp dlg-card"+(L.me?" me":"")+(dp.res==="ok"?" done":dp.res==="miss"?" forgot":"");
-  el.innerHTML='<div class="who">'+esc(L.me?"Moi":D.other)+'</div><div class="texts"></div><div class="actions"></div><div class="fbwrap"></div>';
-  const texts=el.querySelector(".texts"), actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
+  el.innerHTML='<div class="dlg-top"><div class="who">'+esc(L.me?"Moi":D.other)+'</div><div class="marks"></div></div><div class="texts"></div><div class="actions"></div><div class="fbwrap"></div>';
+  const texts=el.querySelector(".texts"), actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap"), marks=el.querySelector(".marks");
   fbw.innerHTML=dp.fb;
   const showFr=!L.me || dp.res!==null;
   if(L.me && !showFr) texts.innerHTML='<div class="ru big">'+esc(L.ru)+'</div><div class="hint">Скажи это по-французски.</div>';
@@ -2277,20 +2273,21 @@ function renderDialogue(){
       }, live=>{ fbw.innerHTML='<div class="fb live"><span class="lbl">J\'entends :</span> '+esc(live)+'</div>'; });
       actions.appendChild(mb);
     }
-    const sh=document.createElement("button"); sh.className="btn ghost"; sh.textContent="Показать ответ"; sh.onclick=()=>{ dp.res="miss"; dp.fb=""; renderDialogue(); }; actions.appendChild(sh);
+    const sh=document.createElement("label"); sh.className="known"; sh.innerHTML='<input type="checkbox"> Показать ответ';
+    sh.querySelector("input").onchange=()=>{ stopAudio(); dp.res="miss"; dp.fb=""; renderDialogue(); }; marks.appendChild(sh);
   } else if(dp.res==="miss"){
     const hint=document.createElement("p"); hint.className="hint"; hint.textContent="Запомни ответ. Эта реплика вернётся в конце диалога, и ты ответишь на неё ещё раз."; actions.appendChild(hint);
     const k=document.createElement("label"); k.className="known"; k.innerHTML='<input type="checkbox"> Je sais';
-    k.querySelector("input").onchange=()=>{ dp.res="ok"; renderDialogue(); }; actions.appendChild(k);
+    k.querySelector("input").onchange=()=>{ dp.res="ok"; renderDialogue(); }; marks.appendChild(k);
   }
   host.appendChild(el); if(cardAnim){ el.classList.add("slide-"+cardAnim); cardAnim=null; }
-  const row=document.createElement("div"); row.className="row";
-  row.innerHTML='<button class="btn violet" id="dlgGo" style="width:100%"'+(dlgSettled()?"":" disabled")+'>Дальше '+CHEV()+'</button>';
-  host.appendChild(row); $("dlgGo").onclick=dlgNext;
+  const bot=document.createElement("div"); bot.className="pl-bottom";
+  bot.innerHTML='<div class="row"><button class="btn ghost" id="dlgPrev"'+(dp.pos<=0?" disabled":"")+'>'+CHEV("l")+' Назад</button><button class="btn violet" id="dlgGo"'+(dlgSettled()?"":" disabled")+'>Дальше '+CHEV()+'</button></div>';
+  host.appendChild(bot); $("dlgGo").onclick=dlgNext; $("dlgPrev").onclick=dlgPrev;
   if(dp.say){ dp.say=false; if(!L.me) setTimeout(()=>{ if(screen==="dialogue" && dp && dp.seq[dp.pos]===li) speak(L.fr,2); },250); }
 }
 function openDialogueAgain(){ const i=dp.i; dp=null; openDialogue(i); }
-swipeOn($("dlgScreen"),()=>$("dlgScreen").querySelector(".dlg-card"),()=>enabledBtn("dlgGo"),()=>null);
+swipeOn($("dlgScreen"),()=>$("dlgScreen").querySelector(".dlg-card"),()=>enabledBtn("dlgGo"),()=>enabledBtn("dlgPrev"));
 
 // установка на экран «Домой»
 let installEv=null;
