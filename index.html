@@ -201,10 +201,11 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .listen-row{display:flex;gap:8px;flex:0 0 auto}
 .actions .listen-row{flex:1 1 100%}
 .listen-row .btn{flex:1 1 0;min-width:0}
-.listen-row .btn.slow{flex:0 0 auto;padding-left:14px;padding-right:14px}
-.accents{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;width:100%;margin-top:2px}
-.accents .acc{min-width:0;width:auto;min-height:48px;padding:0;font:inherit;font-size:1.15rem;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:12px;cursor:pointer}
-.accents .acc:active{background:var(--bg)}
+.accents{display:grid;grid-template-columns:repeat(10,1fr);width:100%;margin-top:2px;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.accents .acc{min-width:0;width:auto;min-height:50px;padding:0;font:inherit;font-size:1.2rem;font-weight:600;background:transparent;color:var(--ink);border:none;border-left:1px solid var(--line);border-radius:0;cursor:pointer}
+.accents .acc:first-child{border-left:none}
+.accents .acc:active{background:var(--bg);color:var(--bleu)}
+.dictrow .btn.ok{min-height:54px;min-width:76px;font-size:1.1rem}
 .streak{display:grid;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
 .streak-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .streak-top b{font-size:1.15rem;color:var(--ink)}
@@ -334,12 +335,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item.sp .actions{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
   .item.sp .actions .listen-row{flex:none;width:100%}
   .item.sp .actions .dictrow{flex:none;width:100%}
-  .item.sp .actions .dictrow .btn{width:auto;min-width:72px}
+  .item.sp .actions .dictrow .btn{width:auto;min-width:76px}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
   .item .actions .listen-row .btn{flex:1 1 0;width:auto;min-width:0;font-size:1rem}
 }
 .listen-row .btn{white-space:nowrap;padding-left:8px;padding-right:8px}
-.listen-row .btn.slow{font-size:1.3rem;padding-left:16px;padding-right:16px}
+@keyframes slideL{from{transform:translateX(70px);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideR{from{transform:translateX(-70px);opacity:0}to{transform:none;opacity:1}}
+.item.slide-l{animation:slideL .26s ease-out}
+.item.slide-r{animation:slideR .26s ease-out}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -832,8 +836,13 @@ function speak(text,n,slow){
 // две синие кнопки с разными голосами
 function listenRow(text){
   const row=document.createElement("div"); row.className="listen-row";
-  [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Voix "+n; b.onclick=()=>speak(text,n); row.appendChild(b); });
-  const sl=document.createElement("button"); sl.type="button"; sl.className="btn slow"; sl.textContent="🐢"; sl.title="Plus lentement"; sl.setAttribute("aria-label","Plus lentement"); sl.onclick=()=>speak(text,1,0.45); row.appendChild(sl);
+  [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Voix "+n; 
+    // первое нажатие читает с выбранной скоростью, второе подряд на ту же кнопку читает медленнее
+    let slowNext=false, last=0;
+    b.onclick=()=>{ if(Date.now()-last>8000) slowNext=false; last=Date.now();
+      if(slowNext){ speak(text,n,Math.min(0.5,speechRate*0.6)); toast("Медленнее 🐢"); } else speak(text,n);
+      slowNext=!slowNext; };
+    row.appendChild(b); });
   return row;
 }
 document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
@@ -1149,7 +1158,7 @@ function dictItem(idx, fr, ru, k, n){
   if(isAgain) fbw.innerHTML='<p class="hint">'+(play?"Запомни слово. Эта карточка вернётся в конец раздела, и ты напишешь слово ещё раз.":"Запомни слово и сними отметку «Je ne sais plus», чтобы написать его ещё раз. Карточка вернётся в конец списка.")+'</p>';
   if(settled) return el;
   const row=document.createElement("div"); row.className="dictrow";
-  row.innerHTML='<input type="text" lang="fr" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Пропущенное слово" aria-label="Пропущенное слово"><button type="button" class="btn ghost">OK</button>';
+  row.innerHTML='<input type="text" lang="fr" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Пропущенное слово" aria-label="Пропущенное слово"><button type="button" class="btn violet ok">OK</button>';
   const inp=row.querySelector("input");
   inp.value=""; inp.name="dict"+idx+"_"+(dictSeq++);   // свежее поле на каждую карточку, без подсказок и остатков прошлого слова
   const go=()=>{
@@ -1588,18 +1597,35 @@ function goHome(){ stopAudio(); play=null; dp=null; rapForce=false; screen="home
 function pushScreen(){ try{ if(!(history.state && history.state.s)) history.pushState({s:1},""); }catch(e){} }
 window.addEventListener("popstate",()=>{ if(screen!=="home") goHome(); });
 function backHome(){ if(history.state && history.state.s){ try{ history.back(); return; }catch(e){} } goHome(); }
-// свайп влево и вправо листает карточки
-function swipeOn(el,onLeft,onRight){
-  let x0=0,y0=0,t0=0,ok=false;
-  el.addEventListener("touchstart",e=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; t0=Date.now(); ok=!e.target.closest("input,textarea,select,.accents,[contenteditable]"); },{passive:true});
-  el.addEventListener("touchend",e=>{
-    if(!ok) return; const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
-    if(Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.6 || Date.now()-t0>800) return;
-    (dx<0?onLeft:onRight)();
+// свайп влево и вправо листает карточки. Карточка едет за пальцем и улетает, следующая выезжает
+let cardAnim=null;   // "l" новая карточка выезжает справа, "r" слева
+function slideIn(host){ const c=host && host.querySelector(".item"); if(cardAnim && c){ c.classList.add("slide-"+cardAnim); } cardAnim=null; }
+function swipeOn(el,getCard,leftBtn,rightBtn){
+  let x0=0,y0=0,t0=0,ok=false,drag=false,card=null;
+  const go=b=>b && !b.disabled ? b : null;
+  const reset=()=>{ if(!card) return; card.style.transition="transform .22s ease, opacity .22s ease"; card.style.transform=""; card.style.opacity=""; const c=card; setTimeout(()=>{ c.style.transition=""; },260); };
+  el.style.touchAction="pan-y";
+  el.addEventListener("touchstart",e=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; t0=Date.now(); drag=false; card=getCard(); ok=!!card && !e.target.closest("input,textarea,select,.accents,[contenteditable]"); },{passive:true});
+  el.addEventListener("touchmove",e=>{
+    if(!ok||!card) return; const t=e.touches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    if(!drag){ if(Math.abs(dx)>14 && Math.abs(dx)>Math.abs(dy)*1.4){ drag=true; card.style.transition="none"; } else return; }
+    const can=go(dx<0?leftBtn():rightBtn()), sh=can?dx:Math.max(-40,Math.min(40,dx*0.25));
+    card.style.transform="translateX("+sh+"px) rotate("+(sh/28)+"deg)"; card.style.opacity=can?String(1-Math.min(Math.abs(dx)/500,.45)):"";
   },{passive:true});
+  el.addEventListener("touchend",e=>{
+    if(!ok||!drag||!card){ return; } drag=false;
+    const t=e.changedTouches[0], dx=t.clientX-x0, dt=Math.max(1,Date.now()-t0), fast=Math.abs(dx)/dt>0.5;
+    const btn=go(dx<0?leftBtn():rightBtn());
+    if(btn && (Math.abs(dx)>90 || (fast&&Math.abs(dx)>40))){
+      const dir=dx<0?-1:1, c=card; c.style.transition="transform .22s ease-in, opacity .22s ease-in";
+      c.style.transform="translateX("+(dir*window.innerWidth*1.1)+"px) rotate("+(dir*16)+"deg)"; c.style.opacity="0";
+      setTimeout(()=>{ const b=go(dx<0?leftBtn():rightBtn()); if(b) b.click(); else reset(); },200);
+    } else reset();
+  },{passive:true});
+  el.addEventListener("touchcancel",()=>{ if(drag){ drag=false; reset(); } },{passive:true});
 }
-const tapIf=id=>{ const b=$(id); if(b && !b.disabled){ b.click(); return true; } return false; };
-swipeOn($("stageHost"),()=>{ tapIf("plNext")||tapIf("plGo"); },()=>{ tapIf("plPrev"); });
+const enabledBtn=id=>{ const b=$(id); return b && !b.disabled ? b : null; };
+swipeOn($("stageHost"),()=>$("plHost").querySelector(".item"),()=>enabledBtn("plNext")||enabledBtn("plGo"),()=>enabledBtn("plPrev"));
 function openRappel(m){ goLevel(m); rapForce=true; navTo(); }
 function levelPct(n){
   const st=n===state.level?state:levelsSaved[n]; if(!st) return 0;
@@ -1729,19 +1755,19 @@ function renderPlayer(){
   host.innerHTML=""; bot.innerHTML=""; $("stageHost").classList.toggle("browse",play.mode==="browse");
   if(play.mode==="browse"){
     const seq=seqFor(k); play.pos=Math.max(0,Math.min(seq.length-1,play.pos));
-    host.appendChild(cardEl(k,seq[play.pos],play.pos+1));
+    host.appendChild(cardEl(k,seq[play.pos],play.pos+1)); slideIn(host);
     const row=document.createElement("div"); row.className="row";
     row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>'+CHEV("l")+' Назад</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Дальше '+CHEV()+'</button>';
     bot.appendChild(row);
-    $("plPrev").onclick=()=>{ stopAudio(); play.pos--; renderPlayer(); };
-    $("plNext").onclick=()=>{ stopAudio(); play.pos++; renderPlayer(); };
+    $("plPrev").onclick=()=>{ stopAudio(); play.pos--; cardAnim="r"; renderPlayer(); cardAnim=null; };
+    $("plNext").onclick=()=>{ stopAudio(); play.pos++; cardAnim="l"; renderPlayer(); cardAnim=null; };
     renderProgress(); return;
   }
   if(play.rel!=null){ renderRelearnCard(); return; }
   if(play.cur==null) play.cur=firstOpen(k);
   if(play.cur===undefined || play.cur===null){ renderPlayerEnd(); return; }
   const seq=seqFor(k);
-  host.appendChild(cardEl(k,play.cur,seq.indexOf(play.cur)+1));
+  host.appendChild(cardEl(k,play.cur,seq.indexOf(play.cur)+1)); slideIn(host);
   plObs=new MutationObserver(()=>plSync()); plObs.observe(host,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
   plSync();
 }
@@ -1773,7 +1799,7 @@ function plAdvance(){
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();   // клавиатура закрывается, введённое слово не переходит дальше
   stopAudio(); const bot=$("plBottom"); play.rel=null;
   play.cur=firstOpen(play.k); if(play.cur===undefined) play.cur=null;
-  if(play.cur==null){ renderPlayerEnd(); } else renderPlayer();
+  cardAnim="l"; if(play.cur==null){ renderPlayerEnd(); } else renderPlayer(); cardAnim=null;
 }
 function playRerender(){
   if(!play) return;
@@ -2060,7 +2086,7 @@ function dlgNext(){
     if(dp.miss.length){ dp.seq=dp.miss.slice(); dp.miss=[]; dp.pos=0; dp.round++; }
     else dlgFinish();
   }
-  renderDialogue(); window.scrollTo({top:0});
+  cardAnim="l"; renderDialogue(); cardAnim=null; window.scrollTo({top:0});
 }
 function dlgFinish(){
   const e=dlg[dp.i]||(dlg[dp.i]={done:false,earned:false}); e.done=true;
@@ -2116,14 +2142,14 @@ function renderDialogue(){
     const k=document.createElement("label"); k.className="known"; k.innerHTML='<input type="checkbox"> Je sais';
     k.querySelector("input").onchange=()=>{ dp.res="ok"; renderDialogue(); }; actions.appendChild(k);
   }
-  host.appendChild(el);
+  host.appendChild(el); if(cardAnim){ el.classList.add("slide-"+cardAnim); cardAnim=null; }
   const row=document.createElement("div"); row.className="row";
   row.innerHTML='<button class="btn violet" id="dlgGo" style="width:100%"'+(dlgSettled()?"":" disabled")+'>Дальше '+CHEV()+'</button>';
   host.appendChild(row); $("dlgGo").onclick=dlgNext;
   if(dp.say){ dp.say=false; if(!L.me) setTimeout(()=>{ if(screen==="dialogue" && dp && dp.seq[dp.pos]===li) speak(L.fr,2); },250); }
 }
 function openDialogueAgain(){ const i=dp.i; dp=null; openDialogue(i); }
-swipeOn($("dlgScreen"),()=>{ tapIf("dlgGo"); },()=>{});
+swipeOn($("dlgScreen"),()=>$("dlgScreen").querySelector(".dlg-card"),()=>enabledBtn("dlgGo"),()=>null);
 
 // установка на экран «Домой»
 let installEv=null;
