@@ -15,6 +15,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+try{ var _v=JSON.parse(localStorage.getItem("marcel-voice")); if(_v && (_v.pal==="chaude"||_v.pal==="bordeaux")) document.documentElement.setAttribute("data-pal",_v.pal); }catch(e){}
+</script>
 <style>
 :root{
   box-sizing:border-box;
@@ -25,6 +28,8 @@
   --water1:#7FD3E6; --water2:#2E8FB8; --sand:#F1D9A0;
   --ok:#14885A; --okbg:#DDF5E9; --bad:#C8322A; --badbg:#FDE3E1;
   --warn:#C77700; --warnbg:#FFF1DA; --violet:#6A38C2;
+  --g1:#6A38C2; --g2:#8B5CF6; --g3:#D946EF; --g4:#6366F1; --gsh:rgba(106,56,194,.38);
+  --bowl:#5b7fd6; --bowl-d:#3b5ab0; --bowl-l:#e9eefb; --bowl-in:#2f3f7a;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -41,6 +46,46 @@
   --water1:#2B7F9C; --water2:#123E63; --sand:#8C7746;
   --ok:#4FD39A; --okbg:#173D33; --bad:#FF8A82; --badbg:#4A1E2A;
   --warn:#F0A63A; --warnbg:#4A3A1E; --violet:#8B67E6;
+}
+
+/* цветовые темы. Выбираются на главном экране, по умолчанию синяя */
+:root[data-pal="chaude"]{
+  --bg:#FBF3E4; --paper:#FFFDF8; --ink:#1F3A2E; --soft:#6B7A6F;
+  --bleu:#2E6B4E; --rouge:#C7432F; --line:#E8D9BF;
+  --water1:#BFD9C8; --water2:#5C8F78; --sand:#E8CFA0;
+  --ok:#2F8F5B; --okbg:#E1F0DF; --bad:#B3261E; --badbg:#F9DDD5;
+  --warn:#B26A00; --warnbg:#FBEBC8; --violet:#B5532F;
+  --g1:#B5532F; --g2:#D9794A; --g3:#E8A04E; --g4:#C4572F; --gsh:rgba(181,83,47,.38);
+  --bowl:#C8643C; --bowl-d:#8E3F22; --bowl-l:#FBEFE2; --bowl-in:#5A2E1E;
+}
+:root[data-pal="bordeaux"]{
+  --bg:#F8F0E8; --paper:#FFFCF8; --ink:#3A1620; --soft:#7A5C63;
+  --bleu:#7B1E3A; --rouge:#C8453B; --line:#E6D3C8;
+  --water1:#E8C9C0; --water2:#A8576C; --sand:#E6CFB5;
+  --ok:#2E7D5B; --okbg:#E0F0E6; --bad:#B3261E; --badbg:#FBE0DC;
+  --warn:#B26A00; --warnbg:#FBEBC8; --violet:#9B2D4F;
+  --g1:#7B1E3A; --g2:#B03256; --g3:#D6667A; --g4:#9B2D4F; --gsh:rgba(123,30,58,.38);
+  --bowl:#8E2E43; --bowl-d:#5E1B2C; --bowl-l:#F6E9E2; --bowl-in:#3A1019;
+}
+@media (prefers-color-scheme:dark){
+  :root[data-pal="chaude"]:not([data-theme="light"]){
+    --bg:#1E1A14; --paper:#2A241B; --ink:#F6EBDA; --soft:#BDAE95;
+    --bleu:#7FC4A0; --rouge:#F08A6A; --line:#4A3F2E;
+    --water1:#2F5A48; --water2:#17382C; --sand:#6E5A33;
+    --ok:#6FD39A; --okbg:#1F3B2C; --bad:#FF8E7E; --badbg:#4A2620;
+    --warn:#F0B24A; --warnbg:#4A3A1E; --violet:#D9744B;
+    --g1:#B5532F; --g2:#D9794A; --g3:#E8A04E; --g4:#C4572F;
+    --bowl:#C8643C; --bowl-d:#8E3F22; --bowl-l:#FBEFE2; --bowl-in:#3A1E14;
+  }
+  :root[data-pal="bordeaux"]:not([data-theme="light"]){
+    --bg:#1F1015; --paper:#2B1820; --ink:#F8EDE6; --soft:#C9A9B1;
+    --bleu:#E58AA5; --rouge:#FF8B7A; --line:#4A2A35;
+    --water1:#6A2E43; --water2:#3A1522; --sand:#6E5236;
+    --ok:#6FD3A0; --okbg:#1D3A2C; --bad:#FF9A8D; --badbg:#4A2224;
+    --warn:#F0B24A; --warnbg:#4A3A1E; --violet:#D0577C;
+    --g1:#7B1E3A; --g2:#B03256; --g3:#D6667A; --g4:#9B2D4F;
+    --bowl:#8E2E43; --bowl-d:#5E1B2C; --bowl-l:#F6E9E2; --bowl-in:#240C13;
+  }
 }
 *,*::before,*::after{box-sizing:inherit}
 [hidden]{display:none!important}
@@ -192,6 +237,9 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .seg button{font:inherit;font-size:.85rem;font-weight:600;border:none;background:none;color:var(--soft);padding:6px 12px;border-radius:999px;cursor:pointer;min-height:0}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg button .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.seg button[aria-pressed="true"] .dot{box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+#palSeg button{padding:6px 9px}
 .seg button:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
 .gap{display:inline-block;width:5.5em;height:1.05em;border-bottom:3px solid var(--bleu);vertical-align:-.12em;margin:0 .2em}
 .gapword{color:var(--ok);font-weight:700;border-bottom:3px solid var(--ok)}
@@ -296,8 +344,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .settings-h{font-size:1.1rem;margin:0 0 6px}
 .lvbtn{width:100%;margin:10px 0 4px;min-height:52px;font-size:1.05rem}
 .btn.cta{position:relative;overflow:hidden;font-size:1.3rem;padding:20px 18px;min-height:70px;border-radius:20px;letter-spacing:.02em;color:#fff;
-  background:linear-gradient(115deg,#6A38C2 0,#8B5CF6 25%,#D946EF 50%,#6366F1 75%,#6A38C2 100%);background-size:420px 100%;animation:ctaflow 4s linear infinite;
-  box-shadow:0 8px 20px rgba(106,56,194,.38);text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  background:linear-gradient(115deg,var(--g1) 0,var(--g2) 25%,var(--g3) 50%,var(--g4) 75%,var(--g1) 100%);background-size:420px 100%;animation:ctaflow 4s linear infinite;
+  box-shadow:0 8px 20px var(--gsh);text-shadow:0 1px 2px rgba(0,0,0,.25)}
 .btn.cta::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);transform:translateX(-130%);animation:ctashine 3.2s ease-in-out infinite;pointer-events:none}
 .btn.cta:active{transform:scale(.98)}
 .btn.cta:disabled{animation:none;filter:grayscale(.6);opacity:.7}.btn.cta:disabled::after{animation:none}
@@ -353,7 +401,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
     <div class="brand" id="brand">
       <span class="brand-text"><b>Marcel</b><small>français</small></span>
     </div>
-    <button type="button" class="btn link" id="lvBack" style="display:none"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Все уровни</button>
+    <button type="button" class="btn link" id="lvBack" style="display:none"><svg class="chev l" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg> Tous les niveaux</button>
     <div class="pill" id="shrimpTop">🦐 Crevettes : 0</div>
   </header>
 
@@ -389,6 +437,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
         <button type="button" data-rate="0.5">0.5×</button>
         <button type="button" data-rate="0.75">0.75×</button>
         <button type="button" data-rate="1">1×</button>
+      </div>
+    </section>
+
+    <section class="speedrow" aria-label="Цветовая тема">
+      <span class="lbl">Thème</span>
+      <div class="seg" id="palSeg" role="group">
+        <button type="button" data-pal="bleu"><i class="dot" style="background:#2346A8"></i>Bleu</button>
+        <button type="button" data-pal="chaude"><i class="dot" style="background:#B5532F"></i>Chaude</button>
+        <button type="button" data-pal="bordeaux"><i class="dot" style="background:#7B1E3A"></i>Bordeaux</button>
       </div>
     </section>
 
@@ -715,7 +772,7 @@ function renderStreak(){
   const host=$("streak"); if(!host) return;
   const n=streakCount(), days=["D","L","M","M","J","V","S"];
   let w=n+" jour"+(n>1?"s":"")+" de suite";
-  if(!n) w="Pas encore de série";
+  if(!n) w="Pas de série";
   host.innerHTML='<div class="streak-top"><b>🔥 '+w+'</b><span>Серия дней подряд</span></div><div class="streak-days">'+
     [6,5,4,3,2,1,0].map(i=>{ const d=dayAgo(i); return '<div class="'+(streak.includes(dayKey(d))?"on ":"")+(i===0?"today":"")+'"><i></i>'+days[d.getDay()]+'</div>'; }).join("")+'</div>';
 }
@@ -814,9 +871,9 @@ async function marcelTip(el, target, said, ru){
 /* ---------- SPEECH ---------- */
 // два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
-let speechRate=0.75, frVoices12={1:null,2:null};
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; if(v.fx===false) fxOn=false; } }catch(e){}
-function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate,fx:fxOn})); }catch(e){} }
+let speechRate=0.75, frVoices12={1:null,2:null}, palette="bleu";
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; if(v.fx===false) fxOn=false; if(v.pal==="chaude"||v.pal==="bordeaux") palette=v.pal; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate,fx:fxOn,pal:palette})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
 function pickVoice(){   // два разных французских голоса выбираются сами
   const list=frVoices(), isFR=x=>x.lang.replace("_","-")==="fr-FR";
@@ -824,6 +881,14 @@ function pickVoice(){   // два разных французских голос
   const v2=list.find(x=>x!==v1 && isFR(x)) || list.find(x=>x!==v1) || v1;
   frVoices12={1:v1,2:v2};
 }
+const PAL_COLOR={bleu:"#2346A8",chaude:"#2E6B4E",bordeaux:"#7B1E3A"};
+function applyPalette(){
+  const r=document.documentElement; if(palette==="bleu") r.removeAttribute("data-pal"); else r.setAttribute("data-pal",palette);
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",PAL_COLOR[palette]);
+  document.querySelectorAll("#palSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.pal===palette));
+}
+document.querySelectorAll("#palSeg button").forEach(b=>{ b.onclick=()=>{ palette=b.dataset.pal; saveVoice(); applyPalette(); }; });
+applyPalette();
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
 function speak(text,n,slow){
   n=n||1;
@@ -1560,7 +1625,7 @@ function renderRecap(m){
   });
   m.appendChild(list);
   // рассказ: те же карточки, что и фразы, нумерация продолжается, справа «Je sais». Перевод стоит над кнопками голоса
-  const head=document.createElement("h3"); head.className="recap-lv"; head.textContent="Прочитать рассказ";
+  const head=document.createElement("h3"); head.className="recap-lv"; head.textContent="Lire l'histoire";
   m.appendChild(head);
   const st=document.createElement("div"); st.className="list";
   for(let q=1;q<N;q++){
@@ -1931,8 +1996,8 @@ function sceneSVG(n){
   for(let i=0;i<shown;i++) pts.push({x:262+((i*29+7)%68), y:149+((i*13+3)%13), r:((i*53)%50)-25});
   const poke=new Set(pts.map((q,i)=>[q.x,i]).sort((a,b)=>a[0]-b[0]).slice(0,3).map(a=>a[1]));
   const shr=pts.map((q,i)=>'<g'+(poke.has(i)?' class="poke"':'')+'><text x="'+q.x+'" y="'+q.y+'" font-size="21" transform="rotate('+q.r+' '+q.x+' '+q.y+')">🦐</text></g>').join("");
-  const bowlBack='<ellipse cx="305" cy="152" rx="58" ry="14" fill="#e9eefb" stroke="#3b5ab0" stroke-width="2"/><ellipse cx="305" cy="153" rx="51" ry="10" fill="#2f3f7a"/>';
-  const bowlFront='<path d="M247 152 A58 14 0 0 0 363 152 Q358 192 305 192 Q252 192 247 152 Z" fill="#5b7fd6" stroke="#3b5ab0" stroke-width="2"/><path d="M257 170 Q305 184 353 170" stroke="#fff" stroke-width="3" fill="none" opacity=".55" stroke-linecap="round"/>';
+  const bowlBack='<ellipse cx="305" cy="152" rx="58" ry="14" style="fill:var(--bowl-l);stroke:var(--bowl-d)" stroke-width="2"/><ellipse cx="305" cy="153" rx="51" ry="10" style="fill:var(--bowl-in)"/>';
+  const bowlFront='<path d="M247 152 A58 14 0 0 0 363 152 Q358 192 305 192 Q252 192 247 152 Z" style="fill:var(--bowl);stroke:var(--bowl-d)" stroke-width="2"/><path d="M257 170 Q305 184 353 170" stroke="#fff" stroke-width="3" fill="none" opacity=".55" stroke-linecap="round"/>';
   const more=n>24?'<text x="305" y="207" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--ink)">× '+n+'</text>':"";
   return '<svg viewBox="0 0 370 212" role="img" aria-label="Кот Марсель лежит рядом с миской и трогает креветок лапкой"><rect width="370" height="212" style="fill:var(--bg)"/><rect y="164" width="370" height="48" style="fill:var(--sand)"/>'+
     '<ellipse cx="108" cy="196" rx="108" ry="8" fill="#000" opacity=".12"/><ellipse cx="305" cy="196" rx="64" ry="7" fill="#000" opacity=".12"/>'+
