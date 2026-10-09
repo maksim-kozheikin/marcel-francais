@@ -130,7 +130,11 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .story-p{margin:12px 0;padding-top:10px;border-top:1px dashed var(--line)}
 .story-p .lvtag{font-size:.85rem;font-weight:700;color:var(--soft)}
 .story-p .fr{font-size:1.15rem;line-height:1.5;margin:.3em 0 .5em}
-.story-p details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600}
+.story-p details.tr{margin-top:14px}
+.story-p details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;gap:6px;list-style:none;padding:4px 0}
+.story-p details.tr summary::-webkit-details-marker{display:none}
+.story-p details.tr[open] summary .chev{transform:rotate(-90deg)}
+.story-read{margin-top:14px;justify-self:start}
 .story-p details.tr p{margin:.4em 0 0;color:var(--soft)}
 .hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
@@ -641,7 +645,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, rapEarned:false, won:false});
+const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день
 let feed={eaten:0,next:0};
@@ -882,9 +886,8 @@ function stageComplete(k){
     const got=award("dis"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
     if(state.unlocked>before) toast("Bravo ! "+pre+(state.forgot.length?"Этап открыт: "+STAGES[4].tab:"Niveau terminé !")); else if(got) toast("Bravo ! +1 🦐");
   }
-  else if(k==="rec"){
-    if(!state.rapEarned){ state.rapEarned=true; state.shrimps++; toast("Bravo ! Rappel : +1 🦐"); } else toast("Bravo !");
-  }
+  else if(k==="rec"){ rapCheck(); }
+
   else if(isRev(k)){
     if(revDone()){
       REV_SUBS.forEach(x=>{ state.again[x.key]=[]; state.tail[x.key]=[]; });
@@ -1413,6 +1416,17 @@ function recapCards(N){
   }
   return out;
 }
+// Rappel засчитывается, когда отмечены все фразы и история прочитана. Тогда +1 креветка
+const rapReady=()=>doneCount("rec")>=stageCount("rec") && !!state.rapRead;
+function rapCheck(){
+  if(rapReady() && !state.rapEarned){ state.rapEarned=true; state.shrimps++; save(); toast("Bravo ! Rappel : +1 🦐"); renderHeader(); renderAqua(); }
+  updateRapBtn();
+}
+function updateRapBtn(){
+  const b=$("recapGo"); if(!b) return;
+  const ok=rapReady()||admin; b.disabled=!ok; b.classList.toggle("cta",ok);
+  const h=$("recapHint"); if(h) h.style.display=ok?"none":"";
+}
 let rapForce=false;   // Rappel открыт вручную (кнопка «Rappel» или строка между уровнями)
 function needRecap(){ return state.level>=2 && rapForce && !!levelData(state.level); }   // Rappel открывается только по желанию, из списка уровней
 function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; navTo(); }
@@ -1434,17 +1448,19 @@ function renderRecap(m){
     const par=document.createElement("div"); par.className="story-p";
     par.innerHTML='<div class="lvtag">Niveau '+p+' · '+esc(BUILTIN[p].fr)+'</div><p class="fr" lang="fr">'+esc(t.fr)+'</p>';
     par.appendChild(listenRow(t.fr));
-    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary>Перевод</summary><p>'+esc(t.ru)+'</p>'; par.appendChild(det);
+    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>'; par.appendChild(det);
     st.appendChild(par);
   }
+  const rd=document.createElement("label"); rd.className="known story-read";
+  rd.innerHTML='<input type="checkbox"> J\'ai lu'; const rc=rd.querySelector("input"); rc.checked=!!state.rapRead;
+  rc.onchange=()=>{ state.rapRead=rc.checked; save(); rapCheck(); };
+  st.appendChild(rd);
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
-  const ready=dn>=tot||admin;
-  nx.innerHTML=ready
-    ? '<button class="btn cta" id="recapGo" style="width:100%">К уровню '+N+'</button>'
-    : '<button class="btn ghost" id="recapGo" style="width:100%">К уровню '+N+' без Rappel</button>';
+  nx.innerHTML='<button class="btn" id="recapGo" style="width:100%">К уровню '+N+'</button><p class="hint" id="recapHint" style="margin:8px 2px 0;text-align:center">Отметь все фразы и «J\'ai lu» под историей. Тогда откроется уровень и Марсель получит +1 🦐</p>';
   nx.querySelector("#recapGo").onclick=recapStart;
   m.appendChild(nx);
+  updateRapBtn();
 }
 
 /* ---------- главный экран со списком уровней ---------- */
@@ -1494,10 +1510,10 @@ function markRappel(m,on){
   st={...fresh(),...st}; st.done={...fresh().done,...st.done}; st.recap={ok:false,...st.recap};
   if(on){
     if(!st.rapEarned){ st.rapEarned=true; state.shrimps++; }
-    st.done.rec=[]; recapCards(m).forEach(c=>{ st.done.rec[c.key]=true; }); st.recap.ok=true;
+    st.rapRead=true; st.done.rec=[]; recapCards(m).forEach(c=>{ st.done.rec[c.key]=true; }); st.recap.ok=true;
   } else {
     if(st.rapEarned){ st.rapEarned=false; state.shrimps=Math.max(0,state.shrimps-1); }
-    st.done.rec=[]; st.recap.ok=false;
+    st.rapRead=false; st.done.rec=[]; st.recap.ok=false;
   }
   st.level=m; st.shrimps=state.shrimps;
   if(cur) state=st; else levelsSaved[m]=st;
