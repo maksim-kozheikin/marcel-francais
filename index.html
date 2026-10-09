@@ -126,9 +126,10 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .substages{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:2px 2px 0;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
 .recap-intro{margin-bottom:10px}
-.story-head{margin:14px 2px 2px}
+.story-head{margin:14px 2px 0;font-size:1.15rem}
 .story-card .lvtag{font-size:.85rem;font-weight:700;color:var(--soft);margin-bottom:2px}
-.story-card details.tr{margin-top:2px}
+.story-card .texts{min-width:0}
+.story-card details.tr{margin-top:4px}
 .story-card details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;gap:6px;list-style:none;padding:6px 0 2px}
 .story-card details.tr summary::-webkit-details-marker{display:none}
 .story-card details.tr[open] summary .chev{transform:rotate(-90deg)}
@@ -642,7 +643,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 
 /* ---------- STATE ---------- */
 const KEY="marcel-course-v3";
-const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
+const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[],story:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день
 let feed={eaten:0,next:0};
@@ -756,7 +757,7 @@ function speak(text,n){
 // две синие кнопки с разными голосами
 function listenRow(text){
   const row=document.createElement("div"); row.className="listen-row";
-  [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Голос "+n; b.onclick=()=>speak(text,n); row.appendChild(b); });
+  [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Voix "+n; b.onclick=()=>speak(text,n); row.appendChild(b); });
   return row;
 }
 document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
@@ -798,13 +799,14 @@ const isRev=k=>k.indexOf("rev_")===0;
 function stageCount(k){
   if(k==="rev") return REV_SUBS.reduce((n,x)=>n+state.fg[x.src].length,0);
   if(isRev(k)) return state.fg[revSrc(k)].length;
-  if(k==="rec") return recapCards(state.level).length;
+  if(k==="rec") return recapCards(state.level).length+Math.max(0,state.level-1);   // фразы и абзацы рассказа
   if(k==="rel") return 1;
   const d=levelData(state.level); return d?d.phrases.length:18;
 }
 function doneCount(k){
   if(k==="rev") return REV_SUBS.reduce((n,x)=>n+doneCount(x.key),0);
   if(isRev(k)) return state.fg[revSrc(k)].filter(i=>state.done[k][i]).length;
+  if(k==="rec") return state.done.rec.filter(Boolean).length+(state.done.story||[]).filter(Boolean).length;
   return state.done[k].filter(Boolean).length;
 }
 function unl(){ return admin ? STAGES.length-1 : state.unlocked; }
@@ -1414,7 +1416,7 @@ function recapCards(N){
   return out;
 }
 // Rappel засчитывается, когда отмечены все фразы и история прочитана. Тогда +1 креветка
-const rapReady=()=>doneCount("rec")>=stageCount("rec") && !!state.rapRead;
+const rapReady=()=>doneCount("rec")>=stageCount("rec");
 function rapCheck(){
   if(rapReady() && !state.rapEarned){ state.rapEarned=true; state.shrimps++; save(); toast("Bravo ! Rappel : +1 🦐"); renderHeader(); renderAqua(); }
   updateRapBtn();
@@ -1438,27 +1440,25 @@ function renderRecap(m){
     list.appendChild(speechItem(c.key,c.fr,c.ru,"rec",false,i+1));
   });
   m.appendChild(list);
-  // история: тот же вид, что у карточек (номер уровня в кружке, текст, две кнопки голоса), перевод раскрывается внутри карточки
-  const head=document.createElement("div"); head.className="story-head";
-  head.innerHTML='<h2 style="margin:0 0 4px">📖 Ma journée avec Léa</h2><p class="hint" style="margin:0">Мой день с Леа. Что делала я, что делала Леа и что делали другие. Каждый абзац написан на конструкции своего уровня.</p>';
+  // рассказ: те же карточки, что и фразы, нумерация продолжается, справа «Je sais». Перевод стоит над кнопками голоса
+  const head=document.createElement("h2"); head.className="story-head"; head.textContent="Прочитать рассказ";
   m.appendChild(head);
   const st=document.createElement("div"); st.className="list";
-  for(let p=1;p<N;p++){
-    const t=STORY[p]; if(!t) continue;
-    const card=document.createElement("article"); card.className="item sp story-card";
-    card.innerHTML='<div class="item-top"><div class="num">'+p+'</div><div class="texts"><div class="lvtag">Niveau '+p+' · '+esc(BUILTIN[p].fr)+'</div><div class="fr" lang="fr">'+esc(t.fr)+'</div></div></div><div class="actions"></div>';
+  for(let q=1;q<N;q++){
+    const t=STORY[q]; if(!t) continue;
+    const isDone=!!(state.done.story||[])[q];
+    const card=document.createElement("article"); card.className="item sp story-card"+(isDone?" done":"");
+    card.innerHTML='<div class="item-top"><div class="num">'+(isDone?"✓":cards.length+q)+'</div><div class="texts"><div class="lvtag">Niveau '+q+' · '+esc(BUILTIN[q].fr)+'</div><div class="fr" lang="fr">'+esc(t.fr)+'</div></div><div class="marks"><label class="known"><input type="checkbox"> Je sais</label></div></div><div class="actions"></div>';
+    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>';
+    card.querySelector(".texts").appendChild(det);
     card.querySelector(".actions").appendChild(listenRow(t.fr));
-    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>'; card.appendChild(det);
+    const cb=card.querySelector(".known input"); cb.checked=isDone;
+    cb.onchange=()=>{ state.done.story[q]=cb.checked; card.classList.toggle("done",cb.checked); card.querySelector(".num").textContent=cb.checked?"✓":cards.length+q; save(); renderHeader(); rapCheck(); };
     st.appendChild(card);
   }
-  const end=document.createElement("article"); end.className="item sp story-end"+(state.rapRead?" done":"");
-  end.innerHTML='<div class="item-top"><div class="num">'+(state.rapRead?"✓":"•")+'</div><div class="texts"><div class="ru">Ты прочитала всю историю?</div></div><div class="marks"><label class="known"><input type="checkbox"> J\'ai lu</label></div></div>';
-  const rc=end.querySelector("input"); rc.checked=!!state.rapRead;
-  rc.onchange=()=>{ state.rapRead=rc.checked; end.classList.toggle("done",rc.checked); end.querySelector(".num").textContent=rc.checked?"✓":"•"; save(); rapCheck(); };
-  st.appendChild(end);
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
-  nx.innerHTML='<button class="btn" id="recapGo" style="width:100%">К уровню '+N+'</button><p class="hint" id="recapHint" style="margin:8px 2px 0;text-align:center">Отметь все фразы и «J\'ai lu» под историей. Тогда откроется уровень и Марсель получит +1 🦐</p>';
+  nx.innerHTML='<button class="btn" id="recapGo" style="width:100%">К уровню '+N+'</button><p class="hint" id="recapHint" style="margin:8px 2px 0;text-align:center">Отметь все фразы и абзацы рассказа. Тогда откроется уровень и Марсель получит +1 🦐</p>';
   nx.querySelector("#recapGo").onclick=recapStart;
   m.appendChild(nx);
   updateRapBtn();
@@ -1511,10 +1511,10 @@ function markRappel(m,on){
   st={...fresh(),...st}; st.done={...fresh().done,...st.done}; st.recap={ok:false,...st.recap};
   if(on){
     if(!st.rapEarned){ st.rapEarned=true; state.shrimps++; }
-    st.rapRead=true; st.done.rec=[]; recapCards(m).forEach(c=>{ st.done.rec[c.key]=true; }); st.recap.ok=true;
+    st.done.rec=[]; recapCards(m).forEach(c=>{ st.done.rec[c.key]=true; }); st.done.story=[]; for(let q=1;q<m;q++) st.done.story[q]=true; st.recap.ok=true;
   } else {
     if(st.rapEarned){ st.rapEarned=false; state.shrimps=Math.max(0,state.shrimps-1); }
-    st.rapRead=false; st.done.rec=[]; st.recap.ok=false;
+    st.done.rec=[]; st.done.story=[]; st.recap.ok=false;
   }
   st.level=m; st.shrimps=state.shrimps;
   if(cur) state=st; else levelsSaved[m]=st;
