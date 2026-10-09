@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Français avec Marcel</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2346A8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Marcel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -155,6 +163,8 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .opts{display:grid;gap:6px}
 .opt{font:inherit;text-align:left;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:9px 12px;cursor:pointer}
 .opt.right{border-color:var(--ok);background:var(--okbg);font-weight:600}
+mark.df{background:rgba(226,69,60,.25);color:inherit;border-radius:3px;padding:0 1px;text-decoration:none}
+.opt.right mark.df{background:rgba(31,138,76,.28)}
 .opt.no{border-color:var(--bad);background:var(--badbg);text-decoration:line-through}
 .q{font-size:1.15rem;font-weight:600}
 
@@ -191,6 +201,33 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .listen-row{display:flex;gap:8px;flex:0 0 auto}
 .actions .listen-row{flex:1 1 100%}
 .listen-row .btn{flex:1 1 0;min-width:0}
+.listen-row .btn.slow{flex:0 0 auto;padding-left:14px;padding-right:14px}
+.accents{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;width:100%;margin-top:2px}
+.accents .acc{min-width:0;width:auto;min-height:48px;padding:0;font:inherit;font-size:1.15rem;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.accents .acc:active{background:var(--bg)}
+.streak{display:grid;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.streak-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.streak-top b{font-size:1.15rem;color:var(--ink)}
+.streak-top span{font-size:.8rem;color:var(--soft)}
+.streak-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.streak-days div{display:grid;gap:4px;font-size:.72rem;color:var(--soft)}
+.streak-days i{display:block;height:26px;border-radius:9px;border:1px solid var(--line);background:var(--bg)}
+.streak-days .on i{background:var(--rouge);border-color:var(--rouge)}
+.streak-days .today i{box-shadow:0 0 0 2px var(--bleu) inset}
+.dl-sub{color:var(--soft);font-weight:400;font-size:.9rem}
+.lv-item.dl .lvnum{font-size:1.2rem}
+.dlg-head{display:grid;gap:2px;margin:2px 2px 0}
+.dlg-head b{font-size:1.25rem}
+.dlg-head small{color:var(--soft);font-size:.95rem}
+.dlg-card{display:grid;gap:12px}
+.dlg-card .who{font-size:.85rem;font-weight:600;color:var(--bleu)}
+.dlg-card .ru.big{font-size:1.2rem}
+.dlg-card .actions{display:grid;gap:10px}
+.dlg-card.me{border-color:var(--bleu)}
+.dlg-bubble-ru{color:var(--soft);font-size:1rem}
+.dlg-end{display:grid;gap:12px}
+.installrow{display:grid;gap:6px}
+.installrow .hint{font-size:.85rem;color:var(--soft);line-height:1.35}
 .notice{background:var(--badbg);border-radius:14px;padding:10px 14px}
 
 .aqua{position:relative;border-radius:24px 24px 18px 18px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
@@ -301,6 +338,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   .item .actions .btn{flex:none;width:100%;min-height:54px;font-size:1.05rem}
   .item .actions .listen-row .btn{flex:1 1 0;width:auto;min-width:0;font-size:1rem}
 }
+.listen-row .btn{white-space:nowrap;padding-left:8px;padding-right:8px}
+.listen-row .btn.slow{font-size:1.3rem;padding-left:16px;padding-right:16px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -329,8 +368,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="feed-note" id="fNote"></div>
     </section>
 
+    <section class="streak" id="streak" aria-label="Серия дней подряд"></section>
+
     <section aria-label="Уровни">
       <div class="lv-list" id="lvHost"></div>
+    </section>
+
+    <section aria-label="Короткие диалоги">
+      <h3 class="recap-lv">Dialogues courts <span class="dl-sub">· Короткие диалоги</span></h3>
+      <div class="lv-list" id="dlgHost" style="margin-top:0"></div>
     </section>
 
     <section class="speedrow" aria-label="Скорость озвучки">
@@ -348,11 +394,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="actions" style="margin-top:10px">
         <button class="btn ghost" id="restartLevel">Начать уровень заново</button>
         <button class="btn ghost" id="resetAll">Сбросить весь прогресс</button>
+        <button class="btn ghost" id="fxBtn" aria-pressed="true">🔔 Звуки и вибрация</button>
+        <div class="installrow" id="installRow" style="display:none"><button class="btn ghost" id="installBtn">📲 Установить на экран «Домой»</button><div class="hint" id="installHint"></div></div>
         <button class="btn ghost" id="adminBtn" aria-pressed="false">🔑 Админ</button>
       </div>
     </details>
     </section>
   </div>
+
+  <div id="dlgScreen" class="screen" style="display:none"></div>
 
   <div id="levelScreen" class="screen" style="display:none">
 
@@ -645,20 +695,46 @@ const KEY="marcel-course-v3";
 const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[],story:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день
-let feed={eaten:0,next:0};
+let feed={eaten:0,next:0}, streak=[], dlg={};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
-  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0};
+  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0}; if(s.dlg && typeof s.dlg==='object') dlg=s.dlg; if(Array.isArray(s.streak)) streak=s.streak.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x));
   // версия 9: в каждом уровне 18 карточек (было 21) и перед уровнем идёт повторение пройденного. Прогресс прежних версий начинается заново, креветки остаются
   if(s.state && s.state.v===9){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; }
 } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved, feed})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved, feed, streak, dlg})); }catch(e){} }
+const dayKey=d=>{ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const dayAgo=n=>{ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-n); return d; };
+function touchStreak(){ const t=dayKey(); if(!streak.includes(t)){ streak.push(t); streak=streak.slice(-60); save(); } }
+function streakCount(){ let n=0, i=streak.includes(dayKey())?0:1; while(streak.includes(dayKey(dayAgo(i)))){ n++; i++; } return n; }
+function renderStreak(){
+  const host=$("streak"); if(!host) return;
+  const n=streakCount(), days=["D","L","M","M","J","V","S"];
+  let w=n+" jour"+(n>1?"s":"")+" de suite";
+  if(!n) w="Pas encore de série";
+  host.innerHTML='<div class="streak-top"><b>🔥 '+w+'</b><span>Серия дней подряд</span></div><div class="streak-days">'+
+    [6,5,4,3,2,1,0].map(i=>{ const d=dayAgo(i); return '<div class="'+(streak.includes(dayKey(d))?"on ":"")+(i===0?"today":"")+'"><i></i>'+days[d.getDay()]+'</div>'; }).join("")+'</div>';
+}
 function levelData(n){ return BUILTIN[n] || generated[n] || null; }
 function planFor(n){ return BUILTIN[n] || PLAN[n] || {fr:"Конструкция "+n, ru:"", theme:"повседневные ситуации"}; }
 
 const $=id=>document.getElementById(id);
 function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2000);}
-function happy(){const c=$("shrimpTop");c.classList.remove("happy");void c.offsetWidth;c.classList.add("happy");}
+function happy(){const c=$("shrimpTop");c.classList.remove("happy");void c.offsetWidth;c.classList.add("happy"); fx("ok");}
+// короткий звук и вибрация. Выключаются в настройках
+let fxOn=true, actx=null;
+function fx(kind){
+  if(!fxOn) return;
+  try{ if(navigator.vibrate) navigator.vibrate(kind==="bad"?[40,40,40]:kind==="win"?[30,40,30,40,60]:18); }catch(e){}
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    actx=actx||new AC(); if(actx.state==="suspended") actx.resume();
+    const seq=kind==="bad"?[[220,0,.16]]:kind==="win"?[[523,0,.12],[659,.12,.12],[784,.24,.22]]:[[660,0,.09],[880,.09,.12]];
+    seq.forEach(([f,t,d])=>{ const o=actx.createOscillator(), g=actx.createGain(), t0=actx.currentTime+t;
+      o.type=kind==="bad"?"triangle":"sine"; o.frequency.value=f; g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.12,t0+.01); g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+      o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+d+.02); });
+  }catch(e){}
+}
 function splitPair(t){ const a=t.split(/(?<=[.?!])\s+/); return a.length===2?a:[t]; }
 function linesHtml(t){ return splitPair(t).map(esc).join(" <br>"); }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -735,8 +811,8 @@ async function marcelTip(el, target, said, ru){
 // два голоса и скорость озвучки сохраняются на этом устройстве
 const VKEY="marcel-voice";
 let speechRate=0.75, frVoices12={1:null,2:null};
-try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; } }catch(e){}
-function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate})); }catch(e){} }
+try{ const v=JSON.parse(localStorage.getItem(VKEY)); if(v){ if([0.5,0.75,1].includes(v.rate)) speechRate=v.rate; if(v.fx===false) fxOn=false; } }catch(e){}
+function saveVoice(){ try{ localStorage.setItem(VKEY, JSON.stringify({rate:speechRate,fx:fxOn})); }catch(e){} }
 function frVoices(){ return ("speechSynthesis" in window ? speechSynthesis.getVoices() : []).filter(x=>x.lang && x.lang.toLowerCase().replace("_","-").startsWith("fr")); }
 function pickVoice(){   // два разных французских голоса выбираются сами
   const list=frVoices(), isFR=x=>x.lang.replace("_","-")==="fr-FR";
@@ -745,11 +821,11 @@ function pickVoice(){   // два разных французских голос
   frVoices12={1:v1,2:v2};
 }
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
-function speak(text,n){
+function speak(text,n,slow){
   n=n||1;
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
   const v=frVoices12[n]||frVoices12[1];
-  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=v?v.lang:"fr-FR"; if(v)u.voice=v; u.rate=speechRate;
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=v?v.lang:"fr-FR"; if(v)u.voice=v; u.rate=slow||speechRate;
   if(n===2 && frVoices12[1]===frVoices12[2]) u.pitch=0.7;
   speechSynthesis.speak(u);
 }
@@ -757,6 +833,7 @@ function speak(text,n){
 function listenRow(text){
   const row=document.createElement("div"); row.className="listen-row";
   [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Voix "+n; b.onclick=()=>speak(text,n); row.appendChild(b); });
+  const sl=document.createElement("button"); sl.type="button"; sl.className="btn slow"; sl.textContent="🐢"; sl.title="Plus lentement"; sl.setAttribute("aria-label","Plus lentement"); sl.onclick=()=>speak(text,1,0.45); row.appendChild(sl);
   return row;
 }
 document.querySelectorAll("#speedSeg button").forEach(b=>{ b.onclick=()=>{ speechRate=+b.dataset.rate; saveVoice(); renderSpeed(); speak("Je veux deux pommes.",1); }; });
@@ -872,6 +949,7 @@ function renderHeader(){
 // за каждую из четырёх вкладок («Écoute & répète», «Associe», «Dictée», «Dis-le») одна креветка за уровень
 function award(k){ if(state.earned[k]) return false; state.earned[k]=true; state.shrimps++; return true; }
 function stageComplete(k){
+  fx("win");
   if(k==="fin"){
     const got=award("fin"), before=state.unlocked, pre=got?"+1 🦐 ":""; syncUnlock();
     if(state.unlocked>before) toast("Bravo ! "+pre+"Этап открыт: "+STAGES[3].tab); else if(got) toast("Bravo ! +1 🦐");
@@ -894,6 +972,7 @@ function stageComplete(k){
   }
 }
 function markDone(k, idx, quiet){
+  touchStreak();
   state.done[k][idx]=true; if(!quiet) happy();
   const complete=doneCount(k)>=stageCount(k);
   if(complete) stageComplete(k);
@@ -975,7 +1054,7 @@ function speechItem(idx, fr, ru, k, ruOnly, n){
       if(ruOnly){ const t=el.querySelector(".texts"); if(!t.querySelector(".fr")) t.insertAdjacentHTML("afterbegin",'<div class="fr" lang="fr">'+linesHtml(fr)+'</div>'); }
       actions.querySelectorAll(".mic").forEach(x=>x.remove()); cb.checked=true;
     } else {
-      el.classList.add("wrong");
+      el.classList.add("wrong"); fx("bad");
       const tip=fbw.querySelector(".tip"); if(tip && mode==="speech"){ tip.hidden=false; marcelTip(tip, fr, said, ru); }
     }
   };
@@ -1019,6 +1098,26 @@ function pickGap(fr,idx){
 }
 function dictNorm(x){ return x.trim().toLowerCase().replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/\s+/g," "); }
 function dictCheck(ans,word){ const a=dictNorm(ans), w=dictNorm(word); if(a===w) return "ok"; if(a && deaccent(a)===deaccent(w)) return "accent"; return false; }
+// где ошибка: слова и буквы, которые отличаются, подсвечиваются
+function charDiff(x,y){
+  let p=0; while(p<x.length && p<y.length && x[p]===y[p]) p++;
+  let q=0; while(q<x.length-p && q<y.length-p && x[x.length-1-q]===y[y.length-1-q]) q++;
+  const mk=(w,m)=>esc(w.slice(0,p))+(m?'<mark class="df">'+esc(m)+'</mark>':"")+esc(w.slice(w.length-q));
+  return [mk(x,x.slice(p,x.length-q)), mk(y,y.slice(p,y.length-q))];
+}
+function diffPair(a,b){
+  const A=a.split(/\s+/).filter(Boolean), B=b.split(/\s+/).filter(Boolean), n=A.length, m=B.length;
+  const L=Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j]=A[i]===B[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const ra=[], rb=[]; let i=0, j=0, sa=[], sb=[];
+  const flush=()=>{ if(sa.length===sb.length) sa.forEach((w,k)=>{ const d=charDiff(w,sb[k]); ra.push(d[0]); rb.push(d[1]); }); else { sa.forEach(w=>ra.push('<mark class="df">'+esc(w)+'</mark>')); sb.forEach(w=>rb.push('<mark class="df">'+esc(w)+'</mark>')); } sa=[]; sb=[]; };
+  while(i<n && j<m){
+    if(A[i]===B[j]){ flush(); ra.push(esc(A[i])); rb.push(esc(B[j])); i++; j++; }
+    else if(L[i+1][j]>=L[i][j+1]){ sa.push(A[i]); i++; } else { sb.push(B[j]); j++; }
+  }
+  while(i<n){ sa.push(A[i]); i++; } while(j<m){ sb.push(B[j]); j++; } flush();
+  return [ra.join(" "), rb.join(" ")];
+}
 let dictSeq=0;
 function dictItem(idx, fr, ru, k, n){
   const isAgain = k==="rev_fin" && state.again.rev_fin.indexOf(idx)>=0;
@@ -1055,7 +1154,7 @@ function dictItem(idx, fr, ru, k, n){
   inp.value=""; inp.name="dict"+idx+"_"+(dictSeq++);   // свежее поле на каждую карточку, без подсказок и остатков прошлого слова
   const go=()=>{
     const r=dictCheck(inp.value,g.word);
-    if(!r){ fbw.innerHTML='<div class="fb bad">'+(inp.value.trim()?'<div class="said"><span class="lbl">Tu as écrit :</span> '+esc(inp.value.trim())+'</div>':"")+'<div><b>Faux.</b> Essaie encore.</div></div>'; inp.focus(); return; }
+    if(!r){ fbw.innerHTML='<div class="fb bad">'+(inp.value.trim()?'<div class="said"><span class="lbl">Tu as écrit :</span> '+charDiff(dictNorm(inp.value),dictNorm(g.word))[0]+'</div>':"")+'<div><b>Faux.</b> Essaie encore.</div></div>'; fx("bad"); inp.focus(); return; }
     if(k==="rev_fin") setAgain(k,idx,false);
     inp.blur();
     markDone(k,idx);
@@ -1063,6 +1162,15 @@ function dictItem(idx, fr, ru, k, n){
   };
   row.querySelector("button").onclick=go; inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } };
   actions.appendChild(row);
+  // французские буквы над клавиатурой телефона: нажатие вставляет букву и не закрывает клавиатуру
+  const acc=document.createElement("div"); acc.className="accents"; acc.setAttribute("aria-label","Французские буквы");
+  ["é","è","ê","à","â","ç","ù","ô","î","œ"].forEach(ch=>{
+    const ab=document.createElement("button"); ab.type="button"; ab.className="acc"; ab.textContent=ch; ab.setAttribute("aria-label","Буква "+ch);
+    ab.onpointerdown=e=>e.preventDefault();
+    ab.onclick=()=>{ const a=inp.selectionStart==null?inp.value.length:inp.selectionStart, b=inp.selectionEnd==null?a:inp.selectionEnd; inp.setRangeText(ch,a,b,"end"); inp.focus(); inp.dispatchEvent(new Event("input",{bubbles:true})); };
+    acc.appendChild(ab);
+  });
+  actions.appendChild(acc);
   return el;
 }
 
@@ -1357,13 +1465,16 @@ function assItem(idx, d, k, n){
   if(memo && isForgot && k==="ass") el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Faux !</b> Ton choix est en rouge, la bonne réponse est en vert. La carte part en révision 🔁</div>';
   const box=el.querySelector(".opts");
   opts.forEach((o,n)=>{
-    const b=document.createElement("button"); b.className="opt"; b.innerHTML=String.fromCharCode(65+n)+". "+linesHtml(o.text);
+    const L=String.fromCharCode(65+n)+". ";
+    const b=document.createElement("button"); b.className="opt"; b.innerHTML=L+linesHtml(o.text);
     if(state.done[k][idx] || isAgain){ b.disabled=true; if(o.i===idx) b.classList.add("right"); }
-    if(memo && isForgot && k==="ass" && o.text===memo.picked && o.i!==idx) b.classList.add("no");
+    if(memo && isForgot && k==="ass" && o.text===memo.picked && o.i!==idx){ b.classList.add("no"); b.innerHTML=L+diffPair(o.text,right)[0]; }
+    if(memo && isForgot && k==="ass" && memo.picked!==o.text && o.i===idx) b.innerHTML=L+diffPair(o.text,memo.picked)[0];
     b.onclick=()=>{
       if(o.i===idx){ b.classList.add("right"); box.querySelectorAll(".opt").forEach(x=>x.disabled=true);
         el.querySelector(".fbwrap").innerHTML='<div class="fb ok">Très bien ! ✅</div>'; el.classList.add("done"); el.querySelector(".num").textContent="✓"; markDone(k, idx); }
       else if(k==="ass"){   // неверный вариант на вкладке «Associe» сразу отправляет карточку на повтор
+        fx("bad");
         assMemo[state.level+":ass:"+idx]={opts,picked:o.text};
         setForgot(idx,true,"ass"); if(state.done.ass[idx]){ save(); renderHeader(); } else markDone("ass", idx, true);
         toast("Faux ! La carte part en révision 🔁");
@@ -1371,7 +1482,7 @@ function assItem(idx, d, k, n){
         if(!play && doneCount("ass")>=stageCount("ass")){ const y=window.scrollY; renderMain(); window.scrollTo(0,y); return; }
         el.replaceWith(assItem(idx,d,k,pos));
       }
-      else { b.classList.add("no"); b.disabled=true; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Essaie encore.</div>'; }
+      else { fx("bad"); b.classList.add("no"); b.disabled=true; b.innerHTML=L+diffPair(o.text,right)[0]; el.querySelector(".fbwrap").innerHTML='<div class="fb bad"><b>Presque !</b> Essaie encore.</div>'; }
     };
     box.appendChild(b);
   });
@@ -1422,7 +1533,7 @@ function rapCheck(){
 }
 function updateRapBtn(){
   const b=$("recapGo"); if(!b) return;
-  const ok=rapReady()||admin; b.disabled=!ok; b.classList.toggle("cta",ok);
+  const ok=rapReady()||admin; b.disabled=!ok; b.classList.toggle("cta",ok); b.style.display=ok?"":"none";
   const h=$("recapHint"); if(h) h.style.display=ok?"none":"";
 }
 let rapForce=false;   // Rappel открыт вручную (кнопка «Rappel» или строка между уровнями)
@@ -1452,7 +1563,7 @@ function renderRecap(m){
     card.querySelector(".texts").appendChild(det);
     card.querySelector(".actions").appendChild(listenRow(t.fr));
     const cb=card.querySelector(".known input"); cb.checked=isDone;
-    cb.onchange=()=>{ state.done.story[q]=cb.checked; card.classList.toggle("done",cb.checked); card.querySelector(".num").textContent=cb.checked?"✓":cards.length+q; save(); renderHeader(); rapCheck(); };
+    cb.onchange=()=>{ if(cb.checked) touchStreak(); state.done.story[q]=cb.checked; card.classList.toggle("done",cb.checked); card.querySelector(".num").textContent=cb.checked?"✓":cards.length+q; save(); renderHeader(); rapCheck(); };
     st.appendChild(card);
   }
   m.appendChild(st);
@@ -1467,12 +1578,28 @@ function renderRecap(m){
 let screen="home";   // "home" или "level". Сайт всегда открывается на главном экране
 function showScreen(){
   const home=screen==="home";
-  $("homeScreen").style.display=home?"":"none"; $("levelScreen").style.display=home?"none":"";
+  $("homeScreen").style.display=home?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; $("dlgScreen").style.display=screen==="dialogue"?"":"none";
   $("brand").style.display=home?"":"none"; $("lvBack").style.display=home?"none":"";
 }
 // единая точка перехода: сохранить, перерисовать, прокрутить вверх
 function navTo(){ save(); renderAll(); window.scrollTo({top:0}); }
-function goHome(){ stopAudio(); play=null; rapForce=false; screen="home"; navTo(); }
+function goHome(){ stopAudio(); play=null; dp=null; rapForce=false; screen="home"; navTo(); }
+// кнопка «назад» на телефоне возвращает на главный экран, а не закрывает сайт
+function pushScreen(){ try{ if(!(history.state && history.state.s)) history.pushState({s:1},""); }catch(e){} }
+window.addEventListener("popstate",()=>{ if(screen!=="home") goHome(); });
+function backHome(){ if(history.state && history.state.s){ try{ history.back(); return; }catch(e){} } goHome(); }
+// свайп влево и вправо листает карточки
+function swipeOn(el,onLeft,onRight){
+  let x0=0,y0=0,t0=0,ok=false;
+  el.addEventListener("touchstart",e=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; t0=Date.now(); ok=!e.target.closest("input,textarea,select,.accents,[contenteditable]"); },{passive:true});
+  el.addEventListener("touchend",e=>{
+    if(!ok) return; const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+    if(Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.6 || Date.now()-t0>800) return;
+    (dx<0?onLeft:onRight)();
+  },{passive:true});
+}
+const tapIf=id=>{ const b=$(id); if(b && !b.disabled){ b.click(); return true; } return false; };
+swipeOn($("stageHost"),()=>{ tapIf("plNext")||tapIf("plGo"); },()=>{ tapIf("plPrev"); });
 function openRappel(m){ goLevel(m); rapForce=true; navTo(); }
 function levelPct(n){
   const st=n===state.level?state:levelsSaved[n]; if(!st) return 0;
@@ -1818,11 +1945,12 @@ function renderAqua(){
 }
 function renderAll(){
   showScreen(); renderHeader(); renderNotice(); renderMain(); renderTheory(); renderStage(); renderAqua(); renderFeed(); renderAdmin();
-  if(screen==="home") renderLevels();
+  if(screen==="home"){ renderLevels(); renderStreak(); renderDlgList(); }
+  if(screen==="dialogue") renderDialogue();
 }
 
 $("restartLevel").onclick=()=>{ if(confirm("Начать текущий уровень заново?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
-$("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; save(); renderAll(); } };
+$("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; streak=[]; dlg={}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
@@ -1833,9 +1961,12 @@ function goLevel(n){
     state=prev ? {...fresh(),...prev, level:n, shrimps:sh} : {...fresh(), level:n, shrimps:sh};
     state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap};
   }
-  screen="level"; navTo();
+  screen="level"; pushScreen(); navTo();
 }
-$("lvBack").onclick=goHome;
+$("lvBack").onclick=backHome;
+function renderFx(){ $("fxBtn").textContent=fxOn?"🔔 Звуки и вибрация включены":"🔕 Звуки и вибрация выключены"; $("fxBtn").setAttribute("aria-pressed",fxOn); }
+$("fxBtn").onclick=()=>{ fxOn=!fxOn; saveVoice(); renderFx(); fx("ok"); };
+renderFx();
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
 function renderAdmin(){
@@ -1843,6 +1974,174 @@ function renderAdmin(){
   $("adminBtn").setAttribute("aria-pressed",admin);
   $("restartLevel").textContent="Начать заново Niveau "+state.level;
 }
+
+/* ---------- короткие диалоги ---------- */
+// who "o" говорит собеседник, "m" говорю я. Реплики «m» отвечаю вслух
+const DIALOGS=[
+ {fr:"Au café", ru:"В кафе", other:"Le serveur", lines:[
+  ["o","Bonjour ! Qu'est-ce que je vous sers ?","Здравствуйте! Что вам подать?"],
+  ["m","Bonjour ! Je voudrais un café, s'il vous plaît.","Здравствуйте! Я бы хотела кофе, пожалуйста."],
+  ["o","Avec du lait ou sans lait ?","С молоком или без молока?"],
+  ["m","Avec un peu de lait, s'il vous plaît.","С небольшим количеством молока, пожалуйста."],
+  ["o","Voulez-vous manger quelque chose ?","Хотите что-нибудь поесть?"],
+  ["m","Oui, je prends un croissant.","Да, я возьму круассан."],
+  ["o","Très bien. Cela fait quatre euros cinquante.","Хорошо. С вас четыре евро пятьдесят."],
+  ["m","Voilà. Merci, bonne journée !","Вот, пожалуйста. Спасибо, хорошего дня!"]]},
+ {fr:"Au marché", ru:"На рынке", other:"La marchande", lines:[
+  ["o","Bonjour madame ! Vous désirez ?","Здравствуйте! Что желаете?"],
+  ["m","Bonjour ! Je voudrais un kilo de pommes, s'il vous plaît.","Здравствуйте! Я бы хотела килограмм яблок, пожалуйста."],
+  ["o","Voilà. Et avec ça ?","Пожалуйста. Что-нибудь ещё?"],
+  ["m","Vous avez des fraises ?","У вас есть клубника?"],
+  ["o","Oui, elles sont très bonnes aujourd'hui.","Да, сегодня она очень вкусная."],
+  ["m","Alors, je prends deux cents grammes de fraises.","Тогда я возьму двести грамм клубники."],
+  ["o","Ça fait sept euros. Vous voulez un sac ?","С вас семь евро. Вам нужен пакет?"],
+  ["m","Non, merci, j'ai mon sac. Bonne journée !","Нет, спасибо, у меня есть своя сумка. Хорошего дня!"]]},
+ {fr:"À l'hôtel", ru:"В отеле", other:"Le réceptionniste", lines:[
+  ["o","Bonsoir madame. Vous avez une réservation ?","Добрый вечер. У вас есть бронь?"],
+  ["m","Bonsoir. Oui, j'ai réservé une chambre pour deux nuits.","Добрый вечер. Да, я забронировала номер на две ночи."],
+  ["o","Très bien. Votre passeport, s'il vous plaît.","Хорошо. Ваш паспорт, пожалуйста."],
+  ["m","Voilà mon passeport.","Вот мой паспорт."],
+  ["o","Votre chambre est le numéro douze.","Ваш номер двенадцатый."],
+  ["m","Le petit déjeuner est à quelle heure ?","Во сколько завтрак?"],
+  ["o","De sept heures à dix heures.","С семи до десяти часов."],
+  ["m","Merci beaucoup. Bonne soirée !","Большое спасибо. Хорошего вечера!"]]},
+ {fr:"Chercher la gare", ru:"Как найти вокзал", other:"Un passant", lines:[
+  ["m","Excusez-moi, monsieur. Où est la gare, s'il vous plaît ?","Извините, пожалуйста. Где вокзал?"],
+  ["o","Vous allez tout droit, puis vous tournez à gauche.","Идите прямо, потом поверните налево."],
+  ["m","C'est loin d'ici ?","Это далеко отсюда?"],
+  ["o","Non, c'est à dix minutes à pied.","Нет, это в десяти минутах пешком."],
+  ["m","Je peux prendre le bus ?","Могу я поехать на автобусе?"],
+  ["o","Oui, le bus numéro cinq s'arrête devant la gare.","Да, автобус номер пять останавливается перед вокзалом."],
+  ["m","Merci beaucoup, vous êtes très gentil !","Большое спасибо, вы очень добры!"],
+  ["o","Je vous en prie. Bonne journée, madame !","Не за что. Хорошего дня!"]]},
+ {fr:"À la pharmacie", ru:"В аптеке", other:"Le pharmacien", lines:[
+  ["o","Bonjour madame. Je peux vous aider ?","Здравствуйте. Могу вам помочь?"],
+  ["m","Bonjour. J'ai mal à la tête depuis ce matin.","Здравствуйте. У меня болит голова с самого утра."],
+  ["o","Vous avez de la fièvre ?","У вас есть температура?"],
+  ["m","Non, je n'ai pas de fièvre, mais je suis très fatiguée.","Нет, температуры нет, но я очень устала."],
+  ["o","Je vous conseille ce médicament. Prenez un comprimé deux fois par jour.","Советую это лекарство. Принимайте по одной таблетке два раза в день."],
+  ["m","Est-ce que je peux le prendre avec de l'eau ?","Можно принимать его с водой?"],
+  ["o","Oui, bien sûr. Et reposez-vous bien.","Да, конечно. И хорошенько отдохните."],
+  ["m","Merci beaucoup. Combien je vous dois ?","Большое спасибо. Сколько я вам должна?"]]},
+ {fr:"Au restaurant", ru:"В ресторане", other:"Le serveur", lines:[
+  ["o","Bonsoir ! Vous avez réservé ?","Добрый вечер! Вы бронировали?"],
+  ["m","Oui, une table pour deux personnes.","Да, столик на двоих."],
+  ["o","Voici la carte. Vous avez choisi ?","Вот меню. Вы выбрали?"],
+  ["m","Oui, je voudrais une soupe à l'oignon, puis du poulet avec des légumes.","Да, я бы хотела луковый суп, потом курицу с овощами."],
+  ["o","Très bien. Et comme boisson ?","Хорошо. А из напитков?"],
+  ["m","Une bouteille d'eau, s'il vous plaît.","Бутылку воды, пожалуйста."],
+  ["o","Voulez-vous un dessert ?","Хотите десерт?"],
+  ["m","Non, merci. L'addition, s'il vous plaît.","Нет, спасибо. Счёт, пожалуйста."]]}
+].map(d=>({...d, lines:d.lines.map(([w,fr,ru])=>({me:w==="m",fr,ru}))}));
+let dp=null;   // {i, seq, pos, round, miss, res, fb, tr, say}
+function dlgDone(i){ return !!(dlg[i] && dlg[i].done); }
+function renderDlgList(){
+  const host=$("dlgHost"); if(!host) return; host.innerHTML="";
+  DIALOGS.forEach((d,i)=>{
+    const done=dlgDone(i), item=document.createElement("div"); item.className="lv-item dl"+(done?" done":"");
+    const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.dlg=i;
+    b.innerHTML='<span class="lvnum">'+(done?"✓":"💬")+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small></span><span class="lvst">'+(done?"✓":"+1 🦐")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+    b.onclick=()=>openDialogue(i);
+    item.appendChild(b); host.appendChild(item);
+  });
+}
+function openDialogue(i){
+  stopAudio(); play=null;
+  dp={i, seq:DIALOGS[i].lines.map((_,j)=>j), pos:0, round:0, miss:[], res:null, fb:"", tr:false, say:true};
+  screen="dialogue"; pushScreen(); navTo();
+}
+function dlgSettled(){ if(!dp) return false; const L=DIALOGS[dp.i].lines[dp.seq[dp.pos]]; return !L.me || dp.res!==null; }
+function dlgNext(){
+  if(!dp || !dlgSettled()) return;
+  stopAudio(); const li=dp.seq[dp.pos];
+  if(dp.res==="miss" && !dp.miss.includes(li)) dp.miss.push(li);
+  dp.pos++; dp.res=null; dp.fb=""; dp.tr=false; dp.say=true;
+  if(dp.pos>=dp.seq.length){
+    if(dp.miss.length){ dp.seq=dp.miss.slice(); dp.miss=[]; dp.pos=0; dp.round++; }
+    else dlgFinish();
+  }
+  renderDialogue(); window.scrollTo({top:0});
+}
+function dlgFinish(){
+  const e=dlg[dp.i]||(dlg[dp.i]={done:false,earned:false}); e.done=true;
+  touchStreak(); fx("win");
+  if(!e.earned){ e.earned=true; state.shrimps++; toast("Bravo ! +1 🦐"); happy(); }
+  save(); renderHeader(); renderAqua();
+}
+function renderDialogue(){
+  const host=$("dlgScreen");
+  if(screen!=="dialogue" || !dp){ host.innerHTML=""; return; }
+  const D=DIALOGS[dp.i];
+  host.innerHTML="";
+  const head=document.createElement("div"); head.className="dlg-head"; head.innerHTML='<b>'+esc(D.fr)+'</b><small>'+esc(D.ru)+'</small>';
+  host.appendChild(head);
+  if(dp.pos>=dp.seq.length){
+    const end=document.createElement("div"); end.className="panel win dlg-end";
+    const e=dlg[dp.i], nx=dp.i+1<DIALOGS.length;
+    end.innerHTML='<div class="big">🐈🎉</div><h2>Bravo !</h2><p>Диалог «'+esc(D.fr)+'» пройден. Ты ответила на все реплики вслух.</p>';
+    const r=document.createElement("button"); r.className="btn ghost"; r.textContent="Повторить диалог"; r.onclick=()=>openDialogueAgain(); end.appendChild(r);
+    if(nx){ const n=document.createElement("button"); n.className="btn violet"; n.innerHTML=esc(DIALOGS[dp.i+1].fr)+" "+CHEV(); n.onclick=()=>{ dp.i++; openDialogueAgain(); }; end.appendChild(n); }
+    const h=document.createElement("button"); h.className="btn link"; h.textContent="К диалогам"; h.onclick=backHome; end.appendChild(h);
+    host.appendChild(end); return;
+  }
+  const li=dp.seq[dp.pos], L=D.lines[li], total=D.lines.length;
+  const pw=document.createElement("section"); pw.className="progwrap";
+  const bar=dp.round===0 ? Math.round(dp.pos/total*100) : Math.round(dp.pos/dp.seq.length*100);
+  pw.innerHTML='<div class="bar"><span style="width:'+bar+'%"></span></div><div class="prog">'+(dp.round===0?(dp.pos+1)+" sur "+total:"à revoir · "+(dp.pos+1)+" sur "+dp.seq.length)+'</div>';
+  host.appendChild(pw);
+  const el=document.createElement("article"); el.className="item sp dlg-card"+(L.me?" me":"")+(dp.res==="ok"?" done":dp.res==="miss"?" forgot":"");
+  el.innerHTML='<div class="who">'+esc(L.me?"Moi":D.other)+'</div><div class="texts"></div><div class="actions"></div><div class="fbwrap"></div>';
+  const texts=el.querySelector(".texts"), actions=el.querySelector(".actions"), fbw=el.querySelector(".fbwrap");
+  fbw.innerHTML=dp.fb;
+  const showFr=!L.me || dp.res!==null;
+  if(L.me && !showFr) texts.innerHTML='<div class="ru big">'+esc(L.ru)+'</div><div class="hint">Скажи это по-французски.</div>';
+  else texts.innerHTML='<div class="fr" lang="fr">'+esc(L.fr)+'</div>'+((L.me||dp.tr)?'<div class="ru">'+esc(L.ru)+'</div>':"");
+  if(showFr) actions.appendChild(listenRow(L.fr));
+  if(!L.me){
+    const t=document.createElement("button"); t.className="btn ghost"; t.textContent=dp.tr?"Скрыть перевод":"Перевод"; t.onclick=()=>{ dp.tr=!dp.tr; renderDialogue(); }; actions.appendChild(t);
+  } else if(dp.res===null){
+    if(!micBroken){
+      const mb=document.createElement("button"); mb.className="btn red mic"; mb.textContent="🎤 Parler";
+      mb.onclick=()=>listen(mb, said=>{
+        const res=check(L.fr, said, "speech");
+        const html=feedbackHtml(res, said, L.fr, false, "speech");
+        if(res.ok){ dp.res="ok"; dp.fb=html; fx("ok"); renderDialogue(); }
+        else { fbw.innerHTML=html; fx("bad"); }
+      }, live=>{ fbw.innerHTML='<div class="fb live"><span class="lbl">J\'entends :</span> '+esc(live)+'</div>'; });
+      actions.appendChild(mb);
+    }
+    const sh=document.createElement("button"); sh.className="btn ghost"; sh.textContent="Показать ответ"; sh.onclick=()=>{ dp.res="miss"; dp.fb=""; renderDialogue(); }; actions.appendChild(sh);
+  } else if(dp.res==="miss"){
+    const hint=document.createElement("p"); hint.className="hint"; hint.textContent="Запомни ответ. Эта реплика вернётся в конце диалога, и ты ответишь на неё ещё раз."; actions.appendChild(hint);
+    const k=document.createElement("label"); k.className="known"; k.innerHTML='<input type="checkbox"> Je sais';
+    k.querySelector("input").onchange=()=>{ dp.res="ok"; renderDialogue(); }; actions.appendChild(k);
+  }
+  host.appendChild(el);
+  const row=document.createElement("div"); row.className="row";
+  row.innerHTML='<button class="btn violet" id="dlgGo" style="width:100%"'+(dlgSettled()?"":" disabled")+'>Дальше '+CHEV()+'</button>';
+  host.appendChild(row); $("dlgGo").onclick=dlgNext;
+  if(dp.say){ dp.say=false; if(!L.me) setTimeout(()=>{ if(screen==="dialogue" && dp && dp.seq[dp.pos]===li) speak(L.fr,2); },250); }
+}
+function openDialogueAgain(){ const i=dp.i; dp=null; openDialogue(i); }
+swipeOn($("dlgScreen"),()=>{ tapIf("dlgGo"); },()=>{});
+
+// установка на экран «Домой»
+let installEv=null;
+const standalone=()=>window.matchMedia("(display-mode: standalone)").matches || navigator.standalone===true;
+function renderInstall(){
+  const row=$("installRow"), btn=$("installBtn"), hint=$("installHint");
+  if(standalone()){ row.style.display="none"; return; }
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(installEv){ row.style.display=""; btn.style.display=""; hint.textContent="Сайт откроется как приложение, без адресной строки."; }
+  else if(ios){ row.style.display=""; btn.style.display="none"; hint.textContent="В Safari нажми «Поделиться» (квадрат со стрелкой), потом «На экран Домой». Сайт откроется как приложение."; }
+  else row.style.display="none";
+}
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEv=e; renderInstall(); });
+window.addEventListener("appinstalled",()=>{ installEv=null; renderInstall(); });
+$("installBtn").onclick=async()=>{ if(!installEv) return; installEv.prompt(); try{ await installEv.userChoice; }catch(e){} installEv=null; renderInstall(); };
+renderInstall();
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){ window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 renderAll();
 feedTick(); setInterval(feedTick,1000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) feedTick(); });
