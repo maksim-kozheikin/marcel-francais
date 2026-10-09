@@ -268,7 +268,6 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .streak-days .on i{background:var(--rouge);border-color:var(--rouge)}
 .streak-days .today i{box-shadow:0 0 0 2px var(--bleu) inset}
 .dl-sub{color:var(--soft);font-weight:400;font-size:.9rem}
-.lv-item.dl .lvnum{font-size:1.2rem}
 .dlg-head{display:grid;gap:2px;margin:2px 2px 0}
 .dlg-head b{font-size:1.25rem}
 .dlg-head small{color:var(--soft);font-size:.95rem}
@@ -323,7 +322,6 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-item{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .lv-item.cur{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
 .lv-item .lv-card{border:none;border-radius:0;background:transparent}
-.lv-rap .lv-sw{background:transparent}
 .lv-sw{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:.8rem;font-weight:600;color:var(--soft)}
 .lv-sw input{position:absolute;opacity:0;width:1px;height:1px}
 .sw-track{flex:none;width:48px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
@@ -333,7 +331,10 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
 .lv-sw input:focus-visible + .sw-track{outline:3px solid var(--rouge);outline-offset:2px}
 .sw-gain{margin-left:auto;color:var(--soft);font-weight:700;white-space:nowrap;font-size:.85rem}
 .sw-ck{color:var(--ok);font-size:1rem}
-.lv-rap{background:var(--bg);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.lv-rap{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.lv-rap .lv-sw{background:var(--bg)}
+.lvico{flex:none;width:44px;height:44px;display:grid;place-items:center;font-size:1.65rem;line-height:1}
+.lvico .okmark{font-style:normal;font-weight:800;font-size:1.5rem;color:var(--ok)}
 .lv-rap.done{border-color:var(--ok)}
 .lv-rapcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:none;padding:12px 14px;cursor:pointer}
 .lv-rapcard .raptxt{flex:1;min-width:0;display:grid;gap:1px}
@@ -430,13 +431,8 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       <div class="lv-list" id="lvHost"></div>
     </section>
 
-    <section aria-label="Короткие диалоги">
-      <h3 class="recap-lv">Dialogues courts <span class="dl-sub">· Короткие диалоги</span></h3>
-      <div class="lv-list" id="dlgHost" style="margin-top:0"></div>
-    </section>
-
-    <section class="speedrow" aria-label="Скорость озвучки">
-      <span class="lbl">Скорость озвучки</span>
+    <section class="speedrow" aria-label="Vitesse de la voix">
+      <span class="lbl">Vitesse de la voix</span>
       <div class="seg" id="speedSeg" role="group">
         <button type="button" data-rate="0.5">0.5×</button>
         <button type="button" data-rate="0.75">0.75×</button>
@@ -453,15 +449,15 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
       </div>
     </section>
 
-    <section class="panel" aria-label="Настройки">
+    <section class="panel" aria-label="Réglages">
     <details>
-      <summary class="setsum"><span>⚙️ Настройки</span><svg class="chev d" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></summary>
+      <summary class="setsum"><span>⚙️ Réglages</span><svg class="chev d" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></summary>
       <div class="actions" style="margin-top:10px">
-        <button class="btn ghost" id="restartLevel">Начать уровень заново</button>
-        <button class="btn ghost" id="resetAll">Сбросить весь прогресс</button>
-        <button class="btn ghost" id="fxBtn" aria-pressed="true">🔔 Звуки и вибрация</button>
-        <div class="installrow" id="installRow" style="display:none"><button class="btn ghost" id="installBtn">📲 Установить на экран «Домой»</button><div class="hint" id="installHint"></div></div>
-        <button class="btn ghost" id="adminBtn" aria-pressed="false">🔑 Админ</button>
+        <button class="btn ghost" id="restartLevel">Recommencer le niveau</button>
+        <button class="btn ghost" id="resetAll">Tout réinitialiser</button>
+        <button class="btn ghost" id="fxBtn" aria-pressed="true">🔔 Sons et vibration</button>
+        <div class="installrow" id="installRow" style="display:none"><button class="btn ghost" id="installBtn">📲 Installer sur l'écran d'accueil</button><div class="hint" id="installHint"></div></div>
+        <button class="btn ghost" id="adminBtn" aria-pressed="false">🔑 Admin</button>
       </div>
     </details>
     </section>
@@ -1765,11 +1761,12 @@ function renderLevels(){
       const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
       const rap=document.createElement("div"); rap.className="lv-rap"+(rdone?" done":"");
       const rb=document.createElement("button"); rb.type="button"; rb.className="lv-rapcard"; rb.dataset.rappel=m;
-      rb.innerHTML='<span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+      rb.innerHTML='<span class="lvico">🔄</span><span class="raptxt"><b>Rappel · '+(n===1?'niveau 1':'niveaux 1 à '+n)+'</b><small>Повторение пройденного</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
       rb.onclick=()=>openRappel(m);
       rap.appendChild(rb);
       rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
       host.appendChild(rap);
+      DLG_ORDER.filter(i=>DLG_AFTER[i]===n).forEach(i=>host.appendChild(dlgRow(i)));
     }
   }
 }
@@ -2040,12 +2037,12 @@ function renderAqua(){
 }
 function renderAll(){
   showScreen(); renderHeader(); renderNotice(); renderMain(); renderTheory(); renderStage(); renderAqua(); renderFeed(); renderAdmin();
-  if(screen==="home"){ renderLevels(); renderStreak(); renderDlgList(); }
+  if(screen==="home"){ renderLevels(); renderStreak(); }
   if(screen==="dialogue") renderDialogue();
 }
 
-$("restartLevel").onclick=()=>{ if(confirm("Начать текущий уровень заново?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
-$("resetAll").onclick=()=>{ if(confirm("Сбросить весь прогресс и креветки?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; streak=[]; dlg={}; save(); renderAll(); } };
+$("restartLevel").onclick=()=>{ if(confirm("Recommencer ce niveau ?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
+$("resetAll").onclick=()=>{ if(confirm("Tout réinitialiser, avec les crevettes ?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; streak=[]; dlg={}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
@@ -2059,15 +2056,15 @@ function goLevel(n){
   screen="level"; pushScreen(); navTo();
 }
 $("lvBack").onclick=backHome;
-function renderFx(){ $("fxBtn").textContent=fxOn?"🔔 Звуки и вибрация включены":"🔕 Звуки и вибрация выключены"; $("fxBtn").setAttribute("aria-pressed",fxOn); }
+function renderFx(){ $("fxBtn").textContent=fxOn?"🔔 Sons et vibration : oui":"🔕 Sons et vibration : non"; $("fxBtn").setAttribute("aria-pressed",fxOn); }
 $("fxBtn").onclick=()=>{ fxOn=!fxOn; saveVoice(); renderFx(); fx("ok"); };
 renderFx();
 $("adminBtn").onclick=()=>{ admin=!admin; save(); renderAll(); };
 function levelDone(n){ const st=n===state.level?state:levelsSaved[n]; return !!(st&&st.won); }
 function renderAdmin(){
-  $("adminBtn").textContent=admin?"🔑 Админ включён (выключить)":"🔑 Админ";
+  $("adminBtn").textContent=admin?"🔑 Admin : oui":"🔑 Admin";
   $("adminBtn").setAttribute("aria-pressed",admin);
-  $("restartLevel").textContent="Начать заново Niveau "+state.level;
+  $("restartLevel").textContent="Recommencer le niveau "+state.level;
 }
 
 /* ---------- короткие диалоги ---------- */
@@ -2130,15 +2127,15 @@ const DIALOGS=[
 ].map(d=>({...d, lines:d.lines.map(([w,fr,ru])=>({me:w==="m",fr,ru}))}));
 let dp=null;   // {i, seq, pos, round, miss, res, fb, tr, say}
 function dlgDone(i){ return !!(dlg[i] && dlg[i].done); }
-function renderDlgList(){
-  const host=$("dlgHost"); if(!host) return; host.innerHTML="";
-  DIALOGS.forEach((d,i)=>{
-    const done=dlgDone(i), item=document.createElement("div"); item.className="lv-item dl"+(done?" done":"");
-    const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.dlg=i;
-    b.innerHTML='<span class="lvnum">'+(done?"✓":"💬")+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small></span><span class="lvst">'+(done?"✓":"+1 🦐")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
-    b.onclick=()=>openDialogue(i);
-    item.appendChild(b); host.appendChild(item);
-  });
+// диалог стоит после Rappel нужного уровня: тема, повтор, диалог
+const DLG_AFTER=[4,5,8,6,9,7];   // для каждого диалога по порядку в DIALOGS номер уровня, после которого он идёт
+const DLG_ORDER=DIALOGS.map((_,i)=>i).sort((a,b)=>DLG_AFTER[a]-DLG_AFTER[b]||a-b);
+function dlgRow(i){
+  const d=DIALOGS[i], done=dlgDone(i), item=document.createElement("div"); item.className="lv-item dl"+(done?" done":"");
+  const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.dlg=i;
+  b.innerHTML='<span class="lvico">'+(done?'<i class="okmark">✓</i>':"💬")+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small></span><span class="lvst">'+(done?"":"+1 🦐")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+  b.onclick=()=>openDialogue(i);
+  item.appendChild(b); return item;
 }
 function openDialogue(i){
   stopAudio(); play=null;
@@ -2172,10 +2169,10 @@ function renderDialogue(){
   host.appendChild(head);
   if(dp.pos>=dp.seq.length){
     const end=document.createElement("div"); end.className="panel win dlg-end";
-    const e=dlg[dp.i], nx=dp.i+1<DIALOGS.length;
+    const e=dlg[dp.i], at=DLG_ORDER.indexOf(dp.i), nxi=at>=0&&at+1<DLG_ORDER.length?DLG_ORDER[at+1]:-1, nx=nxi>=0;
     end.innerHTML='<div class="big">🐈🎉</div><h2>Bravo !</h2><p>Диалог «'+esc(D.fr)+'» пройден. Ты ответила на все реплики вслух.</p>';
     const r=document.createElement("button"); r.className="btn ghost"; r.textContent="Повторить диалог"; r.onclick=()=>openDialogueAgain(); end.appendChild(r);
-    if(nx){ const n=document.createElement("button"); n.className="btn violet"; n.innerHTML=esc(DIALOGS[dp.i+1].fr)+" "+CHEV(); n.onclick=()=>{ dp.i++; openDialogueAgain(); }; end.appendChild(n); }
+    if(nx){ const n=document.createElement("button"); n.className="btn violet"; n.innerHTML=esc(DIALOGS[nxi].fr)+" "+CHEV(); n.onclick=()=>{ dp.i=nxi; openDialogueAgain(); }; end.appendChild(n); }
     const h=document.createElement("button"); h.className="btn link"; h.textContent="К диалогам"; h.onclick=backHome; end.appendChild(h);
     host.appendChild(end); return;
   }
@@ -2229,8 +2226,8 @@ function renderInstall(){
   const row=$("installRow"), btn=$("installBtn"), hint=$("installHint");
   if(standalone()){ row.style.display="none"; return; }
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  if(installEv){ row.style.display=""; btn.style.display=""; hint.textContent="Сайт откроется как приложение, без адресной строки."; }
-  else if(ios){ row.style.display=""; btn.style.display="none"; hint.textContent="В Safari нажми «Поделиться» (квадрат со стрелкой), потом «На экран Домой». Сайт откроется как приложение."; }
+  if(installEv){ row.style.display=""; btn.style.display=""; hint.textContent="Le site s'ouvre comme une appli, sans barre d'adresse."; }
+  else if(ios){ row.style.display=""; btn.style.display="none"; hint.textContent="Dans Safari, appuie sur « Partager », puis sur « Sur l'écran d'accueil »."; }
   else row.style.display="none";
 }
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEv=e; renderInstall(); });
