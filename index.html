@@ -176,9 +176,9 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .feed-timer b{font-variant-numeric:tabular-nums;font-size:1.2rem;color:var(--ink)}
 .feed-note{font-size:.82rem;color:var(--soft)}
 .feed.empty .feed-note{color:var(--rouge);font-weight:600}
-.speedrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px}
-.speedrow .lbl{font-size:.9rem;color:var(--soft)}
-.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--paper)}
+.speedrow{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.speedrow .lbl{font-size:.9rem;font-weight:600;color:var(--ink);white-space:nowrap}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .seg button{font:inherit;font-size:.85rem;font-weight:600;border:none;background:none;color:var(--soft);padding:6px 12px;border-radius:999px;cursor:pointer;min-height:0}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .seg button:focus-visible{outline:3px solid var(--rouge);outline-offset:2px}
@@ -1018,6 +1018,7 @@ function pickGap(fr,idx){
 }
 function dictNorm(x){ return x.trim().toLowerCase().replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/\s+/g," "); }
 function dictCheck(ans,word){ const a=dictNorm(ans), w=dictNorm(word); if(a===w) return "ok"; if(a && deaccent(a)===deaccent(w)) return "accent"; return false; }
+let dictSeq=0;
 function dictItem(idx, fr, ru, k, n){
   const isAgain = k==="rev_fin" && state.again.rev_fin.indexOf(idx)>=0;
   const isForgot = (k==="fin" && state.fg.fin.indexOf(idx)>=0) || isAgain, done=!!state.done[k][idx], settled=done||isForgot;
@@ -1050,10 +1051,12 @@ function dictItem(idx, fr, ru, k, n){
   const row=document.createElement("div"); row.className="dictrow";
   row.innerHTML='<input type="text" lang="fr" inputmode="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Пропущенное слово" aria-label="Пропущенное слово"><button type="button" class="btn ghost">OK</button>';
   const inp=row.querySelector("input");
+  inp.value=""; inp.name="dict"+idx+"_"+(dictSeq++);   // свежее поле на каждую карточку, без подсказок и остатков прошлого слова
   const go=()=>{
     const r=dictCheck(inp.value,g.word);
     if(!r){ fbw.innerHTML='<div class="fb bad">'+(inp.value.trim()?'<div class="said"><span class="lbl">Tu as écrit :</span> '+esc(inp.value.trim())+'</div>':"")+'<div><b>Faux.</b> Essaie encore.</div></div>'; inp.focus(); return; }
     if(k==="rev_fin") setAgain(k,idx,false);
+    inp.blur();
     markDone(k,idx);
     refresh(r==="accent" ? '<div class="fb ok">Presque parfait ! ✅ Vérifie les accents : <b>'+esc(g.word)+'</b></div>' : '<div class="fb ok">Très bien ! ✅🐾</div>');
   };
@@ -1624,6 +1627,7 @@ function renderRelearnCard(){
   plSync();
 }
 function plAdvance(){
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();   // клавиатура закрывается, введённое слово не переходит дальше
   stopAudio(); const bot=$("plBottom"); play.rel=null;
   play.cur=firstOpen(play.k); if(play.cur===undefined) play.cur=null;
   if(play.cur==null){ renderPlayerEnd(); } else renderPlayer();
