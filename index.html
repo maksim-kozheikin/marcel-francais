@@ -185,11 +185,11 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .story-card .texts{min-width:0}
 .story-card details.tr{margin:20px 0 14px}
 .dlg-card details.tr{margin:10px 0 2px}
-details.tr{margin:0}
-details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+details.tr{margin:0;border:1px solid var(--line);border-radius:14px;background:var(--bg);overflow:hidden}
+details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px}
 details.tr summary::-webkit-details-marker{display:none}
 details.tr[open] summary .chev{transform:rotate(-90deg)}
-details.tr p{margin:12px 2px 0;color:var(--soft)}
+details.tr p{margin:0;padding:0 16px 16px;color:var(--soft)}
 .hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
@@ -890,7 +890,8 @@ function applyPalette(){
 document.querySelectorAll("#palSeg button").forEach(b=>{ b.onclick=()=>{ palette=b.dataset.pal; saveVoice(); applyPalette(); }; });
 applyPalette();
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
-const rateLabel=r=>(r>=1?"Normal":r>=0.75?"Lent":"Très lent")+" : "+String(r).replace(".",",")+"×";
+const SPEED_STEPS=[1,0.75,0.5];
+const rateLabel=r=>(r>=1?"Normal":r>=0.75?"Lent":"Très lent")+" : "+(r===1?"1,0":String(r).replace(".",","))+"×";
 function speak(text,n,slow){
   n=n||1;
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
@@ -903,12 +904,11 @@ function speak(text,n,slow){
 function listenRow(text){
   const row=document.createElement("div"); row.className="listen-row";
   [1,2].forEach(n=>{ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊 Voix "+n; 
-    // первое нажатие читает с выбранной скоростью, второе подряд на ту же кнопку читает медленнее
-    let slowNext=false, last=0;
-    b.onclick=()=>{ if(Date.now()-last>8000) slowNext=false; last=Date.now();
-      const rate=slowNext ? (speechRate>=1?0.75:speechRate>=0.75?0.5:0.35) : speechRate;
-      speak(text,n,rate); toast(rateLabel(rate));
-      slowNext=!slowNext; };
+    // нажатия на одну кнопку идут по кругу: Normal 1, Lent 0,75, Très lent 0,5. Через 8 секунд тишины счёт начинается заново
+    let step=0, last=0;
+    b.onclick=()=>{ if(Date.now()-last>8000) step=0; last=Date.now();
+      const rate=SPEED_STEPS[step%3]; step++;
+      speak(text,n,rate); toast(rateLabel(rate)); };
     row.appendChild(b); });
   return row;
 }
@@ -1756,6 +1756,8 @@ function renderLevels(){
       else if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
     }));
     host.appendChild(item);
+    const after=()=>DLG_ORDER.filter(i=>DLG_AFTER[i]===n).forEach(i=>host.appendChild(dlgRow(i)));
+    if(n>=MAXLEVEL) after();
     if(n<MAXLEVEL){
       // между уровнями идёт Rappel: повторение всех пройденных уровней, за него +1 креветка
       const m=n+1, ms=m===state.level?state:levelsSaved[m], rdone=!!(ms&&ms.rapEarned);
@@ -1765,8 +1767,7 @@ function renderLevels(){
       rb.onclick=()=>openRappel(m);
       rap.appendChild(rb);
       rap.appendChild(sw('rappel="'+m,"Je connais déjà",rdone?"+1 🦐":"+1 🦐",rdone,inp=>markRappel(m,inp.checked)));
-      host.appendChild(rap);
-      DLG_ORDER.filter(i=>DLG_AFTER[i]===n).forEach(i=>host.appendChild(dlgRow(i)));
+      host.appendChild(rap); after();
     }
   }
 }
@@ -2098,7 +2099,7 @@ const DIALOGS=[
   ["o","De sept heures à dix heures.","С семи до десяти часов."],
   ["m","Merci beaucoup. Bonne soirée !","Большое спасибо. Хорошего вечера!"]]},
  {fr:"Chercher la gare", ru:"Как найти вокзал", other:"Un passant", lines:[
-  ["m","Excusez-moi, monsieur. Où est la gare, s'il vous plaît ?","Извините, пожалуйста. Где вокзал?"],
+  ["m","Excusez-moi, monsieur. Je cherche la gare, s'il vous plaît.","Извините, пожалуйста. Я ищу вокзал."],
   ["o","Vous allez tout droit, puis vous tournez à gauche.","Идите прямо, потом поверните налево."],
   ["m","C'est loin d'ici ?","Это далеко отсюда?"],
   ["o","Non, c'est à dix minutes à pied.","Нет, это в десяти минутах пешком."],
@@ -2119,16 +2120,78 @@ const DIALOGS=[
   ["o","Bonsoir ! Vous avez réservé ?","Добрый вечер! Вы бронировали?"],
   ["m","Oui, une table pour deux personnes.","Да, столик на двоих."],
   ["o","Voici la carte. Vous avez choisi ?","Вот меню. Вы выбрали?"],
-  ["m","Oui, je voudrais une soupe à l'oignon, puis du poulet avec des légumes.","Да, я бы хотела луковый суп, потом курицу с овощами."],
+  ["m","Oui, je vais prendre une soupe à l'oignon, puis du poulet avec des légumes.","Да, я возьму луковый суп, потом курицу с овощами."],
   ["o","Très bien. Et comme boisson ?","Хорошо. А из напитков?"],
   ["m","Une bouteille d'eau, s'il vous plaît.","Бутылку воды, пожалуйста."],
   ["o","Voulez-vous un dessert ?","Хотите десерт?"],
-  ["m","Non, merci. L'addition, s'il vous plaît.","Нет, спасибо. Счёт, пожалуйста."]]}
+  ["m","Non, merci. L'addition, s'il vous plaît.","Нет, спасибо. Счёт, пожалуйста."]]},
+ {fr:"Chez le boulanger", ru:"В булочной", other:"Le boulanger", lines:[
+  ["o","Bonjour !","Здравствуйте!"],
+  ["m","Bonjour ! Je veux une baguette.","Здравствуйте! Я хочу багет."],
+  ["o","Voilà. Vous voulez autre chose ?","Пожалуйста. Хотите что-нибудь ещё?"],
+  ["m","Oui. Je veux deux croissants.","Да. Я хочу два круассана."],
+  ["o","Voilà. Ça fait trois euros.","Пожалуйста. С вас три евро."],
+  ["m","Merci. Au revoir !","Спасибо. До свидания!"]]},
+ {fr:"À l'aéroport", ru:"В аэропорту", other:"L'employée", lines:[
+  ["o","Bonjour madame. Vous avez un passeport ?","Здравствуйте. У вас есть паспорт?"],
+  ["m","Oui, j'ai un passeport.","Да, у меня есть паспорт."],
+  ["o","Vous avez un billet ?","У вас есть билет?"],
+  ["m","Oui, j'ai un billet. Voilà.","Да, у меня есть билет. Вот."],
+  ["o","Vous avez des valises ?","У вас есть чемоданы?"],
+  ["m","J'ai une valise et un petit sac.","У меня один чемодан и маленькая сумка."],
+  ["o","Merci. Bon voyage !","Спасибо. Счастливого пути!"]]},
+ {fr:"Au snack avec Léa", ru:"В закусочной с Леа", other:"Léa", lines:[
+  ["o","Tu prends quoi ?","Ты что берёшь?"],
+  ["m","Je prends un sandwich. Et toi ?","Я беру сэндвич. А ты?"],
+  ["o","Je prends une salade.","Я беру салат."],
+  ["m","Tu prends un jus de pomme ?","Ты берёшь яблочный сок?"],
+  ["o","Non, je prends de l'eau froide.","Нет, я беру холодную воду."],
+  ["m","Moi, je prends un jus de pomme.","А я возьму яблочный сок."],
+  ["o","D'accord. On prend aussi un dessert ?","Хорошо. Мы возьмём ещё десерт?"]]},
+ {fr:"À l'office de tourisme", ru:"В бюро туристической информации", other:"L'employée", lines:[
+  ["m","Bonjour. Il y a un musée près d'ici ?","Здравствуйте. Рядом есть музей?"],
+  ["o","Oui, il y a un grand musée dans la rue Victor Hugo.","Да, на улице Виктора Гюго есть большой музей."],
+  ["m","Il y a un café près du musée ?","Рядом с музеем есть кафе?"],
+  ["o","Oui, il y a deux cafés et une boulangerie.","Да, там есть два кафе и булочная."],
+  ["m","Il y a aussi un parc ?","А парк там есть?"],
+  ["o","Oui, il y a un très beau parc derrière le musée.","Да, за музеем есть очень красивый парк."],
+  ["m","Merci beaucoup pour votre aide !","Большое спасибо за вашу помощь!"],
+  ["o","Je vous en prie. Bonne visite !","Пожалуйста. Приятной экскурсии!"]]},
+ {fr:"Ma commande dans l'appli", ru:"Мой заказ в приложении", other:"Le service client", lines:[
+  ["o","Bonjour. Je peux vous aider ?","Здравствуйте. Могу вам помочь?"],
+  ["m","Bonjour. J'ai passé une commande hier.","Здравствуйте. Вчера я сделала заказ."],
+  ["o","Vous avez reçu votre commande ?","Вы получили свой заказ?"],
+  ["m","Non, je n'ai pas reçu mon achat.","Нет, я не получила свою покупку."],
+  ["o","Je regarde. Vous avez payé dans l'appli ?","Смотрю. Вы заплатили в приложении?"],
+  ["m","Oui, j'ai payé hier soir avec ma carte.","Да, я заплатила вчера вечером картой."],
+  ["o","Votre commande arrive demain matin.","Ваш заказ приедет завтра утром."],
+  ["m","Très bien. Merci beaucoup !","Хорошо. Большое спасибо!"]]},
+ {fr:"Mon compte", ru:"Мой аккаунт", other:"Le service client", lines:[
+  ["m","Bonjour. Je ne peux pas me connecter à mon compte.","Здравствуйте. Я не могу войти в свой аккаунт."],
+  ["o","Vous avez oublié votre mot de passe ?","Вы забыли пароль?"],
+  ["m","Oui, j'ai oublié le mot de passe.","Да, я забыла пароль."],
+  ["o","Vous pouvez changer le mot de passe dans l'appli.","Вы можете сменить пароль в приложении."],
+  ["m","Où est le bouton « Changer le mot de passe » ?","Где кнопка «Сменить пароль»?"],
+  ["o","Il est dans les paramètres, en bas de l'écran.","Она в настройках, внизу экрана."],
+  ["m","Je vois le bouton. Je change le mot de passe.","Я вижу кнопку. Я меняю пароль."],
+  ["o","Très bien. Vous pouvez vous connecter maintenant.","Хорошо. Теперь вы можете войти."],
+  ["m","Ça marche ! Merci beaucoup.","Работает! Большое спасибо."]]},
+ {fr:"Ma journée avec Léa", ru:"Мой день, разговор с Леа", other:"Léa", lines:[
+  ["o","Salut ! Tu as passé une bonne journée ?","Привет! Ты хорошо провела день?"],
+  ["m","Oui, très bonne ! Ce matin, j'ai acheté du pain au marché.","Да, очень хорошо! Сегодня утром я купила хлеб на рынке."],
+  ["o","Et cet après-midi ? Qu'est-ce que tu as fait ?","А днём? Что ты делала?"],
+  ["m","J'ai marché dans le centre-ville et j'ai cherché un cadeau.","Я гуляла по центру города и искала подарок."],
+  ["o","Tu as trouvé un cadeau ?","Ты нашла подарок?"],
+  ["m","Oui, j'ai trouvé un joli sac. Je suis très contente.","Да, я нашла красивую сумку. Я очень довольна."],
+  ["o","Super ! Ce soir, tu es libre ?","Здорово! Ты сегодня вечером свободна?"],
+  ["m","Oui, je suis libre. Je vais manger une pizza avec toi ?","Да, я свободна. Я пойду есть пиццу с тобой?"],
+  ["o","Parfait ! À ce soir !","Отлично! До вечера!"],
+  ["m","À ce soir !","До вечера!"]]}
 ].map(d=>({...d, lines:d.lines.map(([w,fr,ru])=>({me:w==="m",fr,ru}))}));
 let dp=null;   // {i, seq, pos, round, miss, res, fb, tr, say}
 function dlgDone(i){ return !!(dlg[i] && dlg[i].done); }
 // диалог стоит после Rappel нужного уровня: тема, повтор, диалог
-const DLG_AFTER=[4,5,8,6,9,7];   // для каждого диалога по порядку в DIALOGS номер уровня, после которого он идёт
+const DLG_AFTER=[4,6,8,5,9,7,1,2,3,10,11,12,13];   // для каждого диалога по порядку в DIALOGS номер уровня, после которого он идёт
 const DLG_ORDER=DIALOGS.map((_,i)=>i).sort((a,b)=>DLG_AFTER[a]-DLG_AFTER[b]||a-b);
 function dlgRow(i){
   const d=DIALOGS[i], done=dlgDone(i), item=document.createElement("div"); item.className="lv-item dl"+(done?" done":"");
