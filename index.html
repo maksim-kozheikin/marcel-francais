@@ -178,14 +178,18 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .item.forgot .forgot-mark{border-color:var(--warn);background:var(--paper)}
 .substages{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:2px 2px 0;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
-.recap-intro{margin-bottom:10px}
+.theory.titleonly .th-rap{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.theory.titleonly .th-rap h2{margin:0 0 6px;font-size:1.25rem}
+.theory.titleonly .th-rap p{margin:0;font-size:.98rem}
 .story-card .lvtag{font-size:.85rem;font-weight:700;color:var(--soft);margin-bottom:2px}
 .story-card .texts{min-width:0}
 .story-card details.tr{margin:20px 0 14px}
-.story-card details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
-.story-card details.tr summary::-webkit-details-marker{display:none}
-.story-card details.tr[open] summary .chev{transform:rotate(-90deg)}
-.story-card details.tr p{margin:12px 2px 0;color:var(--soft)}
+.dlg-card details.tr{margin:10px 0 2px}
+details.tr{margin:0}
+details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;min-height:52px;padding:0 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+details.tr summary::-webkit-details-marker{display:none}
+details.tr[open] summary .chev{transform:rotate(-90deg)}
+details.tr p{margin:12px 2px 0;color:var(--soft)}
 .hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
@@ -890,6 +894,7 @@ function applyPalette(){
 document.querySelectorAll("#palSeg button").forEach(b=>{ b.onclick=()=>{ palette=b.dataset.pal; saveVoice(); applyPalette(); }; });
 applyPalette();
 function renderSpeed(){ document.querySelectorAll("#speedSeg button").forEach(b=>b.setAttribute("aria-pressed", +b.dataset.rate===speechRate)); }
+const rateLabel=r=>(r>=1?"Normal":r>=0.75?"Lent":"Très lent")+" : "+String(r).replace(".",",")+"×";
 function speak(text,n,slow){
   n=n||1;
   if(!("speechSynthesis" in window)){toast("Озвучка не поддерживается этим браузером");return;}
@@ -905,7 +910,8 @@ function listenRow(text){
     // первое нажатие читает с выбранной скоростью, второе подряд на ту же кнопку читает медленнее
     let slowNext=false, last=0;
     b.onclick=()=>{ if(Date.now()-last>8000) slowNext=false; last=Date.now();
-      if(slowNext){ speak(text,n,Math.min(0.5,speechRate*0.6)); toast("Медленнее 🐢"); } else speak(text,n);
+      const rate=slowNext ? (speechRate>=1?0.75:speechRate>=0.75?0.5:0.35) : speechRate;
+      speak(text,n,rate); toast(rateLabel(rate));
       slowNext=!slowNext; };
     row.appendChild(b); });
   return row;
@@ -1615,9 +1621,6 @@ function needRecap(){ return state.level>=2 && rapForce && !!levelData(state.lev
 function recapStart(){ rapForce=false; state.recap.ok=true; state.view=0; navTo(); }
 function renderRecap(m){
   const N=state.level, cards=recapCards(N), tot=cards.length, dn=doneCount("rec");
-  const intro=document.createElement("section"); intro.className="panel recap-intro";
-  intro.innerHTML='<h2 style="margin:0 0 6px">🔄 Rappel</h2><p style="margin:0">Перед уровнем '+N+' вспомним всё, что ты прошла. Сначала по две фразы из каждого пройденного уровня. Потом история, в которой эти фразы встречаются в жизни. Её можно прочитать и послушать.</p>';
-  m.appendChild(intro);
   const list=document.createElement("div"); list.className="list"; let last=0;
   cards.forEach((c,i)=>{
     if(c.p!==last){ last=c.p; const h=document.createElement("h3"); h.className="recap-lv"; h.textContent="Niveau "+c.p+" · "+BUILTIN[c.p].fr; list.appendChild(h); }
@@ -1913,7 +1916,8 @@ function renderTheory(){
   if(screen!=="level" || !levelData(state.level)) return;
   if(needRecap()){   // во время Rappel теории нет, остаётся только название уровня
     const pl=planFor(state.level), t=document.createElement("section"); t.className="theory titleonly";
-    t.innerHTML='<div class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</div><div class="th-ru">'+esc(pl.ru)+'</div>'; h.appendChild(t); return;
+    t.innerHTML='<div class="th-lv">Niveau '+state.level+' · '+esc(pl.fr)+'</div><div class="th-ru">'+esc(pl.ru)+'</div>'+
+      '<div class="th-rap"><h2>🔄 Rappel</h2><p>Перед уровнем '+state.level+' вспомним всё, что ты прошла. Сначала по две фразы из каждого пройденного уровня. Потом история, в которой эти фразы встречаются в жизни. Её можно прочитать и послушать.</p></div>'; h.appendChild(t); return;
   }
   const lv=state.level, open=!!theoryOpen[lv];
   const th=theoryBlock(open); if(!th) return;
@@ -2186,10 +2190,12 @@ function renderDialogue(){
   fbw.innerHTML=dp.fb;
   const showFr=!L.me || dp.res!==null;
   if(L.me && !showFr) texts.innerHTML='<div class="ru big">'+esc(L.ru)+'</div><div class="hint">Скажи это по-французски.</div>';
-  else texts.innerHTML='<div class="fr" lang="fr">'+esc(L.fr)+'</div>'+((L.me||dp.tr)?'<div class="ru">'+esc(L.ru)+'</div>':"");
+  else {
+    texts.innerHTML='<div class="fr" lang="fr">'+esc(L.fr)+'</div><details class="tr"><summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(L.ru)+'</p></details>';
+    const dt=texts.querySelector("details"); dt.open=dp.tr; dt.addEventListener("toggle",()=>{ dp.tr=dt.open; });
+  }
   if(showFr) actions.appendChild(listenRow(L.fr));
   if(!L.me){
-    const t=document.createElement("button"); t.className="btn ghost"; t.textContent=dp.tr?"Скрыть перевод":"Перевод"; t.onclick=()=>{ dp.tr=!dp.tr; renderDialogue(); }; actions.appendChild(t);
   } else if(dp.res===null){
     if(!micBroken){
       const mb=document.createElement("button"); mb.className="btn red mic"; mb.textContent="🎤 Parler";
