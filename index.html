@@ -126,16 +126,13 @@ input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:2px s
 .substages{display:flex;gap:18px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:2px 2px 0;border-bottom:1px solid var(--line)}
 .recap-lv{margin:14px 2px 6px;font-size:1rem;color:var(--bleu)}
 .recap-intro{margin-bottom:10px}
-.story{margin-top:14px}
-.story-p{margin:12px 0;padding-top:10px;border-top:1px dashed var(--line)}
-.story-p .lvtag{font-size:.85rem;font-weight:700;color:var(--soft)}
-.story-p .fr{font-size:1.15rem;line-height:1.5;margin:.3em 0 .5em}
-.story-p details.tr{margin-top:14px}
-.story-p details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;gap:6px;list-style:none;padding:4px 0}
-.story-p details.tr summary::-webkit-details-marker{display:none}
-.story-p details.tr[open] summary .chev{transform:rotate(-90deg)}
-.story-read{margin-top:14px;justify-self:start}
-.story-p details.tr p{margin:.4em 0 0;color:var(--soft)}
+.story-head{margin:14px 2px 2px}
+.story-card .lvtag{font-size:.85rem;font-weight:700;color:var(--soft);margin-bottom:2px}
+.story-card details.tr{margin-top:2px}
+.story-card details.tr summary{cursor:pointer;color:var(--bleu);font-weight:600;display:flex;align-items:center;gap:6px;list-style:none;padding:6px 0 2px}
+.story-card details.tr summary::-webkit-details-marker{display:none}
+.story-card details.tr[open] summary .chev{transform:rotate(-90deg)}
+.story-card details.tr p{margin:.4em 0 0;color:var(--soft)}
 .hint{color:var(--soft);font-size:.95rem;margin:0 0 4px}
 
 .fb{border-radius:12px;padding:8px 12px;font-size:.98rem}
@@ -1441,20 +1438,24 @@ function renderRecap(m){
     list.appendChild(speechItem(c.key,c.fr,c.ru,"rec",false,i+1));
   });
   m.appendChild(list);
-  const st=document.createElement("section"); st.className="panel story";
-  st.innerHTML='<h2 style="margin:0 0 4px">📖 Ma journée avec Léa</h2><p class="hint">Мой день с Леа. Что делала я, что делала Леа и что делали другие. Каждый абзац написан на конструкции своего уровня.</p>';
+  // история: тот же вид, что у карточек (номер уровня в кружке, текст, две кнопки голоса), перевод раскрывается внутри карточки
+  const head=document.createElement("div"); head.className="story-head";
+  head.innerHTML='<h2 style="margin:0 0 4px">📖 Ma journée avec Léa</h2><p class="hint" style="margin:0">Мой день с Леа. Что делала я, что делала Леа и что делали другие. Каждый абзац написан на конструкции своего уровня.</p>';
+  m.appendChild(head);
+  const st=document.createElement("div"); st.className="list";
   for(let p=1;p<N;p++){
     const t=STORY[p]; if(!t) continue;
-    const par=document.createElement("div"); par.className="story-p";
-    par.innerHTML='<div class="lvtag">Niveau '+p+' · '+esc(BUILTIN[p].fr)+'</div><p class="fr" lang="fr">'+esc(t.fr)+'</p>';
-    par.appendChild(listenRow(t.fr));
-    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>'; par.appendChild(det);
-    st.appendChild(par);
+    const card=document.createElement("article"); card.className="item sp story-card";
+    card.innerHTML='<div class="item-top"><div class="num">'+p+'</div><div class="texts"><div class="lvtag">Niveau '+p+' · '+esc(BUILTIN[p].fr)+'</div><div class="fr" lang="fr">'+esc(t.fr)+'</div></div></div><div class="actions"></div>';
+    card.querySelector(".actions").appendChild(listenRow(t.fr));
+    const det=document.createElement("details"); det.className="tr"; det.innerHTML='<summary><span>Перевод</span>'+CHEV("d")+'</summary><p>'+esc(t.ru)+'</p>'; card.appendChild(det);
+    st.appendChild(card);
   }
-  const rd=document.createElement("label"); rd.className="known story-read";
-  rd.innerHTML='<input type="checkbox"> J\'ai lu'; const rc=rd.querySelector("input"); rc.checked=!!state.rapRead;
-  rc.onchange=()=>{ state.rapRead=rc.checked; save(); rapCheck(); };
-  st.appendChild(rd);
+  const end=document.createElement("article"); end.className="item sp story-end"+(state.rapRead?" done":"");
+  end.innerHTML='<div class="item-top"><div class="num">'+(state.rapRead?"✓":"•")+'</div><div class="texts"><div class="ru">Ты прочитала всю историю?</div></div><div class="marks"><label class="known"><input type="checkbox"> J\'ai lu</label></div></div>';
+  const rc=end.querySelector("input"); rc.checked=!!state.rapRead;
+  rc.onchange=()=>{ state.rapRead=rc.checked; end.classList.toggle("done",rc.checked); end.querySelector(".num").textContent=rc.checked?"✓":"•"; save(); rapCheck(); };
+  st.appendChild(end);
   m.appendChild(st);
   const nx=document.createElement("div"); nx.style.marginTop="14px";
   nx.innerHTML='<button class="btn" id="recapGo" style="width:100%">К уровню '+N+'</button><p class="hint" id="recapHint" style="margin:8px 2px 0;text-align:center">Отметь все фразы и «J\'ai lu» под историей. Тогда откроется уровень и Марсель получит +1 🦐</p>';
