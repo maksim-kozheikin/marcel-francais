@@ -1755,7 +1755,7 @@ function renderLevels(){
       else if(confirm("Réinitialiser le niveau "+n+" ?"+(back?" Les crevettes de ce niveau ("+back+") seront retirées.":""))) unmarkLevelDone(n); else inp.checked=true;
     }));
     host.appendChild(item);
-    const after=()=>DLG_ORDER.filter(i=>DLG_AFTER[i]===n).forEach(i=>host.appendChild(dlgRow(i)));
+    const after=()=>DLG_ORDER.filter(i=>DLG_AFTER[i]===n).forEach(i=>host.appendChild(dlgRow(i,sw)));
     if(n>=MAXLEVEL) after();
     if(n<MAXLEVEL){
       // между уровнями идёт Rappel: повторение всех пройденных уровней, за него +1 креветка
@@ -2192,12 +2192,20 @@ function dlgDone(i){ return !!(dlg[i] && dlg[i].done); }
 // диалог стоит после Rappel нужного уровня: тема, повтор, диалог
 const DLG_AFTER=[4,6,8,5,9,7,1,2,3,10,11,12,13];   // для каждого диалога по порядку в DIALOGS номер уровня, после которого он идёт
 const DLG_ORDER=DIALOGS.map((_,i)=>i).sort((a,b)=>DLG_AFTER[a]-DLG_AFTER[b]||a-b);
-function dlgRow(i){
+function markDialogue(i,on){
+  const e=dlg[i]||(dlg[i]={done:false,earned:false});
+  if(on){ e.done=true; if(!e.earned){ e.earned=true; state.shrimps++; } touchStreak(); }
+  else { e.done=false; if(e.earned){ e.earned=false; state.shrimps=Math.max(0,state.shrimps-1); } }
+  save(); renderAll(); toast(on?"Dialogue : +1 🦐":"Dialogue réinitialisé : −1 🦐");
+}
+function dlgRow(i,sw){
   const d=DIALOGS[i], done=dlgDone(i), item=document.createElement("div"); item.className="lv-item dl"+(done?" done":"");
   const b=document.createElement("button"); b.type="button"; b.className="lv-card"; b.dataset.dlg=i;
-  b.innerHTML='<span class="lvico">'+(done?'<i class="okmark">✓</i>':"💬")+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small></span><span class="lvst">'+(done?"":"+1 🦐")+'</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+  b.innerHTML='<span class="lvico">'+(done?'<i class="okmark">✓</i>':"💬")+'</span><span class="lvtxt"><b>'+esc(d.fr)+'</b><small>'+esc(d.ru)+'</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
   b.onclick=()=>openDialogue(i);
-  item.appendChild(b); return item;
+  item.appendChild(b);
+  item.appendChild(sw('dlg="'+i,"Je connais déjà","+1 🦐",done,inp=>markDialogue(i,inp.checked)));
+  return item;
 }
 function openDialogue(i){
   stopAudio(); play=null;
