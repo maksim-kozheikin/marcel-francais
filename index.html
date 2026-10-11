@@ -275,6 +275,14 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .dlg-head b{font-size:1.25rem}
 .dlg-head small{color:var(--soft);font-size:.95rem}
 .dlg-card{display:grid;gap:12px}
+.gl-list{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.gl-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+.gl-row:first-child{border-top:none}
+.gl-txt{flex:1;min-width:0;display:grid;gap:1px}
+.gl-txt b{color:var(--bleu);font-size:1.05rem;line-height:1.3}
+.gl-txt small{color:var(--soft);font-size:.9rem;line-height:1.3}
+.gl-row .btn{flex:none;min-width:52px;min-height:46px;padding:0 14px;font-size:1.1rem}
+.lv-item.gl .lvnum{font-weight:800}
 .dlg-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px}
 .dlg-card .who{font-size:.85rem;font-weight:600;color:var(--bleu)}
 .dlg-card .ru.big{font-size:1.2rem}
@@ -465,6 +473,7 @@ details summary{cursor:pointer;color:var(--soft);font-size:.95rem}
   </div>
 
   <div id="dlgScreen" class="screen" style="display:none"></div>
+  <div id="glsScreen" class="screen" style="display:none"></div>
 
   <div id="levelScreen" class="screen" style="display:none">
     <div id="winHost"></div>
@@ -743,7 +752,7 @@ const STAGES = [
   {key:"ass", tab:"🔗 Associe", fr:"Associe.", ru:"Выбери правильный перевод."},
   {key:"fin", tab:"✍️ Dictée", fr:"La dictée !", ru:"Послушай фразу и впиши пропущенное слово."},
   {key:"dis", tab:"🇷🇺 Dis-le", fr:"Dis-le en français.", ru:"Скажи это по-французски."},
-  {key:"rev", tab:"🔁 Повтор", fr:"On révise !", ru:"Повторим карточки, которые ты отложила. Это последний этап уровня."}
+  {key:"rev", tab:"🔁 Révision", fr:"On révise !", ru:"Повторим карточки, которые ты отложила. Это последний этап уровня."}
 ];
 // повтор по разделам: в каждом только карточки, отложенные именно в этом разделе
 const REV_SUBS = [
@@ -1650,7 +1659,7 @@ function renderRecap(m){
 let screen="home";   // "home" или "level". Сайт всегда открывается на главном экране
 function showScreen(){
   const home=screen==="home";
-  $("homeScreen").style.display=home?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; $("dlgScreen").style.display=screen==="dialogue"?"":"none";
+  $("homeScreen").style.display=home?"":"none"; $("levelScreen").style.display=screen==="level"?"":"none"; $("dlgScreen").style.display=screen==="dialogue"?"":"none"; $("glsScreen").style.display=screen==="glossary"?"":"none";
   $("brand").style.display=home?"":"none"; $("lvBack").style.display=home?"none":"";
 }
 // единая точка перехода: сохранить, перерисовать, прокрутить вверх
@@ -1742,6 +1751,10 @@ function renderLevels(){
     l.innerHTML='<input type="checkbox" data-'+id+'"'+(checked?" checked":"")+'><span class="sw-track" aria-hidden="true"></span><span class="sw-text">'+label+'</span><span class="sw-gain">'+gainTxt+(checked?' <span class="sw-ck">✓</span>':"")+'</span>';
     const inp=l.querySelector("input"); inp.onchange=()=>onChange(inp); return l;
   };
+  const g0=document.createElement("div"); g0.className="lv-item gl";
+  const gb=document.createElement("button"); gb.type="button"; gb.className="lv-card"; gb.dataset.glossary="1";
+  gb.innerHTML='<span class="lvnum">0</span><span class="lvtxt"><b>Les mots de l\'appli</b><small>Слова и кнопки приложения</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+  gb.onclick=openGlossary; g0.appendChild(gb); host.appendChild(g0);
   for(let n=1;n<=MAXLEVEL;n++){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
     const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
@@ -1822,7 +1835,7 @@ function renderPlayer(){
     const seq=seqFor(k); play.pos=Math.max(0,Math.min(seq.length-1,play.pos));
     host.appendChild(cardEl(k,seq[play.pos],play.pos+1)); slideIn(host);
     const row=document.createElement("div"); row.className="row";
-    row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>'+CHEV("l")+' Назад</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Дальше '+CHEV()+'</button>';
+    row.innerHTML='<button class="btn ghost" id="plPrev"'+(play.pos<=0?" disabled":"")+'>'+CHEV("l")+' Précédent</button><button class="btn violet" id="plNext"'+(play.pos>=seq.length-1?" disabled":"")+'>Suivant '+CHEV()+'</button>';
     bot.appendChild(row);
     $("plPrev").onclick=()=>{ stopAudio(); play.pos--; cardAnim="r"; renderPlayer(); cardAnim=null; };
     $("plNext").onclick=()=>{ stopAudio(); play.pos++; cardAnim="l"; renderPlayer(); cardAnim=null; };
@@ -1843,7 +1856,7 @@ function plSync(){
   const k=play.k, bot=$("plBottom"), settled=play.rel!=null ? isSettled("rel",play.rel) : isSettled(k,play.cur);
   let go=$("plGo");
   if(!go){   // кнопка есть всегда, поэтому ничего не прыгает. Пока ответа нет, она неактивна
-    bot.innerHTML='<div class="row"><button class="btn violet" id="plGo" style="width:100%">Дальше '+CHEV()+'</button></div>';
+    bot.innerHTML='<div class="row"><button class="btn violet" id="plGo" style="width:100%">Suivant '+CHEV()+'</button></div>';
     go=$("plGo"); go.onclick=plAdvance;
   }
   go.disabled=!settled;
@@ -1876,10 +1889,10 @@ function playRerender(){
 function nextStep(k){
   if(isRev(k)){
     const nx=revSections().find(x=>x.key!==k && doneCount(x.key)<stageCount(x.key));
-    return nx?{label:"Дальше: "+nx.tab, go:()=>{ state.revKey=nx.key; navTo(); }}:null;
+    return nx?{label:"Suivant : "+nx.tab, go:()=>{ state.revKey=nx.key; navTo(); }}:null;
   }
   const i=STAGES.findIndex(s=>s.key===k), to=i+1;
-  if(i>=0 && to<STAGES.length && to<=unl()) return {label:"Дальше: "+STAGES[to].tab, go:()=>{ state.view=to; navTo(); }};
+  if(i>=0 && to<STAGES.length && to<=unl()) return {label:"Suivant : "+STAGES[to].tab, go:()=>{ state.view=to; navTo(); }};
   return null;
 }
 function renderPlayerEnd(){
@@ -1946,7 +1959,7 @@ function renderMain(){
 function renderReview(m){
   if(!state.forgot.length){
     const w=document.createElement("section"); w.className="panel win";
-    w.innerHTML='<div class="big">🐈✨</div><h2 style="margin:.3em 0">Повторять нечего!</h2><p>Ты не откладывала карточки. Повтор последний этап, поэтому после «Dictée» и «Dis-le» уровень засчитывается сам.</p>';
+    w.innerHTML='<div class="big">🐈✨</div><h2 style="margin:.3em 0">Повторять нечего!</h2><p>Ты не откладывала карточки. «Révision» последний этап, поэтому после «Dictée» и «Dis-le» уровень засчитывается сам.</p>';
     m.appendChild(w); return;
   }
   const secs=revSections(), cur=secs.find(x=>x.key===state.revKey)||secs[0]; state.revKey=cur.key;
@@ -2039,6 +2052,7 @@ function renderAll(){
   showScreen(); renderHeader(); renderNotice(); renderMain(); renderTheory(); renderStage(); renderAqua(); renderFeed(); renderAdmin();
   if(screen==="home"){ renderLevels(); renderStreak(); }
   if(screen==="dialogue") renderDialogue();
+  if(screen==="glossary") renderGlossary();
 }
 
 $("restartLevel").onclick=()=>{ if(confirm("Recommencer ce niveau ?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
@@ -2290,12 +2304,94 @@ function renderDialogue(){
   }
   host.appendChild(el); if(cardAnim){ el.classList.add("slide-"+cardAnim); cardAnim=null; }
   const bot=document.createElement("div"); bot.className="pl-bottom";
-  bot.innerHTML='<div class="row"><button class="btn ghost" id="dlgPrev"'+(dp.pos<=0?" disabled":"")+'>'+CHEV("l")+' Назад</button><button class="btn violet" id="dlgGo"'+(dlgSettled()?"":" disabled")+'>Дальше '+CHEV()+'</button></div>';
+  bot.innerHTML='<div class="row"><button class="btn ghost" id="dlgPrev"'+(dp.pos<=0?" disabled":"")+'>'+CHEV("l")+' Précédent</button><button class="btn violet" id="dlgGo"'+(dlgSettled()?"":" disabled")+'>Suivant '+CHEV()+'</button></div>';
   host.appendChild(bot); $("dlgGo").onclick=dlgNext; $("dlgPrev").onclick=dlgPrev;
   if(dp.say){ dp.say=false; if(!L.me) setTimeout(()=>{ if(screen==="dialogue" && dp && dp.seq[dp.pos]===li) speak(L.fr,2); },250); }
 }
 function openDialogueAgain(){ const i=dp.i; dp=null; openDialogue(i); }
 swipeOn($("dlgScreen"),()=>$("dlgScreen").querySelector(".dlg-card"),()=>enabledBtn("dlgGo"),()=>enabledBtn("dlgPrev"));
+
+
+/* ---------- карточка 0: слова и кнопки приложения ---------- */
+// [по-французски, по-русски, как читать вслух (если отличается)]
+const GLOSSARY=[
+ {h:"Les étapes", ru:"Этапы", items:[
+  ["Niveau","Уровень"],
+  ["Théorie","Теория уровня"],
+  ["Écoute & répète","Слушай и повторяй","Écoute et répète"],
+  ["Associe","Соотнеси. Выбери верный ответ"],
+  ["Dictée","Диктант. Впиши пропущенное слово"],
+  ["Dis-le","Скажи это. Ответ вслух по русской подсказке"],
+  ["Révision","Повторение карточек, которые ты отложила"],
+  ["Rappel","Напоминание. Повторение пройденных уровней"],
+  ["Lire l'histoire","Прочитать историю"],
+  ["Dialogue","Диалог"]]},
+ {h:"Les boutons", ru:"Кнопки", items:[
+  ["Suivant","Дальше"],
+  ["Précédent","Назад"],
+  ["Parler","Говорить, нажми и скажи фразу"],
+  ["Voix 1","Первый голос"],
+  ["Voix 2","Второй голос"],
+  ["Je sais","Я знаю"],
+  ["Je ne sais plus","Я больше не помню"],
+  ["Je connais déjà","Я уже знаю это"],
+  ["Tous les niveaux","Все уровни"],
+  ["Réglages","Настройки"],
+  ["Thème","Цветовая тема"],
+  ["Sons et vibration","Звуки и вибрация"],
+  ["Recommencer le niveau","Начать уровень заново"],
+  ["Tout réinitialiser","Сбросить всё"],
+  ["Installer sur l'écran d'accueil","Установить на экран «Домой»"]]},
+ {h:"La vitesse", ru:"Скорость озвучки", items:[
+  ["Normal","Обычная скорость"],
+  ["Lent","Медленно"],
+  ["Très lent","Очень медленно"]]},
+ {h:"Les messages", ru:"Сообщения", items:[
+  ["Bravo !","Молодец!"],
+  ["Très bien !","Очень хорошо!"],
+  ["Faux","Неверно"],
+  ["Presque !","Почти!"],
+  ["Essaie encore","Попробуй ещё"],
+  ["Encore une fois","Ещё раз"],
+  ["Il faut","Нужно. Так правильно"],
+  ["Tu as écrit","Ты написала"],
+  ["Tu as dit","Ты сказала"],
+  ["J'entends","Я слышу"],
+  ["Je n'ai rien entendu","Я ничего не услышала"],
+  ["Vérifie les accents","Проверь значки над буквами"],
+  ["Niveau terminé","Уровень пройден"],
+  ["Rien à revoir","Нечего повторять"]]},
+ {h:"Les compteurs", ru:"Счётчики", items:[
+  ["0 sur 18","0 из 18"],
+  ["à revoir","на повторение"],
+  ["aperçu","просмотр"],
+  ["Crevettes","Креветки"],
+  ["Reçues","Получено"],
+  ["Mangées","Съедено"],
+  ["Restantes","Осталось"],
+  ["Prochain repas dans","Следующая еда через"],
+  ["Le bol est vide","Миска пуста"],
+  ["jours de suite","дней подряд"],
+  ["Moi","Я. Так подписана твоя реплика в диалоге"]]}
+];
+function openGlossary(){ stopAudio(); play=null; dp=null; screen="glossary"; pushScreen(); navTo(); }
+function renderGlossary(){
+  const host=$("glsScreen"); host.innerHTML="";
+  if(screen!=="glossary") return;
+  const head=document.createElement("div"); head.className="dlg-head"; head.innerHTML='<b>Niveau 0 · Les mots de l\'appli</b><small>Слова и кнопки, которые встречаются в приложении. Нажми 🔊, чтобы послушать.</small>';
+  host.appendChild(head);
+  GLOSSARY.forEach(g=>{
+    const h=document.createElement("h3"); h.className="recap-lv"; h.textContent=g.h+" · "+g.ru; host.appendChild(h);
+    const list=document.createElement("div"); list.className="gl-list";
+    g.items.forEach(([fr,ru,say])=>{
+      const row=document.createElement("div"); row.className="gl-row";
+      row.innerHTML='<div class="gl-txt"><b lang="fr">'+esc(fr)+'</b><small>'+esc(ru)+'</small></div>';
+      const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊"; b.setAttribute("aria-label","Écouter : "+fr); b.onclick=()=>speak(say||fr,1);
+      row.appendChild(b); list.appendChild(row);
+    });
+    host.appendChild(list);
+  });
+}
 
 // установка на экран «Домой»
 let installEv=null;
