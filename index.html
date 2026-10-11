@@ -757,7 +757,7 @@ const revSrc=k=>REV_SUBS.find(x=>x.key===k).src;
 const KEY="marcel-course-v3";
 const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[],story:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
-const MEAL_MS=6*3600*1000;   // Марсель съедает одну креветку каждые 6 часов, то есть четыре в день
+const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день. Уже идущий таймер не сбрасывается, новый интервал начинается после следующей съеденной
 let feed={eaten:0,next:0}, streak=[], dlg={};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
   generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0}; if(s.dlg && typeof s.dlg==='object') dlg=s.dlg; if(Array.isArray(s.streak)) streak=s.streak.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x));
@@ -2013,7 +2013,7 @@ function renderFeed(){
   $("fReceived").textContent=state.shrimps; $("fEaten").textContent=feed.eaten; $("fLeft").textContent=left;
   const ms=Math.max(0,feed.next-Date.now()), t=Math.floor(ms/1000);
   $("fTimer").textContent=two(Math.floor(t/3600))+":"+two(Math.floor(t%3600/60))+":"+two(t%60);
-  $("fNote").textContent=left?"4 crevettes par jour : une toutes les 6 heures.":"Le bol est vide. Gagne des crevettes !";
+  $("fNote").textContent=left?"3 crevettes par jour : une toutes les 8 heures.":"Le bol est vide. Gagne des crevettes !";
   $("feed").classList.toggle("empty",!left);
 }
 // время еды: съедается одна креветка, если в миске что-то есть. Пропущенные за время отсутствия приёмы пищи догоняются
