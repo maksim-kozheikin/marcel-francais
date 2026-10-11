@@ -276,12 +276,19 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .dlg-head small{color:var(--soft);font-size:.95rem}
 .dlg-card{display:grid;gap:12px}
 .gl-list{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
-.gl-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+.gl-row{padding:10px 14px;border-top:1px solid var(--line);display:grid;gap:6px}
 .gl-row:first-child{border-top:none}
+.gl-line{display:flex;align-items:center;gap:10px}
+.gl-ck{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:.8rem;font-weight:800;color:#fff}
+.gl-row.done .gl-ck{background:var(--ok);border-color:var(--ok)}
 .gl-txt{flex:1;min-width:0;display:grid;gap:1px}
 .gl-txt b{color:var(--bleu);font-size:1.05rem;line-height:1.3}
 .gl-txt small{color:var(--soft);font-size:.9rem;line-height:1.3}
-.gl-row .btn{flex:none;min-width:52px;min-height:46px;padding:0 14px;font-size:1.1rem}
+.gl-line .btn{flex:none;min-width:50px;min-height:46px;padding:0 12px;font-size:1.1rem}
+.gl-line .btn.got{box-shadow:inset 0 0 0 2px var(--ok)}
+.gl-fb{font-size:.88rem;color:var(--soft)}
+.gl-fb:empty{display:none}
+.gl-fb .ok{color:var(--ok);font-weight:600}.gl-fb .bad{color:var(--bad);font-weight:600}
 .lv-item.gl .lvnum{font-weight:800}
 .dlg-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px}
 .dlg-card .who{font-size:.85rem;font-weight:600;color:var(--bleu)}
@@ -767,14 +774,14 @@ const KEY="marcel-course-v3";
 const fresh = () => ({v:9, level:1, shrimps:0, unlocked:0, view:0, revView:0, revKey:"", order:null, forgot:[], fg:{ass:[],dis:[],fin:[]}, again:{rev_ass:[],rev_dis:[],rev_fin:[]}, tail:{rev_ass:[],rev_dis:[],rev_fin:[]}, earned:{rep:false,ass:false,dis:false,fin:false}, done:{rep:[],ass:[],dis:[],fin:[],rev_ass:[],rev_dis:[],rev_fin:[],rec:[],rel:[],story:[]}, recap:{ok:false}, rapEarned:false, rapRead:false, won:false});
 let state = fresh(), generated = {}, admin = false, levelsSaved = {};
 const MEAL_MS=8*3600*1000;   // Марсель съедает одну креветку каждые 8 часов, то есть три в день. Уже идущий таймер не сбрасывается, новый интервал начинается после следующей съеденной
-let feed={eaten:0,next:0}, streak=[], dlg={};
+let feed={eaten:0,next:0}, streak=[], dlg={}, gls={l:{},s:{},earned:false};
 try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s){
-  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0}; if(s.dlg && typeof s.dlg==='object') dlg=s.dlg; if(Array.isArray(s.streak)) streak=s.streak.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x));
+  generated=s.generated||{}; admin=!!s.admin; levelsSaved=s.levels||{}; if(s.feed) feed={eaten:+s.feed.eaten||0,next:+s.feed.next||0}; if(s.dlg && typeof s.dlg==='object') dlg=s.dlg; if(s.gls && typeof s.gls==='object') gls={l:{},s:{},earned:false,...s.gls}; if(Array.isArray(s.streak)) streak=s.streak.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x));
   // версия 9: в каждом уровне 18 карточек (было 21) и перед уровнем идёт повторение пройденного. Прогресс прежних версий начинается заново, креветки остаются
   if(s.state && s.state.v===9){ state={...fresh(),...s.state}; state.done={...fresh().done,...state.done}; state.fg={ass:[],dis:[],fin:[],...state.fg}; state.again={rev_ass:[],rev_dis:[],rev_fin:[],...state.again}; state.tail={rev_ass:[],rev_dis:[],rev_fin:[],...state.tail}; state.recap={ok:false,...state.recap}; }
   else if(s.state){ state={...fresh(), level:s.state.level||1, shrimps:s.state.shrimps||0}; levelsSaved={}; }
 } }catch(e){}
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved, feed, streak, dlg})); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify({state, generated, admin, levels:levelsSaved, feed, streak, dlg, gls})); }catch(e){} }
 const dayKey=d=>{ d=d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
 const dayAgo=n=>{ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-n); return d; };
 function touchStreak(){ const t=dayKey(); if(!streak.includes(t)){ streak.push(t); streak=streak.slice(-60); save(); } }
@@ -1751,10 +1758,13 @@ function renderLevels(){
     l.innerHTML='<input type="checkbox" data-'+id+'"'+(checked?" checked":"")+'><span class="sw-track" aria-hidden="true"></span><span class="sw-text">'+label+'</span><span class="sw-gain">'+gainTxt+(checked?' <span class="sw-ck">✓</span>':"")+'</span>';
     const inp=l.querySelector("input"); inp.onchange=()=>onChange(inp); return l;
   };
-  const g0=document.createElement("div"); g0.className="lv-item gl";
+  const gDone=glDoneCount(), gTot=GL_KEYS.length, gPct=Math.round(gDone/gTot*100), gAll=gDone>=gTot;
+  const g0=document.createElement("div"); g0.className="lv-item gl"+(gAll?" done":"");
   const gb=document.createElement("button"); gb.type="button"; gb.className="lv-card"; gb.dataset.glossary="1";
-  gb.innerHTML='<span class="lvnum">0</span><span class="lvtxt"><b>Les mots de l\'appli</b><small>Слова и кнопки приложения</small></span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
-  gb.onclick=openGlossary; g0.appendChild(gb); host.appendChild(g0);
+  gb.innerHTML='<span class="lvnum">'+(gAll?"✓":"0")+'</span><span class="lvtxt"><b>Les mots de l\'appli</b><small>Слова и кнопки приложения</small><span class="lvbar"><span style="width:'+gPct+'%"></span></span></span><span class="lvst">'+gPct+'%</span><span class="lvgo" aria-hidden="true">'+CHEV()+'</span>';
+  gb.onclick=openGlossary; g0.appendChild(gb);
+  g0.appendChild(sw('glossary="1',"Je connais déjà","+1 🦐",gAll&&gls.earned,inp=>markGlossary(inp.checked)));
+  host.appendChild(g0);
   for(let n=1;n<=MAXLEVEL;n++){
     const done=levelDone(n), pct=levelPct(n), d=BUILTIN[n], st=n===state.level?state:levelsSaved[n];
     const item=document.createElement("div"); item.className="lv-item"+(n===state.level?" cur":"")+(done?" done":"");
@@ -2056,7 +2066,7 @@ function renderAll(){
 }
 
 $("restartLevel").onclick=()=>{ if(confirm("Recommencer ce niveau ?")){ const sh=state.shrimps, lv=state.level; state={...fresh(), level:lv, shrimps:sh}; save(); renderAll(); } };
-$("resetAll").onclick=()=>{ if(confirm("Tout réinitialiser, avec les crevettes ?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; streak=[]; dlg={}; save(); renderAll(); } };
+$("resetAll").onclick=()=>{ if(confirm("Tout réinitialiser, avec les crevettes ?")){ state=fresh(); generated={}; levelsSaved={}; feed={eaten:0,next:Date.now()+MEAL_MS}; streak=[]; dlg={}; gls={l:{},s:{},earned:false}; save(); renderAll(); } };
 // прогресс каждого уровня хранится отдельно, поэтому можно переключаться туда и обратно
 function goLevel(n){
   n=Math.max(1,Math.min(MAXLEVEL,n)); if(n!==state.level) rapForce=false;
@@ -2374,23 +2384,63 @@ const GLOSSARY=[
   ["jours de suite","дней подряд"],
   ["Moi","Я. Так подписана твоя реплика в диалоге"]]}
 ];
+const GL_KEYS=GLOSSARY.flatMap(g=>g.items.map(x=>x[0]));
+const glOk=k=>!!(gls.l[k] && gls.s[k]);
+function glDoneCount(){ return GL_KEYS.filter(glOk).length; }
 function openGlossary(){ stopAudio(); play=null; dp=null; screen="glossary"; pushScreen(); navTo(); }
+// карточка 0 засчитывается, когда каждое слово послушано и произнесено. За это одна креветка, один раз
+function glCheckDone(){
+  if(glDoneCount()>=GL_KEYS.length && !gls.earned){ gls.earned=true; state.shrimps++; touchStreak(); fx("win"); toast("Bravo ! +1 🦐"); happy(); save(); renderHeader(); renderAqua(); }
+  else save();
+}
+function markGlossary(on){
+  if(on){ GL_KEYS.forEach(k=>{ gls.l[k]=true; gls.s[k]=true; }); if(!gls.earned){ gls.earned=true; state.shrimps++; touchStreak(); } }
+  else { gls.l={}; gls.s={}; if(gls.earned){ gls.earned=false; state.shrimps=Math.max(0,state.shrimps-1); } }
+  save(); renderAll(); toast(on?"Niveau 0 : +1 🦐":"Niveau 0 réinitialisé : −1 🦐");
+}
+function glRefresh(){
+  const host=$("glsScreen"); if(!host) return;
+  const n=glDoneCount(), t=GL_KEYS.length, bar=host.querySelector(".gl-bar"), pr=host.querySelector(".gl-prog");
+  if(bar) bar.style.width=(n/t*100)+"%"; if(pr) pr.textContent=n+" sur "+t;
+  host.querySelectorAll(".gl-row").forEach(r=>{
+    const k=r.dataset.k, ok=glOk(k);
+    r.classList.toggle("done",ok); r.querySelector(".gl-ck").textContent=ok?"✓":"";
+    r.querySelector(".gl-ear").classList.toggle("got",!!gls.l[k]);
+    r.querySelector(".gl-say").classList.toggle("got",!!gls.s[k]);
+  });
+}
 function renderGlossary(){
   const host=$("glsScreen"); host.innerHTML="";
   if(screen!=="glossary") return;
-  const head=document.createElement("div"); head.className="dlg-head"; head.innerHTML='<b>Niveau 0 · Les mots de l\'appli</b><small>Слова и кнопки, которые встречаются в приложении. Нажми 🔊, чтобы послушать.</small>';
+  const head=document.createElement("div"); head.className="dlg-head"; head.innerHTML='<b>Niveau 0 · Les mots de l\'appli</b><small>Послушай каждое слово (🔊) и произнеси его вслух (🎤). Когда отмечены все, получишь +1 🦐.</small>';
   host.appendChild(head);
+  const pw=document.createElement("section"); pw.className="progwrap"; pw.innerHTML='<div class="bar"><span class="gl-bar" style="width:0%"></span></div><div class="prog gl-prog"></div>'; host.appendChild(pw);
   GLOSSARY.forEach(g=>{
     const h=document.createElement("h3"); h.className="recap-lv"; h.textContent=g.h+" · "+g.ru; host.appendChild(h);
     const list=document.createElement("div"); list.className="gl-list";
     g.items.forEach(([fr,ru,say])=>{
-      const row=document.createElement("div"); row.className="gl-row";
-      row.innerHTML='<div class="gl-txt"><b lang="fr">'+esc(fr)+'</b><small>'+esc(ru)+'</small></div>';
-      const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="🔊"; b.setAttribute("aria-label","Écouter : "+fr); b.onclick=()=>speak(say||fr,1);
-      row.appendChild(b); list.appendChild(row);
+      const target=say||fr, row=document.createElement("div"); row.className="gl-row"; row.dataset.k=fr;
+      row.innerHTML='<div class="gl-line"><span class="gl-ck" aria-hidden="true"></span><div class="gl-txt"><b lang="fr">'+esc(fr)+'</b><small>'+esc(ru)+'</small></div></div><div class="gl-fb"></div>';
+      const line=row.querySelector(".gl-line"), fb=row.querySelector(".gl-fb");
+      const ear=document.createElement("button"); ear.type="button"; ear.className="btn gl-ear"; ear.textContent="🔊"; ear.setAttribute("aria-label","Écouter : "+fr);
+      ear.onclick=()=>{ speak(target,1); if(!gls.l[fr]){ gls.l[fr]=true; glRefresh(); glCheckDone(); } };
+      const say2=document.createElement("button"); say2.type="button"; say2.className="btn red gl-say";
+      if(micBroken){
+        say2.textContent="Je sais"; say2.onclick=()=>{ gls.s[fr]=!gls.s[fr]; glRefresh(); glCheckDone(); };
+      } else {
+        say2.textContent="🎤"; say2.setAttribute("aria-label","Parler : "+fr);
+        say2.onclick=()=>listen(say2, said=>{
+          const res=check(target, said, "speech");
+          if(res.ok){ fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; fx("ok"); gls.s[fr]=true; glRefresh(); glCheckDone(); }
+          else { fb.innerHTML='<span class="bad">Presque ! Encore une fois.</span> <span class="said">J\'entends : '+esc(said)+'</span>'; fx("bad"); }
+        }, live=>{ fb.innerHTML='<span class="said">J\'entends : '+esc(live)+'</span>'; });
+      }
+      line.appendChild(ear); line.appendChild(say2);
+      list.appendChild(row);
     });
     host.appendChild(list);
   });
+  glRefresh();
 }
 
 // установка на экран «Домой»
