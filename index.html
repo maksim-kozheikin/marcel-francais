@@ -288,6 +288,7 @@ details[open]>.setsum .chev{transform:rotate(-90deg)}
 .gl-line .btn.got{box-shadow:inset 0 0 0 2px var(--ok)}
 .gl-fb{font-size:.88rem;color:var(--soft)}
 .gl-fb:empty{display:none}
+.gl-fb .gl-skip{margin-left:8px;min-height:36px;padding:0 14px;font-size:.9rem}
 .gl-fb .ok{color:var(--ok);font-weight:600}.gl-fb .bad{color:var(--bad);font-weight:600}
 .lv-item.gl .lvnum{font-weight:800}
 .dlg-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px}
@@ -833,10 +834,14 @@ function numFr(n){
   return "quatre-vingt-"+U[10+u];
 }
 const FILLERS=new Set(["euh","heu","bah","ben","hum","mmm"]);
+// распознавание речи часто пишет знаки и сокращения вместо слов («&», «€», «%», «150 gr», «3 kg»). Приводим их к словам, как в карточках
+const ABBR={gr:"grammes",g:"grammes",kg:"kilos",km:"kilomètres",ml:"millilitres",cl:"centilitres",l:"litres",m:"mètres",cm:"centimètres",min:"minutes",h:"heures"};
 function tokens(s){
-  return s.toLowerCase().replace(/\d+/g,d=>" "+numFr(+d)+" ").replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/æ/g,"ae")
+  return s.toLowerCase().replace(/(\d)\s*m\s?[²2]/g,"$1 mètres carrés").replace(/\bm²|\bm2\b/g," mètres carrés ")
+    .replace(/&/g," et ").replace(/€/g," euros ").replace(/%/g," pour cent ").replace(/°/g," degrés ").replace(/\+/g," plus ")
+    .replace(/\d+/g,d=>" "+numFr(+d)+" ").replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/æ/g,"ae")
     .replace(/[.,!?;:«»"()…]/g," ").replace(/-/g," ").replace(/'/g,"")
-    .split(/\s+/).filter(w=>w && !FILLERS.has(w));
+    .split(/\s+/).filter(w=>w && !FILLERS.has(w)).flatMap(w=>ABBR[w]?ABBR[w].split(" "):[w]);
 }
 function deaccent(w){return w.normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
 function sound(w){ w=deaccent(w); return w.length>3 ? w.replace(/(ent|es|s|x|t|e)$/,"") : w.replace(/[sxt]$/,""); }
@@ -2419,7 +2424,7 @@ function renderGlossary(){
     const h=document.createElement("h3"); h.className="recap-lv"; h.textContent=g.h+" · "+g.ru; host.appendChild(h);
     const list=document.createElement("div"); list.className="gl-list";
     g.items.forEach(([fr,ru,say])=>{
-      const target=say||fr, row=document.createElement("div"); row.className="gl-row"; row.dataset.k=fr;
+      const target=say||fr; let fails=0; const row=document.createElement("div"); row.className="gl-row"; row.dataset.k=fr;
       row.innerHTML='<div class="gl-line"><span class="gl-ck" aria-hidden="true"></span><div class="gl-txt"><b lang="fr">'+esc(fr)+'</b><small>'+esc(ru)+'</small></div></div><div class="gl-fb"></div>';
       const line=row.querySelector(".gl-line"), fb=row.querySelector(".gl-fb");
       const ear=document.createElement("button"); ear.type="button"; ear.className="btn gl-ear"; ear.textContent="🔊"; ear.setAttribute("aria-label","Écouter : "+fr);
@@ -2432,7 +2437,13 @@ function renderGlossary(){
         say2.onclick=()=>listen(say2, said=>{
           const res=check(target, said, "speech");
           if(res.ok){ fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; fx("ok"); gls.s[fr]=true; glRefresh(); glCheckDone(); }
-          else { fb.innerHTML='<span class="bad">Presque ! Encore une fois.</span> <span class="said">J\'entends : '+esc(said)+'</span>'; fx("bad"); }
+          else {
+            fails++; fb.innerHTML='<span class="bad">Presque ! Encore une fois.</span> <span class="said">J\'entends : '+esc(said)+'</span>'; fx("bad");
+            if(fails>=3){   // если распознавание не понимает слово, его можно засчитать вручную
+              const sk=document.createElement("button"); sk.type="button"; sk.className="btn ghost gl-skip"; sk.textContent="Je sais";
+              sk.onclick=()=>{ gls.s[fr]=true; fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; glRefresh(); glCheckDone(); }; fb.appendChild(sk);
+            }
+          }
         }, live=>{ fb.innerHTML='<span class="said">J\'entends : '+esc(live)+'</span>'; });
       }
       line.appendChild(ear); line.appendChild(say2);
