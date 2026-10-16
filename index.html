@@ -2403,6 +2403,14 @@ function markGlossary(on){
   else { gls.l={}; gls.s={}; if(gls.earned){ gls.earned=false; state.shrimps=Math.max(0,state.shrimps-1); } }
   save(); renderAll(); toast(on?"Niveau 0 : +1 🦐":"Niveau 0 réinitialisé : −1 🦐");
 }
+// знаки и цифры в названиях («&», «Voix 1», «0 sur 18») не произносятся и распознаются как попало. Проверяем только слова
+const GL_SKIP=new Set("§1 zéro zero un une deux trois quatre cinq six sept huit neuf dix onze douze treize quatorze quinze seize vingt et".split(" "));
+function glCheck(fr, target, said){
+  if(!/[&\d]/.test(fr)) return check(target, said, "speech");
+  const core=fr.replace(/&/g," ").replace(/\d+/g," ").trim();
+  const cleaned=said.split(/\s+/).filter(w=>{ const t=tokens(w); return t.length && !t.every(x=>GL_SKIP.has(x)); }).join(" ");
+  return check(core, cleaned, "speech");
+}
 function glRefresh(){
   const host=$("glsScreen"); if(!host) return;
   const n=glDoneCount(), t=GL_KEYS.length, bar=host.querySelector(".gl-bar"), pr=host.querySelector(".gl-prog");
@@ -2435,7 +2443,7 @@ function renderGlossary(){
       } else {
         say2.textContent="🎤"; say2.setAttribute("aria-label","Parler : "+fr);
         say2.onclick=()=>listen(say2, said=>{
-          const res=check(target, said, "speech");
+          const res=glCheck(fr, target, said);
           if(res.ok){ fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; fx("ok"); gls.s[fr]=true; glRefresh(); glCheckDone(); }
           else {
             fails++; fb.innerHTML='<span class="bad">Presque ! Encore une fois.</span> <span class="said">J\'entends : '+esc(said)+'</span>'; fx("bad");
