@@ -838,7 +838,7 @@ const FILLERS=new Set(["euh","heu","bah","ben","hum","mmm"]);
 const ABBR={gr:"grammes",g:"grammes",kg:"kilos",km:"kilomètres",ml:"millilitres",cl:"centilitres",l:"litres",m:"mètres",cm:"centimètres",min:"minutes",h:"heures"};
 function tokens(s){
   return s.toLowerCase().replace(/(\d)\s*m\s?[²2]/g,"$1 mètres carrés").replace(/\bm²|\bm2\b/g," mètres carrés ")
-    .replace(/&/g," et ").replace(/€/g," euros ").replace(/%/g," pour cent ").replace(/°/g," degrés ").replace(/\+/g," plus ")
+    .replace(/&/g," et ").replace(/€/g," euros ").replace(/%/g," pour cent ").replace(/°/g," degrés ").replace(/\+/g," plus ").replace(/\//g," sur ").replace(/[^\p{L}\p{N}\s'’`´\-]/gu," ")
     .replace(/\d+/g,d=>" "+numFr(+d)+" ").replace(/[’`´]/g,"'").replace(/œ/g,"oe").replace(/æ/g,"ae")
     .replace(/[.,!?;:«»"()…]/g," ").replace(/-/g," ").replace(/'/g,"")
     .split(/\s+/).filter(w=>w && !FILLERS.has(w)).flatMap(w=>ABBR[w]?ABBR[w].split(" "):[w]);
@@ -939,12 +939,12 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let micBroken=!SR, rec=null, recBtn=null;
 function listen(btn, onText, onLive){
   if(rec){ try{rec.stop();}catch(e){} if(recBtn===btn) return; }
-  const me=new SR(); rec=me; recBtn=btn;
+  const me=new SR(); rec=me; recBtn=btn; const idleTxt=btn.dataset.idle||btn.textContent, liveTxt=btn.dataset.live||"⏹ Stop";
   me.lang="fr-FR"; me.interimResults=true; me.continuous=true; me.maxAlternatives=1;
   let got="", heard="", timer=null;
   // не обрываем на первой паузе: останавливаемся, когда тишина длится дольше
   const arm=ms=>{ clearTimeout(timer); timer=setTimeout(()=>{ try{me.stop();}catch(e){} }, ms); };
-  me.onstart=()=>{btn.classList.add("listening");btn.textContent="⏹ Stop"; if(onLive) onLive("…"); arm(8000);};
+  me.onstart=()=>{btn.classList.add("listening");btn.textContent=liveTxt; if(onLive) onLive("…"); arm(8000);};
   me.onresult=e=>{
     const fin=[], tmp=[];
     for(const r of e.results){ (r.isFinal?fin:tmp).push(r[0].transcript.trim()); }
@@ -956,7 +956,7 @@ function listen(btn, onText, onLive){
     if(e.error==="not-allowed"||e.error==="service-not-allowed"||e.error==="audio-capture"){ micBroken=true; renderNotice(); renderMain(); }
     else if(e.error==="no-speech") toast("Je n'ai rien entendu. Parle un peu plus fort 🎤");
   };
-  me.onend=()=>{ clearTimeout(timer); btn.classList.remove("listening"); btn.textContent="🎤 Parler";
+  me.onend=()=>{ clearTimeout(timer); btn.classList.remove("listening"); btn.textContent=idleTxt;
     if(rec===me){ rec=null; recBtn=null; }
     const text=(got||heard).trim();
     if(text) onText(text); else if(onLive) onLive("rien entendu, essaie encore"); };
@@ -2404,12 +2404,21 @@ function markGlossary(on){
   save(); renderAll(); toast(on?"Niveau 0 : +1 🦐":"Niveau 0 réinitialisé : −1 🦐");
 }
 // знаки и цифры в названиях («&», «Voix 1», «0 sur 18») не произносятся и распознаются как попало. Проверяем только слова
-const GL_SKIP=new Set("§1 zéro zero un une deux trois quatre cinq six sept huit neuf dix onze douze treize quatorze quinze seize vingt et".split(" "));
+const GL_SKIP=new Set("§1 zéro zero un une deux trois quatre cinq six sept huit neuf dix onze douze treize quatorze quinze seize vingt trente quarante cinquante soixante cent et".split(" "));
+const flat=x=>x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g,"");
+function lev(a,b){ const d=Array.from({length:a.length+1},(_,i)=>[i]); for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++) d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length]; }
 function glCheck(fr, target, said){
-  if(!/[&\d]/.test(fr)) return check(target, said, "speech");
-  const core=fr.replace(/&/g," ").replace(/\d+/g," ").trim();
-  const cleaned=said.split(/\s+/).filter(w=>{ const t=tokens(w); return t.length && !t.every(x=>GL_SKIP.has(x)); }).join(" ");
-  return check(core, cleaned, "speech");
+  const sym=/[&\d]/.test(fr);
+  const core=sym?fr.replace(/&/g," ").replace(/\d+/g," ").trim():target;
+  const cleaned=sym?tokens(said).filter(t=>!GL_SKIP.has(t)).join(" "):said;
+  const res=check(core, cleaned, "speech");
+  if(res.ok) return res;
+  // распознавание путает слова на слух («mahger» вместо «mangées»), поэтому похожее написание тоже засчитываем
+  const a=flat(core), b=flat(cleaned);
+  if(a && b){ const sim=1-lev(a,b)/Math.max(a.length,b.length); if(sim>=(a.length<=4?0.75:a.length<10?0.5:0.7)) return {...res, ok:true, near:true}; }
+  return res;
 }
 function glRefresh(){
   const host=$("glsScreen"); if(!host) return;
@@ -2441,13 +2450,13 @@ function renderGlossary(){
       if(micBroken){
         say2.textContent="Je sais"; say2.onclick=()=>{ gls.s[fr]=!gls.s[fr]; glRefresh(); glCheckDone(); };
       } else {
-        say2.textContent="🎤"; say2.setAttribute("aria-label","Parler : "+fr);
+        say2.textContent="🎤"; say2.dataset.idle="🎤"; say2.dataset.live="⏹"; say2.setAttribute("aria-label","Parler : "+fr);
         say2.onclick=()=>listen(say2, said=>{
           const res=glCheck(fr, target, said);
           if(res.ok){ fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; fx("ok"); gls.s[fr]=true; glRefresh(); glCheckDone(); }
           else {
             fails++; fb.innerHTML='<span class="bad">Presque ! Encore une fois.</span> <span class="said">J\'entends : '+esc(said)+'</span>'; fx("bad");
-            if(fails>=3){   // если распознавание не понимает слово, его можно засчитать вручную
+            if(fails>=2){   // если распознавание не понимает слово, его можно засчитать вручную
               const sk=document.createElement("button"); sk.type="button"; sk.className="btn ghost gl-skip"; sk.textContent="Je sais";
               sk.onclick=()=>{ gls.s[fr]=true; fb.innerHTML='<span class="ok">Très bien ! ✅</span>'; glRefresh(); glCheckDone(); }; fb.appendChild(sk);
             }
